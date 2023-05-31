@@ -1,0 +1,46 @@
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using System.Threading;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Jellyfin.UWP.Pages
+{
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class LoginPage : Page
+    {
+        public LoginPage()
+        {
+            this.InitializeComponent();
+
+            DataContext = Ioc.Default.GetRequiredService<LoginViewModel>();
+
+            this.Loaded += LoginPage_Loaded;
+            this.Unloaded += LoginPage_Unloaded;
+        }
+
+        private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ((LoginViewModel)DataContext).SuccessfullyLoggedIn -= LoginPage_SuccessfullyLoggedIn;
+        }
+
+        private void LoginPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((LoginViewModel)DataContext).SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
+        }
+
+        private void LoginPage_SuccessfullyLoggedIn()
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
+        }
+
+        private void PasswordBox_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
+            }
+        }
+    }
+}

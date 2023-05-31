@@ -1,0 +1,27 @@
+﻿<Page
+    x:Class="Jellyfin.UWP.Pages.MediaItemPlayer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:app1="using:Jellyfin.UWP"
+    d:DataContext="{d:DesignInstance Type=app1:MediaItemPlayerViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" Content="Back" Click="{x:Bind BackClick}" />
+
+        <MediaPlayerElement x:Name="_mediaPlayerElement" AreTransportControlsEnabled="True" HorizontalAlignment="Stretch"
+          Grid.Row="1">
+            <MediaPlayerElement.TransportControls>
+                <MediaTransportControls  IsFastForwardButtonVisible="True" IsFastForwardEnabled="True" IsFastRewindButtonVisible="True" IsFastRewindEnabled="True" IsPlaybackRateButtonVisible="True" IsPlaybackRateEnabled="True" IsCompact="False" IsSeekBarVisible="True" IsSeekEnabled="True" IsSkipForwardButtonVisible="True" IsSkipForwardEnabled="True" IsSkipBackwardButtonVisible="True" IsSkipBackwardEnabled="True" IsStopButtonVisible="True" IsStopEnabled="True"/>
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>
+    </Grid>
+</Page>
