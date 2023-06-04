@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Pages;
+using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -83,7 +84,7 @@ namespace Jellyfin.UWP
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
                .AddTransient<MediaListViewModel>()
-               .AddTransient<MediaItemViewModel>()
+               .AddTransient<DetailsViewModel>()
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()

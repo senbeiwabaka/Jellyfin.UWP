@@ -35,7 +35,7 @@ namespace Jellyfin.UWP.Pages
 
         public void ClickItemList(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPage), ((UIMediaListItem)e.ClickedItem).Id);
+            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

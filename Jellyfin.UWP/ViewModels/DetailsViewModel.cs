@@ -8,9 +8,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Jellyfin.UWP
+namespace Jellyfin.UWP.ViewModels
 {
-    public partial class MediaItemViewModel : ObservableObject
+    public partial class DetailsViewModel : ObservableObject
     {
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IMemoryCache memoryCache;
@@ -52,7 +52,7 @@ namespace Jellyfin.UWP
         [ObservableProperty]
         private string writer;
 
-        public MediaItemViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public DetailsViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
             this.httpClientFactory = httpClientFactory;
             this.sdkClientSettings = sdkClientSettings;
@@ -100,21 +100,22 @@ namespace Jellyfin.UWP
             var libraryClient = new LibraryClient(sdkClientSettings, httpClient);
             var similiarItems = await libraryClient.GetSimilarItemsAsync(MediaItem.Id, limit: 12, fields: new[] { ItemFields.PrimaryImageAspectRatio });
 
-            SimiliarMediaList = new ObservableCollection<UIMediaListItem>(similiarItems.Items
-            .Select(x => new UIMediaListItem
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=446&fillWidth=298&quality=96&tag={x.ImageTags["Primary"]}",
-                Year = x.ProductionYear.ToString(),
-            }));
+            SimiliarMediaList = new ObservableCollection<UIMediaListItem>(
+                similiarItems.Items
+                .Select(x => new UIMediaListItem
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Url = SetImageUrl(x.Id, "446", "298", x.ImageTags["Primary"]),
+                    Year = x.ProductionYear?.ToString() ?? "N/A",
+                }));
 
-            SetImageUrl();
+            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
         }
 
-        private void SetImageUrl()
+        private string SetImageUrl(Guid id, string height, string width, string imageTagId)
         {
-            ImageUrl = $"{sdkClientSettings.BaseUrl}/Items/{MediaItem.Id}/Images/Primary?fillHeight=720&fillWidth=480&quality=96&tag={MediaItem.ImageTags["Primary"]}";
+            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
         }
     }
 }

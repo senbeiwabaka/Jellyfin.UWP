@@ -31,7 +31,7 @@ namespace Jellyfin.UWP.Pages
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPage), ((UIMediaListItem)e.ClickedItem).Id);
+            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
     }
 }
