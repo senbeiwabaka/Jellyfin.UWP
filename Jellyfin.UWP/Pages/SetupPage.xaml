@@ -1,0 +1,20 @@
+﻿<Page
+    x:Class="Jellyfin.UWP.Pages.SetupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:uwp="using:Jellyfin.UWP" d:DataContext="{d:DesignInstance Type=uwp:SetupViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Margin="10,10,10,0">
+            <TextBlock Text="Jellyfin URL:" Padding="10" />
+            <TextBox x:Name="JellyfinUrlTextBox" Text="{Binding JellyfinUrl, Mode=TwoWay}" Width="150" KeyUp="JellyfinUrlTextBox_KeyUp" Padding="10" />
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="Center" Margin="10">
+            <Button x:Name="CompleteButton" Content="Complete" Command="{Binding CompleteCommand}" Background="#00a4dc" />
+        </StackPanel>
+    </StackPanel>
+</Page>

@@ -42,7 +42,8 @@ namespace Jellyfin.UWP
         protected override async void OnLaunched(LaunchActivatedEventArgs e)
         {
             var localSettings = ApplicationData.Current.LocalSettings;
-            var localPassword = localSettings.Values["accessToken"]?.ToString();
+            var accessToken = localSettings.Values["accessToken"]?.ToString();
+            var jellyfinUrl = localSettings.Values["jellyfinUrl"]?.ToString();
 
             Frame rootFrame = Window.Current.Content as Frame;
 
@@ -66,7 +67,7 @@ namespace Jellyfin.UWP
 
             var settings = new SdkClientSettings
             {
-                BaseUrl = "https://jellyfin.mjy-home.duckdns.org",
+                BaseUrl = jellyfinUrl,
                 ClientName = "jellyfin",
                 ClientVersion = "1.0",
                 DeviceName = "jellyfin",
@@ -74,20 +75,23 @@ namespace Jellyfin.UWP
             };
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
-               .AddSingleton<SdkClientSettings>((serviceProvider) => settings) //Services
+               // Services
+               .AddSingleton<SdkClientSettings>((serviceProvider) => settings)
                .AddHttpClient()
                .AddMemoryCache()
-               .AddTransient<LoginViewModel>() //ViewModels
+               // ViewModels
+               .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
                .AddTransient<MediaListViewModel>()
                .AddTransient<MediaItemViewModel>()
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
+               .AddTransient<SetupViewModel>()
                .BuildServiceProvider());
 
-            if (!string.IsNullOrWhiteSpace(localPassword))
+            if (!string.IsNullOrWhiteSpace(accessToken))
             {
-                settings.AccessToken = localPassword;
+                settings.AccessToken = accessToken;
 
                 var httpClientFactory = Ioc.Default.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient();
@@ -102,7 +106,11 @@ namespace Jellyfin.UWP
             {
                 if (rootFrame.Content == null)
                 {
-                    if (string.IsNullOrWhiteSpace(localPassword))
+                    if (string.IsNullOrWhiteSpace(jellyfinUrl) || !Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute))
+                    {
+                        rootFrame.Navigate(typeof(SetupPage));
+                    }
+                    else if (string.IsNullOrWhiteSpace(accessToken))
                     {
                         rootFrame.Navigate(typeof(LoginPage));
                     }

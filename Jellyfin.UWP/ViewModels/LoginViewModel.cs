@@ -10,31 +10,36 @@ using Windows.Storage;
 
 namespace Jellyfin.UWP
 {
-    public partial class LoginViewModel : ObservableValidator
+    internal sealed partial class LoginViewModel : ObservableValidator
     {
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
-        [Required(AllowEmptyStrings = false)]
-        private string username;
+        private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         [Required(AllowEmptyStrings = false)]
         private string password;
 
-        public delegate void EventHandler();
-
-        public event EventHandler SuccessfullyLoggedIn;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+        [Required(AllowEmptyStrings = false)]
+        private string username;
 
         public LoginViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
             this.httpClientFactory = httpClientFactory;
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
+        }
+
+        public delegate void EventHandler();
+
+        public event EventHandler SuccessfullyLoggedIn;
+
+        private bool CanLogIn()
+        {
+            return !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
         }
 
         [RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanLogIn))]
@@ -64,11 +69,6 @@ namespace Jellyfin.UWP
             catch (UserException e)
             {
             }
-        }
-
-        private bool CanLogIn()
-        {
-            return !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
         }
     }
 }
