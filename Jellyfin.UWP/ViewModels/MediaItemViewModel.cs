@@ -13,23 +13,14 @@ namespace Jellyfin.UWP
     public partial class MediaItemViewModel : ObservableObject
     {
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
+        private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
-        private BaseItemDto mediaItem;
+        private ObservableCollection<UIPersonItem> castAndCrew;
 
         [ObservableProperty]
-        private string imageUrl;
-
-        [ObservableProperty]
-        private string videoType;
-
-        [ObservableProperty]
-        private string mediaTags;
-
-        [ObservableProperty]
-        private string mediaTagLines;
+        private string director;
 
         [ObservableProperty]
         private string externalURLs;
@@ -38,19 +29,28 @@ namespace Jellyfin.UWP
         private string genres;
 
         [ObservableProperty]
-        private string director;
+        private string imageUrl;
 
         [ObservableProperty]
-        private string writer;
+        private BaseItemDto mediaItem;
 
         [ObservableProperty]
-        private ObservableCollection<UIPersonItem> castAndCrew;
+        private string mediaTagLines;
+
+        [ObservableProperty]
+        private string mediaTags;
+
+        [ObservableProperty]
+        private string runTime;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> similiarMediaList;
 
         [ObservableProperty]
-        private string runTime;
+        private string videoType;
+
+        [ObservableProperty]
+        private string writer;
 
         public MediaItemViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
@@ -67,7 +67,11 @@ namespace Jellyfin.UWP
             var userLibraryItem = await userLibraryClient.GetItemAsync(user.Id, id);
 
             MediaItem = userLibraryItem;
-            VideoType = MediaItem.MediaStreams.Single(x => x.Type == MediaStreamType.Video).DisplayTitle;
+
+            if (MediaItem.MediaStreams is not null)
+            {
+                VideoType = MediaItem.MediaStreams.SingleOrDefault(x => x.Type == MediaStreamType.Video)?.DisplayTitle;
+            }
 
             if (MediaItem.RunTimeTicks.HasValue)
             {
