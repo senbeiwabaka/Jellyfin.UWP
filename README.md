@@ -5,6 +5,8 @@ This is a UWP application for Windows store and Xbox to use Jellyfin. It should 
 
 To note this will not have Live TV or Pictures. If someone would like to start adding that to this, that would be cool. I have neither so I can not build or test.
 
+THERE ARE NOT TESTS YET! :( THERE WILL BE TESTS.... eventually.... :/
+
 ## Features
 * Load your libraries
 * Basic search/filtering
