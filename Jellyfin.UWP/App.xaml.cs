@@ -80,6 +80,20 @@ namespace Jellyfin.UWP
                .AddSingleton<SdkClientSettings>((serviceProvider) => settings)
                .AddHttpClient()
                .AddMemoryCache()
+               .AddTransient<IUserLibraryClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new UserLibraryClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<ILibraryClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new LibraryClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -88,6 +102,7 @@ namespace Jellyfin.UWP
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()
+
                .BuildServiceProvider());
 
             if (!string.IsNullOrWhiteSpace(accessToken))

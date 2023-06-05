@@ -5,15 +5,15 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
     public partial class DetailsViewModel : ObservableObject
     {
-        private readonly IHttpClientFactory httpClientFactory;
         private readonly IMemoryCache memoryCache;
+        private readonly IUserLibraryClient userLibraryClient;
+        private readonly ILibraryClient libraryClient;
         private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
@@ -52,18 +52,21 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private string writer;
 
-        public DetailsViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public DetailsViewModel(
+            IMemoryCache memoryCache,
+            IUserLibraryClient userLibraryClient,
+            ILibraryClient libraryClient,
+            SdkClientSettings sdkClientSettings)
         {
-            this.httpClientFactory = httpClientFactory;
-            this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
+            this.userLibraryClient = userLibraryClient;
+            this.libraryClient = libraryClient;
+            this.sdkClientSettings = sdkClientSettings;
         }
 
         public async Task LoadMediaInformationAsync(Guid id)
         {
             var user = memoryCache.Get<UserDto>("user");
-            var httpClient = httpClientFactory.CreateClient();
-            var userLibraryClient = new UserLibraryClient(sdkClientSettings, httpClient);
             var userLibraryItem = await userLibraryClient.GetItemAsync(user.Id, id);
 
             MediaItem = userLibraryItem;
@@ -97,7 +100,6 @@ namespace Jellyfin.UWP.ViewModels
                 .Where(x => x.Type == "Actor")
                 .Select(x => new UIPersonItem { Id = x.Id, Name = x.Name, Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=446&fillWidth=298&quality=96&tag={x.PrimaryImageTag}", Role = x.Role, }));
 
-            var libraryClient = new LibraryClient(sdkClientSettings, httpClient);
             var similiarItems = await libraryClient.GetSimilarItemsAsync(MediaItem.Id, limit: 12, fields: new[] { ItemFields.PrimaryImageAspectRatio });
 
             SimiliarMediaList = new ObservableCollection<UIMediaListItem>(

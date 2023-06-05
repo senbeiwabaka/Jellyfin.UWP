@@ -3,11 +3,8 @@ using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
-using RichardSzalay.MockHttp;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.Tests.ViewModels
@@ -19,39 +16,66 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task LoadMediaInformationAsync()
         {
             // Arrange
-            var mockFactory = new Mock<IHttpClientFactory>();
+            var userId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
             var sdkSettings = new SdkClientSettings
             {
                 ClientName = "client",
                 DeviceName = "client",
                 AccessToken = "token",
-                BaseUrl = "http://localhost/api/user/",
+                BaseUrl = "http://localhost/",
                 ClientVersion = "client",
                 DeviceId = "client",
             };
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var viewModel = new DetailsViewModel(mockFactory.Object, sdkSettings, memoryCache);
-            var mockHttp = new MockHttpMessageHandler();
+            var userLibraryClientMock = new Mock<IUserLibraryClient>();
+            var libraryClientMock = new Mock<ILibraryClient>();
+            var viewModel = new DetailsViewModel(
+                memoryCache,
+                userLibraryClientMock.Object,
+                libraryClientMock.Object,
+                sdkSettings);
 
-            mockHttp.When("http://localhost/api/user/*")
-                .Respond("application/json", JsonConvert.SerializeObject(new BaseItemDto
+            memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
+
+            userLibraryClientMock
+                .Setup(x => x.GetItemAsync(userId, itemId, default))
+                .ReturnsAsync(new BaseItemDto
                 {
+                    Id = itemId,
                     Tags = Array.Empty<string>(),
                     Taglines = Array.Empty<string>(),
                     Genres = Array.Empty<string>(),
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
-                }));
+                })
+                .Verifiable();
 
-            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(mockHttp.ToHttpClient());
-
-            memoryCache.Set<UserDto>("user", new UserDto());
+            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, null, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
+                .ReturnsAsync(new BaseItemDtoQueryResult
+                {
+                    Items = new[]
+                    {
+                        new BaseItemDto
+                        {
+                            Tags = Array.Empty<string>(),
+                            Taglines = Array.Empty<string>(),
+                            Genres = Array.Empty<string>(),
+                            People = Array.Empty<BaseItemPerson>(),
+                            ImageTags = new Dictionary<string, string> { { "Primary", "" } },
+                        }
+                    }
+                })
+                .Verifiable();
 
             // Act
-            await viewModel.LoadMediaInformationAsync(Guid.NewGuid());
+            await viewModel.LoadMediaInformationAsync(itemId);
 
             // Assert
             Assert.IsNotNull(viewModel.MediaItem);
+
+            userLibraryClientMock.Verify();
+            libraryClientMock.Verify();
         }
     }
 }
