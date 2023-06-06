@@ -15,7 +15,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <Grid Margin="10">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="125" />
             <RowDefinition Height="*" />
@@ -38,7 +38,7 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1">
+        <ScrollViewer Grid.Row="1" Margin="10">
             <StackPanel>
                 <StackPanel>
                     <TextBlock Text="My Media" Foreground="White" />

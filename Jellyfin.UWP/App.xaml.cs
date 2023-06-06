@@ -102,27 +102,53 @@ namespace Jellyfin.UWP
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()
-
                .BuildServiceProvider());
 
-            if (!string.IsNullOrWhiteSpace(accessToken))
-            {
-                settings.AccessToken = accessToken;
+            var resetJellyfinUrl = false;
 
+            // Testing URL to see if it is still active
+            if (!string.IsNullOrWhiteSpace(jellyfinUrl) || Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute))
+            {
+                using (var scope = Ioc.Default.CreateScope())
+                {
+                    var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+                    var httpClient = httpClientFactory.CreateClient();
+
+                    httpClient.BaseAddress = new Uri(jellyfinUrl);
+
+                    var response = await httpClient.GetAsync(string.Empty);
+
+                    resetJellyfinUrl = !response.IsSuccessStatusCode;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(accessToken) && !resetJellyfinUrl)
+            {
                 var httpClientFactory = Ioc.Default.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient();
                 var authClient = new UserClient(settings, httpClient);
-                var user = await authClient.GetCurrentUserAsync();
-                var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
-                memoryCache.Set("user", user);
+                try
+                {
+                    var user = await authClient.GetCurrentUserAsync();
+                    var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+
+                    memoryCache.Set("user", user);
+
+                    settings.AccessToken = accessToken;
+                }
+                catch (UserException)
+                {
+                    localSettings.Values.Remove("accessToken");
+                    accessToken = string.Empty;
+                }
             }
 
-            if (e.PrelaunchActivated == false)
+            if (!e.PrelaunchActivated)
             {
                 if (rootFrame.Content == null)
                 {
-                    if (string.IsNullOrWhiteSpace(jellyfinUrl) || !Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute))
+                    if (string.IsNullOrWhiteSpace(jellyfinUrl) || !Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute) || resetJellyfinUrl)
                     {
                         rootFrame.Navigate(typeof(SetupPage));
                     }
