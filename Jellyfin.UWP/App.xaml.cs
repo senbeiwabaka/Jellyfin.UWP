@@ -94,6 +94,13 @@ namespace Jellyfin.UWP
 
                    return new LibraryClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<ITvShowsClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new TvShowsClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -116,9 +123,16 @@ namespace Jellyfin.UWP
 
                     httpClient.BaseAddress = new Uri(jellyfinUrl);
 
-                    var response = await httpClient.GetAsync(string.Empty);
+                    try
+                    {
+                        var response = await httpClient.GetAsync(string.Empty);
 
-                    resetJellyfinUrl = !response.IsSuccessStatusCode;
+                        resetJellyfinUrl = !response.IsSuccessStatusCode;
+                    }
+                    catch
+                    {
+                        resetJellyfinUrl = true;
+                    }
                 }
             }
 
@@ -126,16 +140,16 @@ namespace Jellyfin.UWP
             {
                 var httpClientFactory = Ioc.Default.GetRequiredService<IHttpClientFactory>();
                 var httpClient = httpClientFactory.CreateClient();
-                var authClient = new UserClient(settings, httpClient);
 
                 try
                 {
+                    settings.AccessToken = accessToken;
+
+                    var authClient = new UserClient(settings, httpClient);
                     var user = await authClient.GetCurrentUserAsync();
                     var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
                     memoryCache.Set("user", user);
-
-                    settings.AccessToken = accessToken;
                 }
                 catch (UserException)
                 {

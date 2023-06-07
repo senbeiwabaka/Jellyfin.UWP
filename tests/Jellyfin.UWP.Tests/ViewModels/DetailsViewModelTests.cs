@@ -30,11 +30,13 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
+            var tvShowsClientMock = new Mock<ITvShowsClient>();
             var viewModel = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
-                sdkSettings);
+                sdkSettings,
+                tvShowsClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 
@@ -96,11 +98,13 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
+            var tvShowsClientMock = new Mock<ITvShowsClient>();
             var viewModel = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
-                sdkSettings);
+                sdkSettings,
+                tvShowsClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 
@@ -166,11 +170,13 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
+            var tvShowsClientMock = new Mock<ITvShowsClient>();
             var viewModel = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
-                sdkSettings);
+                sdkSettings,
+                tvShowsClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 

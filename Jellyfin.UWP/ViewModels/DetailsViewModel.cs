@@ -15,6 +15,7 @@ namespace Jellyfin.UWP.ViewModels
         private readonly IUserLibraryClient userLibraryClient;
         private readonly ILibraryClient libraryClient;
         private readonly SdkClientSettings sdkClientSettings;
+        private readonly ITvShowsClient tvShowsClient;
 
         [ObservableProperty]
         private ObservableCollection<UIPersonItem> castAndCrew;
@@ -52,16 +53,36 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private string writer;
 
+        [ObservableProperty]
+        private bool isMovie;
+
+        [ObservableProperty]
+        private string seriesNextUpUrl;
+
+        [ObservableProperty]
+        private Guid? seriesNextUpId;
+
+        [ObservableProperty]
+        private string seriesNextUpName;
+
+        [ObservableProperty]
+        private bool isNotMovie;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaListItem> seriesMetadata;
+
         public DetailsViewModel(
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
             ILibraryClient libraryClient,
-            SdkClientSettings sdkClientSettings)
+            SdkClientSettings sdkClientSettings,
+            ITvShowsClient tvShowsClient)
         {
             this.memoryCache = memoryCache;
             this.userLibraryClient = userLibraryClient;
             this.libraryClient = libraryClient;
             this.sdkClientSettings = sdkClientSettings;
+            this.tvShowsClient = tvShowsClient;
         }
 
         public async Task LoadMediaInformationAsync(Guid id)
@@ -100,6 +121,43 @@ namespace Jellyfin.UWP.ViewModels
                 .Where(x => x.Type == "Actor")
                 .Select(x => new UIPersonItem { Id = x.Id, Name = x.Name, Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=446&fillWidth=298&quality=96&tag={x.PrimaryImageTag}", Role = x.Role, }));
 
+            if (MediaItem.Type == BaseItemKind.Movie)
+            {
+                IsMovie = true;
+            }
+
+            if (MediaItem.Type == BaseItemKind.Series)
+            {
+                IsNotMovie = true;
+
+                var seasons = await tvShowsClient.GetSeasonsAsync(
+                    MediaItem.Id,
+                    user.Id,
+                    fields: new[]
+                    {
+                        ItemFields.ItemCounts,
+                        ItemFields.PrimaryImageAspectRatio,
+                        ItemFields.BasicSyncInfo,
+                        ItemFields.MediaSourceCount,
+                    });
+                var nextUp = await tvShowsClient.GetNextUpAsync(
+                    user.Id,
+                    seriesId: MediaItem.Id.ToString(),
+                    fields: new[] { ItemFields.MediaSourceCount, });
+                var nextUpItem = nextUp.Items.First();
+
+                SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", nextUpItem.ImageTags["Primary"]);
+                SeriesNextUpId = nextUpItem.Id;
+                SeriesNextUpName = $"S{nextUpItem.ParentIndexNumber}:E{nextUpItem.IndexNumber} - {nextUpItem.Name}";
+                SeriesMetadata = new ObservableCollection<UIMediaListItem>(
+                    seasons.Items.Select(x => new UIMediaListItem
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
+                    }));
+            }
+
             var similiarItems = await libraryClient.GetSimilarItemsAsync(MediaItem.Id, limit: 12, fields: new[] { ItemFields.PrimaryImageAspectRatio });
 
             SimiliarMediaList = new ObservableCollection<UIMediaListItem>(
@@ -113,6 +171,17 @@ namespace Jellyfin.UWP.ViewModels
                 }));
 
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
+        }
+
+        // TODO: Figure out how to get series episode id to play.
+        public Guid GetPlayId()
+        {
+            if (IsMovie)
+            {
+                return MediaItem.Id;
+            }
+
+            return MediaItem.Id;
         }
 
         private string SetImageUrl(Guid id, string height, string width, string imageTagId)

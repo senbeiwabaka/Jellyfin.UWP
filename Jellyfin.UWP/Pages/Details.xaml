@@ -4,11 +4,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:DetailsViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
 
     <Grid Background="#101010">
         <Grid.RowDefinitions>
@@ -112,25 +117,65 @@
                                 <TextBlock Text="{Binding Genres}" />
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{Binding IsMovie, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="Director" Width="93" />
                                 <TextBlock Text="{Binding Director}" />
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{Binding IsMovie, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <TextBlock Text="Writor" Width="93" />
                                 <TextBlock Text="{Binding Writer}" />
                             </StackPanel>
                         </StackPanel>
 
+                        <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Next Up" />
+
+                            <Button x:Name="NextUpButton" Width="277" Height="156" Click="NextUpButton_Click">
+                                <Button.Resources>
+                                    <ResourceDictionary>
+                                        <ResourceDictionary.ThemeDictionaries>
+                                            <ResourceDictionary x:Key="Dark">
+                                                <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{Binding SeriesNextUpUrl}" />
+                                            </ResourceDictionary>
+                                            <ResourceDictionary x:Key="Light">
+                                                <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{Binding SeriesNextUpUrl}" />
+                                            </ResourceDictionary>
+                                        </ResourceDictionary.ThemeDictionaries>
+                                    </ResourceDictionary>
+                                </Button.Resources>
+                                <Button.Background>
+                                    <ImageBrush ImageSource="{Binding SeriesNextUpUrl}" />
+                                </Button.Background>
+                            </Button>
+
+                            <TextBlock Text="{Binding SeriesNextUpName}" />
+                        </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Seasons" />
+
+                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True">
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Background="Transparent" Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:UIMediaListItem">
+                                        <StackPanel Width="204" Height="360">
+                                            <Image Source="{x:Bind Url}" Width="186" />
+                                            <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+
                         <StackPanel>
                             <TextBlock Text="Cast &amp; Crew" />
 
-                            <ListView ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ItemsSource="{Binding CastAndCrew, Mode=OneWay}" IsItemClickEnabled="False">
+                            <ListView ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding CastAndCrew, Mode=OneWay}" IsItemClickEnabled="False">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -140,7 +185,6 @@
                                     <DataTemplate x:DataType="m:UIPersonItem">
                                         <StackPanel Width="204" Height="360">
                                             <Image Source="{x:Bind Url}" Width="186" />
-
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" />
                                             <TextBlock Text="{x:Bind Role}" FontSize="12" />
                                         </StackPanel>

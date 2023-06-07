@@ -37,7 +37,7 @@ namespace Jellyfin.UWP.Pages
 
         public void PlayClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).MediaItem.Id);
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).GetPlayId());
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -59,6 +59,11 @@ namespace Jellyfin.UWP.Pages
             await context.LoadMediaInformationAsync(id);
 
             ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
+        }
+
+        private void NextUpButton_Click(object sender, RoutedEventArgs e)
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).SeriesNextUpId);
         }
 
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
