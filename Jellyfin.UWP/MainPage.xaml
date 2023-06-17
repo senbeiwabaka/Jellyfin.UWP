@@ -30,11 +30,9 @@
         <StackPanel Grid.Row="0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="Search" Margin="15" Click="SearchClick" />
-                <Button Content="My Preferences" Margin="15" />
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Home" Margin="15" />
-                <Button Content="Favorites" Margin="15" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="Logout" Content="Logout" Margin="15" Click="Logout_Click" />
             </StackPanel>
         </StackPanel>
 

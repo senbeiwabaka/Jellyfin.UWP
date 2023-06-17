@@ -2,6 +2,7 @@
 using System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
@@ -41,6 +42,21 @@ namespace Jellyfin.UWP.Pages
             {
                 ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
             }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (this.Frame.CanGoForward)
+            {
+                this.Frame.ForwardStack.Clear();
+            }
+
+            if (this.Frame.CanGoBack)
+            {
+                this.Frame.BackStack.Clear();
+            }
+
+            base.OnNavigatedTo(e);
         }
     }
 }

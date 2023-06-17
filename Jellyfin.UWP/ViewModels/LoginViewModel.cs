@@ -63,6 +63,10 @@ namespace Jellyfin.UWP
                     var user = authResult.User;
                     memoryCache.Set("user", user);
 
+                    var session = authResult.SessionInfo;
+                    memoryCache.Set("session", session);
+                    localSettings.Values["session"] = System.Text.Json.JsonSerializer.Serialize(session);
+
                     SuccessfullyLoggedIn?.Invoke();
                 }
             }

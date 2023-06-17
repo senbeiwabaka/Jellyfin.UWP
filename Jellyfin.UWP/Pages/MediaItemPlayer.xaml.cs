@@ -15,6 +15,8 @@ namespace Jellyfin.UWP.Pages
     /// </summary>
     public sealed partial class MediaItemPlayer : Page
     {
+        private readonly DispatcherTimer dispatcherTimer;
+
         private Guid id;
 
         public MediaItemPlayer()
@@ -25,11 +27,12 @@ namespace Jellyfin.UWP.Pages
 
             this.Loaded += MediaItemPlayer_Loaded;
             this.Unloaded += MediaItemPlayer_Unloaded;
-        }
 
-        private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
-        {
-            _mediaPlayerElement.MediaPlayer.Dispose();
+            dispatcherTimer = new DispatcherTimer();
+            dispatcherTimer.Tick += DispatcherTimer_Tick;
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
+
+            dispatcherTimer.Start();
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
@@ -44,13 +47,23 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatedTo(e);
         }
 
-        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        protected override async void OnNavigatingFrom(NavigatingCancelEventArgs e)
         {
+            dispatcherTimer.Stop();
+
             _mediaPlayerElement.MediaPlayer.Pause();
+
+            await ((MediaItemPlayerViewModel)DataContext).SessionStopAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
+
             base.OnNavigatingFrom(e);
         }
 
-        private void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
+        private async void DispatcherTimer_Tick(object sender, object e)
+        {
+            await ((MediaItemPlayerViewModel)DataContext).SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
+        }
+
+        private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
             var url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id);
 
@@ -62,6 +75,13 @@ namespace Jellyfin.UWP.Pages
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
             mediaPlayer.Play();
+
+            await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
+        }
+
+        private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _mediaPlayerElement.MediaPlayer.Dispose();
         }
     }
 }

@@ -102,6 +102,27 @@ namespace Jellyfin.UWP
 
                    return new TvShowsClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IVideosClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new VideosClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<ISessionClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new SessionClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<IPlaystateClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new PlaystateClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -138,6 +159,14 @@ namespace Jellyfin.UWP
                 }
             }
 
+            var localSettingsSession = localSettings.Values["session"]?.ToString();
+
+            if (string.IsNullOrWhiteSpace(localSettingsSession))
+            {
+                settings.AccessToken = string.Empty;
+                accessToken = string.Empty;
+            }
+
             if (!string.IsNullOrWhiteSpace(accessToken) && !resetJellyfinUrl)
             {
                 var httpClientFactory = Ioc.Default.GetRequiredService<IHttpClientFactory>();
@@ -151,7 +180,10 @@ namespace Jellyfin.UWP
                     var user = await authClient.GetCurrentUserAsync();
                     var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
+                    var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
+
                     memoryCache.Set("user", user);
+                    memoryCache.Set("session", session);
                 }
                 catch (UserException)
                 {

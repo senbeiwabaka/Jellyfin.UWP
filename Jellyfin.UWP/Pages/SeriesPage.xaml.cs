@@ -47,6 +47,11 @@ namespace Jellyfin.UWP.Pages
             ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
         }
 
+        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
         {
             var context = ((SeriesViewModel)DataContext);
@@ -56,11 +61,6 @@ namespace Jellyfin.UWP.Pages
 
         private void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
         {
-        }
-
-        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((UIMediaListItem)e.ClickedItem).Id);
         }
     }
 }

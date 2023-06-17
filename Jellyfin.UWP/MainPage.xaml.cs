@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -30,6 +31,16 @@ namespace Jellyfin.UWP
         private void ContinueWatchingClickItemList(object sender, ItemClickEventArgs e)
         {
             ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            var localSettings = ApplicationData.Current.LocalSettings;
+
+            localSettings.Values.Remove("accessToken");
+            localSettings.Values.Remove("session");
+
+            ((Frame)Window.Current.Content).Navigate(typeof(LoginPage));
         }
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
