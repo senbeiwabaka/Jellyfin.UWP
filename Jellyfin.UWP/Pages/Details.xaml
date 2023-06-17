@@ -81,10 +81,11 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1">
-                                <Button Content="Play" Click="{x:Bind PlayClick}">
+                                <Button Click="{x:Bind PlayClick}">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity=".87" />
                                     </Button.Background>
+                                    <SymbolIcon x:Name="play" Symbol="Play" />
                                 </Button>
 
                                 <Button Content="Trailer">
@@ -155,7 +156,7 @@
                         <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
                             <TextBlock Text="Seasons" />
 
-                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True">
+                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SeriesItems_ItemClick">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -165,7 +166,13 @@
                                     <DataTemplate x:DataType="m:UIMediaListItem">
                                         <StackPanel Width="204" Height="360">
                                             <Image Source="{x:Bind Url}" Width="186" />
-                                            <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <Button x:Name="SeasonPlay" Click="SeasonPlay_Click">
+                                                    <SymbolIcon x:Name="play" Symbol="Play" />
+                                                </Button>
+
+                                                <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                            </StackPanel>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

@@ -36,6 +36,7 @@ namespace Jellyfin.UWP
         {
             await ((MainViewModel)DataContext).LoadMediaListAsync();
             await ((MainViewModel)DataContext).LoadResumeItemsAsync();
+            await ((MainViewModel)DataContext).LoadNextUpAsync();
         }
 
         private void SearchClick(object sender, RoutedEventArgs e)

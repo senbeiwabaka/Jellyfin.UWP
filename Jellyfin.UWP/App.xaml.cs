@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
+using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -69,10 +70,10 @@ namespace Jellyfin.UWP
             var settings = new SdkClientSettings
             {
                 BaseUrl = jellyfinUrl,
-                ClientName = "jellyfin",
-                ClientVersion = "1.0",
-                DeviceName = "jellyfin",
-                DeviceId = "jellyfin",
+                ClientName = "Jellyfin.UWP",
+                ClientVersion = Assembly.GetEntryAssembly().GetName().Version.ToString(),
+                DeviceName = Environment.MachineName,
+                DeviceId = "Jellyfin.UWP",
             };
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
@@ -109,6 +110,7 @@ namespace Jellyfin.UWP
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()
+               .AddTransient<SeriesViewModel>()
                .BuildServiceProvider());
 
             var resetJellyfinUrl = false;

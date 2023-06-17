@@ -174,14 +174,27 @@ namespace Jellyfin.UWP.ViewModels
         }
 
         // TODO: Figure out how to get series episode id to play.
-        public Guid GetPlayId()
+        public async Task<Guid> GetPlayId()
         {
             if (IsMovie)
             {
                 return MediaItem.Id;
             }
 
-            return MediaItem.Id;
+            if (SeriesMetadata.Any(x => x.IsSelected))
+            {
+                var user = memoryCache.Get<UserDto>("user");
+
+                var episodes = await tvShowsClient.GetEpisodesAsync(
+                    seriesId: MediaItem.Id,
+                    userId: user.Id,
+                    seasonId: SeriesMetadata.Single(x => x.IsSelected).Id,
+                    fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
+
+                return episodes.Items.First(x => !x.UserData.Played).Id;
+            }
+
+            return SeriesNextUpId.Value;
         }
 
         private string SetImageUrl(Guid id, string height, string width, string imageTagId)

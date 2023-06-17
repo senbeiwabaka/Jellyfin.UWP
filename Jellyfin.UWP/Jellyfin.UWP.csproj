@@ -130,6 +130,7 @@
     </Compile>
     <Compile Include="Models\Filters\FiltersModel.cs" />
     <Compile Include="Models\Filters\GenreFiltersModel.cs" />
+    <Compile Include="Models\SeasonSeries.cs" />
     <Compile Include="Models\UIMediaListItem.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
     <Compile Include="Pages\LoginPage.xaml.cs">
@@ -147,6 +148,9 @@
     <Compile Include="Pages\SearchPage.xaml.cs">
       <DependentUpon>SearchPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SeriesPage.xaml.cs">
+      <DependentUpon>SeriesPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\SetupPage.xaml.cs">
       <DependentUpon>SetupPage.xaml</DependentUpon>
     </Compile>
@@ -158,6 +162,7 @@
     <Compile Include="ViewModels\MediaListViewModel.cs" />
     <Compile Include="ViewModels\MediaViewModel.cs" />
     <Compile Include="ViewModels\SearchViewModel.cs" />
+    <Compile Include="ViewModels\SeriesViewModel.cs" />
     <Compile Include="ViewModels\SetupViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -245,6 +250,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\SearchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\SeriesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

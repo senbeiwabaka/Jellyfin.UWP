@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using Windows.Storage;
 
-namespace Jellyfin.UWP
+namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class SetupViewModel : ObservableValidator
     {

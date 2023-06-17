@@ -15,5 +15,7 @@ namespace Jellyfin.UWP.Models
         public string CollectionType { get; internal set; }
 
         public string Year { get; internal set; }
+
+        public bool IsSelected { get; internal set; }
     }
 }

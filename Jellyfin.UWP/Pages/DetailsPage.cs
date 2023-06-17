@@ -22,7 +22,7 @@ namespace Jellyfin.UWP.Pages
 
             this.DataContext = Ioc.Default.GetRequiredService<DetailsViewModel>();
 
-            this.Loaded += MediaItemPage_Loaded;
+            this.Loaded += DetailsPage_Loaded;
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
@@ -35,9 +35,9 @@ namespace Jellyfin.UWP.Pages
             ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
         }
 
-        public void PlayClick(object sender, RoutedEventArgs e)
+        public async void PlayClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).GetPlayId());
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayId());
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -52,7 +52,7 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatedTo(e);
         }
 
-        private async void MediaItemPage_Loaded(object sender, RoutedEventArgs e)
+        private async void DetailsPage_Loaded(object sender, RoutedEventArgs e)
         {
             var context = ((DetailsViewModel)DataContext);
 
@@ -64,6 +64,21 @@ namespace Jellyfin.UWP.Pages
         private void NextUpButton_Click(object sender, RoutedEventArgs e)
         {
             ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).SeriesNextUpId);
+        }
+
+        private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+
+            item.IsSelected = true;
+
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayId());
+        }
+
+        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(SeriesPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
         }
 
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
