@@ -2,6 +2,8 @@
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.ViewModels;
+using MetroLog;
+using MetroLog.Targets;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -9,6 +11,7 @@ using System.Net.Http;
 using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
+using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -21,6 +24,8 @@ namespace Jellyfin.UWP
     /// </summary>
     public partial class App : Application
     {
+        private readonly ILogger Log;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -29,10 +34,19 @@ namespace Jellyfin.UWP
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            
+
+            var x = ApplicationData.Current.LocalFolder;
+            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
+
+            GlobalCrashHandler.Configure();
+
+            Log = LogManagerFactory.DefaultLogManager.GetLogger<App>();
+
             this.UnhandledException += (sender, e) =>
             {
                 e.Handled = true;
-                System.Diagnostics.Debug.WriteLine(e.Exception);
+                Log.Error("unhandled exception", e.Exception);
             };
         }
 
@@ -123,6 +137,20 @@ namespace Jellyfin.UWP
 
                    return new PlaystateClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IMediaInfoClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new MediaInfoClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<ISubtitleClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new SubtitleClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -185,10 +213,12 @@ namespace Jellyfin.UWP
                     memoryCache.Set("user", user);
                     memoryCache.Set("session", session);
                 }
-                catch (UserException)
+                catch (UserException exception)
                 {
                     localSettings.Values.Remove("accessToken");
                     accessToken = string.Empty;
+
+                    Log.Error("Failed to get user information on startup", exception);
                 }
             }
 

@@ -71,6 +71,9 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesMetadata;
 
+        [ObservableProperty]
+        private bool isEpisode;
+
         public DetailsViewModel(
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
@@ -126,6 +129,11 @@ namespace Jellyfin.UWP.ViewModels
                 IsMovie = true;
             }
 
+            if (MediaItem.Type == BaseItemKind.Episode)
+            {
+                IsEpisode = true;
+            }
+
             if (MediaItem.Type == BaseItemKind.Series)
             {
                 IsNotMovie = true;
@@ -144,11 +152,15 @@ namespace Jellyfin.UWP.ViewModels
                     user.Id,
                     seriesId: MediaItem.Id.ToString(),
                     fields: new[] { ItemFields.MediaSourceCount, });
-                var nextUpItem = nextUp.Items.First();
+                var nextUpItem = nextUp.Items.FirstOrDefault();
 
-                SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", nextUpItem.ImageTags["Primary"]);
-                SeriesNextUpId = nextUpItem.Id;
-                SeriesNextUpName = $"S{nextUpItem.ParentIndexNumber}:E{nextUpItem.IndexNumber} - {nextUpItem.Name}";
+                if (nextUpItem is not null)
+                {
+                    SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", nextUpItem.ImageTags["Primary"]);
+                    SeriesNextUpId = nextUpItem.Id;
+                    SeriesNextUpName = $"S{nextUpItem.ParentIndexNumber}:E{nextUpItem.IndexNumber} - {nextUpItem.Name}";
+                }
+
                 SeriesMetadata = new ObservableCollection<UIMediaListItem>(
                     seasons.Items.Select(x => new UIMediaListItem
                     {
@@ -176,7 +188,7 @@ namespace Jellyfin.UWP.ViewModels
         // TODO: Figure out how to get series episode id to play.
         public async Task<Guid> GetPlayId()
         {
-            if (IsMovie)
+            if (IsMovie || IsEpisode)
             {
                 return MediaItem.Id;
             }

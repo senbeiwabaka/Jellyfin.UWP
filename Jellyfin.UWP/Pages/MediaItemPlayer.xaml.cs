@@ -1,7 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using MetroLog;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -16,8 +20,11 @@ namespace Jellyfin.UWP.Pages
     public sealed partial class MediaItemPlayer : Page
     {
         private readonly DispatcherTimer dispatcherTimer;
-
+        private readonly ILogger Log;
+        private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private Guid id;
+
+        // Keep a map to correlate sources with their URIs for error handling
 
         public MediaItemPlayer()
         {
@@ -33,6 +40,8 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
 
             dispatcherTimer.Start();
+
+            Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
@@ -65,11 +74,43 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            var url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id);
+            var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync(id);
+            var mediaStreams = mediaSourceInfo.MediaStreams;
 
-            var mediaPlayer = new MediaPlayer
+            Uri url;
+            MediaSource source;
+
+            if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Subtitle))
             {
-                Source = MediaSource.CreateFromUri(url)
+                var firstSubtitle = mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Subtitle);
+                var subtitleUrl = ((MediaItemPlayerViewModel)DataContext).GetSubtitleUrl(
+                    id,
+                    firstSubtitle.Index,
+                    string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
+
+                var subtitleUri = new Uri(subtitleUrl);
+                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUri);
+
+                timedTextSource.Resolved += Tts_Resolved;
+
+                ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
+
+                url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id, firstSubtitle.Index);
+
+                source = MediaSource.CreateFromUri(url);
+
+                source.ExternalTimedTextSources.Add(timedTextSource);
+            }
+            else
+            {
+                url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id);
+
+                source = MediaSource.CreateFromUri(url);
+            }
+
+            var mediaPlayer = new MediaPlayer()
+            {
+                Source = source,
             };
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
@@ -82,6 +123,22 @@ namespace Jellyfin.UWP.Pages
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
         {
             _mediaPlayerElement.MediaPlayer.Dispose();
+        }
+
+        private void Tts_Resolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
+        {
+            // Handle errors
+            if (args.Error != null)
+            {
+                var ignoreAwaitWarning = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                {
+                    //rootPage.NotifyUser("Error resolving track " + ttsUri + " due to error " + args.Error.ErrorCode, NotifyType.ErrorMessage);
+                });
+                return;
+            }
+
+            // Update label manually since the external SRT does not contain it
+            args.Tracks[0].Label = ttsMap[sender];
         }
     }
 }
