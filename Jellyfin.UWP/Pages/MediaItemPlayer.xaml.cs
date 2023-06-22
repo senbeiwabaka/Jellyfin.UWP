@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Jellyfin.UWP.Pages
 {
@@ -24,7 +23,7 @@ namespace Jellyfin.UWP.Pages
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private Guid id;
 
-        // Keep a map to correlate sources with their URIs for error handling
+        private readonly DisplayRequest displayRequest;
 
         public MediaItemPlayer()
         {
@@ -42,6 +41,8 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer.Start();
 
             Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
+
+            displayRequest = new DisplayRequest();
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
@@ -64,6 +65,8 @@ namespace Jellyfin.UWP.Pages
 
             await ((MediaItemPlayerViewModel)DataContext).SessionStopAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
 
+            displayRequest.RequestRelease();
+
             base.OnNavigatingFrom(e);
         }
 
@@ -76,9 +79,10 @@ namespace Jellyfin.UWP.Pages
         {
             var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync(id);
             var mediaStreams = mediaSourceInfo.MediaStreams;
+            var item = await ((MediaItemPlayerViewModel)DataContext).LoadMediaItemAsync(id);
+            var userData = item.UserData;
 
-            Uri url;
-            MediaSource source;
+            int? subtitleIndex = null;
 
             if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Subtitle))
             {
@@ -95,29 +99,39 @@ namespace Jellyfin.UWP.Pages
 
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
 
-                url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id, firstSubtitle.Index);
-
-                source = MediaSource.CreateFromUri(url);
-
-                source.ExternalTimedTextSources.Add(timedTextSource);
+                subtitleIndex = firstSubtitle.Index;
             }
-            else
+
+            var mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(
+                id,
+                mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "dts"),
+                subtitleIndex,
+                audioStreamIndex: mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Audio).Index,
+                videoStreamIndex: mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Video).Index);
+            var source = MediaSource.CreateFromUri(mediaUri);
+
+            foreach (var keyValuePair in ttsMap)
             {
-                url = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(id);
-
-                source = MediaSource.CreateFromUri(url);
+                source.ExternalTimedTextSources.Add(keyValuePair.Key);
             }
 
-            var mediaPlayer = new MediaPlayer()
+            var mediaPlayer = new MediaPlayer
             {
                 Source = source,
             };
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
+            if (userData.PlayedPercentage > 0)
+            {
+                mediaPlayer.PlaybackSession.Position = new TimeSpan(userData.PlaybackPositionTicks);
+            }
+
             mediaPlayer.Play();
 
             await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
+
+            displayRequest.RequestActive();
         }
 
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)

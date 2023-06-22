@@ -13,6 +13,7 @@ namespace Jellyfin.UWP
         private readonly IMemoryCache memoryCache;
         private readonly IPlaystateClient playstateClient;
         private readonly ISubtitleClient subtitleClient;
+        private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
         private Guid id;
 
@@ -21,13 +22,15 @@ namespace Jellyfin.UWP
             IVideosClient videosClient,
             IPlaystateClient playstateClient,
             IMediaInfoClient mediaInfoClient,
-            ISubtitleClient subtitleClient)
+            ISubtitleClient subtitleClient,
+            IUserLibraryClient userLibraryClient)
         {
             this.memoryCache = memoryCache;
             this.videosClient = videosClient;
             this.playstateClient = playstateClient;
             this.mediaInfoClient = mediaInfoClient;
             this.subtitleClient = subtitleClient;
+            this.userLibraryClient = userLibraryClient;
         }
 
         public string GetSubtitleUrl(Guid id, int index, string routeFormat)
@@ -37,16 +40,43 @@ namespace Jellyfin.UWP
             return subtitleClient.GetSubtitleWithTicksUrl(id, routeId, index, 0, routeFormat);
         }
 
-        public Uri GetVideoUrl(Guid id, int? subtitleIndex = null, string container = null)
+        public Uri GetVideoUrl(
+            Guid id,
+            bool needsEncoding,
+            int? subtitleIndex = null,
+            string container = "mp4",
+            int? audioStreamIndex = null,
+            string audioCodec = "aac,mp3",
+            int? videoStreamIndex = null,
+            string videoCodec = "h264,h264")
         {
             this.id = id;
 
-            var videoUrl = videosClient.GetVideoStreamUrl(
-                id,
-                container: "mp4",
-                @static: true,
-                subtitleStreamIndex: subtitleIndex,
-                subtitleMethod: SubtitleDeliveryMethod.External);
+            string videoUrl;
+
+            if (needsEncoding)
+            {
+                videoUrl = videosClient.GetVideoStreamUrl(
+                    id,
+                    container: container,
+                    @static: false,
+                    subtitleStreamIndex: subtitleIndex,
+                    audioStreamIndex: audioStreamIndex,
+                    audioCodec: audioCodec,
+                    videoStreamIndex: videoStreamIndex,
+                    videoCodec: videoCodec,
+                    videoBitRate: 139616000,
+                    audioSampleRate: 384000,
+                    maxFramerate: 23.976f,
+                    requireAvc: false,
+                    breakOnNonKeyFrames: true,
+                    mediaSourceId: id.ToString().Replace("-", string.Empty),
+                    transcodeReasons: "VideoCodecNotSupported, AudioCodecNotSupported");
+            }
+            else
+            {
+                videoUrl = videosClient.GetVideoStreamUrl(id, container: container, @static: true);
+            }
 
             return new Uri(videoUrl);
         }
@@ -59,13 +89,82 @@ namespace Jellyfin.UWP
                 body: new PlaybackInfoDto
                 {
                     UserId = user.Id,
-                    StartTimeTicks = 0,
                     EnableDirectPlay = true,
                     AutoOpenLiveStream = true,
-                    SubtitleStreamIndex = 0,
+                    EnableTranscoding = true,
+                    AllowVideoStreamCopy = true,
+                    AllowAudioStreamCopy = true,
+                    MaxStreamingBitrate = 140000000,
+                    MediaSourceId = id.ToString().Replace("-", string.Empty),
+                    DeviceProfile = new DeviceProfile
+                    {
+                        CodecProfiles = new[]
+                        {
+                            new CodecProfile
+                            {
+                                Codec = "aac",
+                                Conditions = new []
+                                {
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileConditionType.Equals,
+                                        IsRequired = false,
+                                        Property = ProfileConditionValue.IsSecondaryAudio,
+                                        Value = "false",
+                                    },
+                                },
+                                Type = CodecType.VideoAudio
+                            },
+                            new CodecProfile
+                            {
+                                Conditions = new []
+                                {
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileConditionType.Equals,
+                                        IsRequired = false,
+                                        Property = ProfileConditionValue.IsSecondaryAudio,
+                                        Value = "false",
+                                    },
+                                },
+                                Type = CodecType.VideoAudio
+                            },
+                            new CodecProfile
+                            {
+                                Codec = "h264",
+                                Conditions = new []
+                                {
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileConditionType.Equals,
+                                        IsRequired = false,
+                                        Property = ProfileConditionValue.IsSecondaryAudio,
+                                        Value = "false",
+                                    },
+                                },
+                                Type = CodecType.VideoAudio
+                            },
+                        },
+                        DirectPlayProfiles = new[]
+                        {
+                            new DirectPlayProfile
+                            {
+                                Container = "aac",
+                                Type = DlnaProfileType.Audio
+                            },
+                        },
+                    },
                 });
 
             return playbackInfo.MediaSources.Single();
+        }
+
+        public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+
+            return item;
         }
 
         public async Task SessionPlayingAsync()
