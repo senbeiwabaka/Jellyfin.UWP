@@ -9,7 +9,7 @@ To note this will not have Live TV or Pictures. If someone would like to start a
 * Load your libraries
 * Basic search/filtering
 * Library page with basic filtering and paging
-* Specific media item page (movies only mostly there, see `Not finished` below)
+* Specific media item page (mostly there, see `Not finished` below)
 * Media playback (see `Not finished` below)
 
 [Supported Codecs](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/supported-codecs)
