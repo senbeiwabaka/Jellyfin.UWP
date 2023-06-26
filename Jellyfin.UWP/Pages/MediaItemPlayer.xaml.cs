@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
 using MetroLog;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace Jellyfin.UWP.Pages
         private readonly DispatcherTimer dispatcherTimer;
         private readonly ILogger Log;
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
+        private readonly SdkClientSettings sdkClientSettings;
         private Guid id;
 
         private readonly DisplayRequest displayRequest;
@@ -30,6 +32,7 @@ namespace Jellyfin.UWP.Pages
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<MediaItemPlayerViewModel>();
+            sdkClientSettings = Ioc.Default.GetRequiredService<SdkClientSettings>();
 
             this.Loaded += MediaItemPlayer_Loaded;
             this.Unloaded += MediaItemPlayer_Unloaded;
@@ -77,18 +80,14 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync(id);
-            var mediaStreams = mediaSourceInfo.MediaStreams;
             var item = await ((MediaItemPlayerViewModel)DataContext).LoadMediaItemAsync(id);
-            var userData = item.UserData;
-
-            int? subtitleIndex = null;
+            var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync();
+            var mediaStreams = mediaSourceInfo.MediaStreams;
 
             if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Subtitle))
             {
                 var firstSubtitle = mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Subtitle);
                 var subtitleUrl = ((MediaItemPlayerViewModel)DataContext).GetSubtitleUrl(
-                    id,
                     firstSubtitle.Index,
                     string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
 
@@ -98,16 +97,19 @@ namespace Jellyfin.UWP.Pages
                 timedTextSource.Resolved += Tts_Resolved;
 
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
-
-                subtitleIndex = firstSubtitle.Index;
             }
 
-            var mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(
-                id,
-                mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "dts"),
-                subtitleIndex,
-                audioStreamIndex: mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Audio).Index,
-                videoStreamIndex: mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Video).Index);
+            Uri mediaUri;
+
+            if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "dts"))
+            {
+                mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
+            }
+            else
+            {
+                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl();
+            }
+
             var source = MediaSource.CreateFromUri(mediaUri);
 
             foreach (var keyValuePair in ttsMap)
@@ -118,13 +120,14 @@ namespace Jellyfin.UWP.Pages
             var mediaPlayer = new MediaPlayer
             {
                 Source = source,
+                AudioCategory = MediaPlayerAudioCategory.Movie,
             };
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
-            if (userData.PlayedPercentage > 0)
+            if (item.UserData.PlayedPercentage > 0)
             {
-                mediaPlayer.PlaybackSession.Position = new TimeSpan(userData.PlaybackPositionTicks);
+                mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
             }
 
             mediaPlayer.Play();
@@ -132,6 +135,13 @@ namespace Jellyfin.UWP.Pages
             await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
 
             displayRequest.RequestActive();
+
+            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+        }
+
+        private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+        {
+            Log.Info(args.ErrorMessage);
         }
 
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)

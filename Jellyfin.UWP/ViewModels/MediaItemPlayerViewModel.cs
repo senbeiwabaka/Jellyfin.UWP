@@ -15,7 +15,7 @@ namespace Jellyfin.UWP
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
-        private Guid id;
+        private Guid itemId;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -33,69 +33,39 @@ namespace Jellyfin.UWP
             this.userLibraryClient = userLibraryClient;
         }
 
-        public string GetSubtitleUrl(Guid id, int index, string routeFormat)
+        public string GetSubtitleUrl(int index, string routeFormat)
         {
-            var routeId = id.ToString().Replace("-", string.Empty);
+            var routeId = itemId.ToString().Replace("-", string.Empty);
 
-            return subtitleClient.GetSubtitleWithTicksUrl(id, routeId, index, 0, routeFormat);
+            return subtitleClient.GetSubtitleWithTicksUrl(itemId, routeId, index, 0, routeFormat);
         }
 
-        public Uri GetVideoUrl(
-            Guid id,
-            bool needsEncoding,
-            int? subtitleIndex = null,
-            string container = "mp4",
-            int? audioStreamIndex = null,
-            string audioCodec = "aac,mp3",
-            int? videoStreamIndex = null,
-            string videoCodec = "h264,h264")
+        public Uri GetVideoUrl()
         {
-            this.id = id;
-
-            string videoUrl;
-
-            if (needsEncoding)
-            {
-                videoUrl = videosClient.GetVideoStreamUrl(
-                    id,
-                    container: container,
-                    @static: false,
-                    subtitleStreamIndex: subtitleIndex,
-                    audioStreamIndex: audioStreamIndex,
-                    audioCodec: audioCodec,
-                    videoStreamIndex: videoStreamIndex,
-                    videoCodec: videoCodec,
-                    videoBitRate: 139616000,
-                    audioSampleRate: 384000,
-                    maxFramerate: 23.976f,
-                    requireAvc: false,
-                    breakOnNonKeyFrames: true,
-                    mediaSourceId: id.ToString().Replace("-", string.Empty),
-                    transcodeReasons: "VideoCodecNotSupported, AudioCodecNotSupported");
-            }
-            else
-            {
-                videoUrl = videosClient.GetVideoStreamUrl(id, container: container, @static: true);
-            }
+            var videoUrl = videosClient.GetVideoStreamUrl(itemId, @static: true);
 
             return new Uri(videoUrl);
         }
 
-        public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync(Guid id)
+        public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync()
         {
+            const string mp4VideoFormats = "h264,vp8,vp9";
+            const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
+            const string audioFormarts = "aac,mp3,ac3";
+
             var user = memoryCache.Get<UserDto>("user");
             var playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
-                id,
+                itemId,
                 body: new PlaybackInfoDto
                 {
                     UserId = user.Id,
-                    EnableDirectPlay = true,
+                    EnableDirectPlay = false,
                     AutoOpenLiveStream = true,
                     EnableTranscoding = true,
                     AllowVideoStreamCopy = true,
-                    AllowAudioStreamCopy = true,
-                    MaxStreamingBitrate = 140000000,
-                    MediaSourceId = id.ToString().Replace("-", string.Empty),
+                    //AllowAudioStreamCopy = true,
+                    MaxStreamingBitrate = 120_000_000,
+                    MaxAudioChannels = 2,
                     DeviceProfile = new DeviceProfile
                     {
                         CodecProfiles = new[]
@@ -108,21 +78,6 @@ namespace Jellyfin.UWP
                                     new ProfileCondition
                                     {
                                         Condition = ProfileConditionType.Equals,
-                                        IsRequired = false,
-                                        Property = ProfileConditionValue.IsSecondaryAudio,
-                                        Value = "false",
-                                    },
-                                },
-                                Type = CodecType.VideoAudio
-                            },
-                            new CodecProfile
-                            {
-                                Conditions = new []
-                                {
-                                    new ProfileCondition
-                                    {
-                                        Condition = ProfileConditionType.Equals,
-                                        IsRequired = false,
                                         Property = ProfileConditionValue.IsSecondaryAudio,
                                         Value = "false",
                                     },
@@ -136,21 +91,108 @@ namespace Jellyfin.UWP
                                 {
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileConditionType.Equals,
-                                        IsRequired = false,
-                                        Property = ProfileConditionValue.IsSecondaryAudio,
-                                        Value = "false",
+                                        Condition = ProfileConditionType.EqualsAny,
+                                        Property = ProfileConditionValue.IsAnamorphic,
+                                        Value = "true",
+                                    },
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileConditionType.EqualsAny,
+                                        Property = ProfileConditionValue.VideoProfile,
+                                        Value = "high|main|baseline|constrained baseline",
+                                    },
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileConditionType.LessThanEqual,
+                                        Property = ProfileConditionValue.VideoLevel,
+                                        Value = "42",
                                     },
                                 },
-                                Type = CodecType.VideoAudio
+                                Type = CodecType.Video
                             },
                         },
                         DirectPlayProfiles = new[]
                         {
                             new DirectPlayProfile
                             {
+                                Container = "mp4,m4v",
+                                Type = DlnaProfileType.Video,
+                                VideoCodec = mp4VideoFormats,
+                                AudioCodec = audioFormarts,
+                            },
+                            new DirectPlayProfile
+                            {
+                                Container = "mkv",
+                                Type = DlnaProfileType.Video,
+                                VideoCodec = mp4VideoFormats,
+                                AudioCodec = audioFormarts,
+                            },
+                            new DirectPlayProfile
+                            {
+                                Container = "m4a",
+                                AudioCodec = "aac",
+                                Type = DlnaProfileType.Audio,
+                            },
+                            new DirectPlayProfile
+                            {
+                                Container = "m4b",
+                                AudioCodec = "aac",
+                                Type = DlnaProfileType.Audio,
+                            },
+                            new DirectPlayProfile
+                            {
+                                Container = "mp3",
+                                Type = DlnaProfileType.Audio,
+                            },
+                        },
+                        TranscodingProfiles = new[]
+                        {
+                            new TranscodingProfile
+                            {
                                 Container = "aac",
-                                Type = DlnaProfileType.Audio
+                                Type = DlnaProfileType.Audio,
+                                AudioCodec = "aac",
+                                Context = EncodingContext.Streaming,
+                                Protocol = "http",
+                                MaxAudioChannels = "2",
+                            },
+                            new TranscodingProfile
+                            {
+                                Container = "mp3",
+                                Type = DlnaProfileType.Audio,
+                                AudioCodec = "mp3",
+                                Context = EncodingContext.Streaming,
+                                Protocol = "http",
+                                MaxAudioChannels = "2",
+                            },
+                            new TranscodingProfile
+                            {
+                                Container = "mp4",
+                                Type = DlnaProfileType.Video,
+                                VideoCodec = mp4VideoFormats,
+                                Context = EncodingContext.Streaming,
+                                MaxAudioChannels = "2",
+                                CopyTimestamps = true,
+                                AudioCodec = "aac,mp3",
+                            },
+                            new TranscodingProfile
+                            {
+                                Container = "mkv",
+                                Type = DlnaProfileType.Video,
+                                VideoCodec = mkvVideoFormats,
+                                Context = EncodingContext.Streaming,
+                                MaxAudioChannels = "2",
+                                CopyTimestamps = true,
+                                AudioCodec = "aac,mp3",
+                            },
+                        },
+                        ResponseProfiles = new[]
+                        {
+                            new ResponseProfile
+                            {
+                                Container = "m4v",
+                                MimeType = "video/mp4",
+                                Type = DlnaProfileType.Video,
                             },
                         },
                     },
@@ -161,6 +203,8 @@ namespace Jellyfin.UWP
 
         public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
         {
+            itemId = id;
+
             var user = memoryCache.Get<UserDto>("user");
             var item = await userLibraryClient.GetItemAsync(user.Id, id);
 
@@ -174,8 +218,7 @@ namespace Jellyfin.UWP
             await playstateClient.ReportPlaybackStartAsync(
                 new PlaybackStartInfo
                 {
-                    MediaSourceId = id.ToString(),
-                    ItemId = id,
+                    ItemId = itemId,
                     SessionId = session.Id,
                 });
         }
@@ -187,9 +230,8 @@ namespace Jellyfin.UWP
             await playstateClient.ReportPlaybackProgressAsync(
                 new PlaybackProgressInfo
                 {
-                    MediaSourceId = id.ToString(),
                     SessionId = session.Id,
-                    ItemId = id,
+                    ItemId = itemId,
                     PositionTicks = position,
                 });
         }
@@ -202,9 +244,8 @@ namespace Jellyfin.UWP
                 new PlaybackStopInfo
                 {
                     PositionTicks = position,
-                    ItemId = id,
+                    ItemId = itemId,
                     SessionId = session.Id,
-                    MediaSourceId = id.ToString(),
                 });
         }
     }

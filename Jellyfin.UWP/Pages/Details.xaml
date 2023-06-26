@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
     </Page.Resources>
 
     <Grid Background="#101010">
@@ -100,11 +101,15 @@
                     <StackPanel Padding="30,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Video" Width="93" />
-                            <TextBlock Text="{Binding VideoType}" />
+                            <TextBlock Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{Binding VideoType}" />
+                            <ComboBox Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource BoolToVisibilityConverter}}">
+                            </ComboBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Audio" Width="93" />
-                            <TextBlock Text="{Binding VideoType}" />
+                            <TextBlock Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{Binding AudioType}" />
+                            <ComboBox Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource BoolToVisibilityConverter}}" ItemsSource="{Binding AudioStreams}" DisplayMemberPath="Title" SelectedValuePath="IsSelected" SelectedItem="{Binding SelectedAudioStream, Mode=TwoWay}">
+                            </ComboBox>
                         </StackPanel>
 
                         <TextBlock Text="{Binding MediaTagLines}" Margin="0,17,0,17" />

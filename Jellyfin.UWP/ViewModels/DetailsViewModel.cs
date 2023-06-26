@@ -11,11 +11,17 @@ namespace Jellyfin.UWP.ViewModels
 {
     public partial class DetailsViewModel : ObservableObject
     {
-        private readonly IMemoryCache memoryCache;
-        private readonly IUserLibraryClient userLibraryClient;
         private readonly ILibraryClient libraryClient;
+        private readonly IMemoryCache memoryCache;
         private readonly SdkClientSettings sdkClientSettings;
         private readonly ITvShowsClient tvShowsClient;
+        private readonly IUserLibraryClient userLibraryClient;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaStream> audioStreams;
+
+        [ObservableProperty]
+        private string audioType;
 
         [ObservableProperty]
         private ObservableCollection<UIPersonItem> castAndCrew;
@@ -30,7 +36,22 @@ namespace Jellyfin.UWP.ViewModels
         private string genres;
 
         [ObservableProperty]
+        private bool hasMultipleAudioStreams;
+
+        [ObservableProperty]
+        private bool hasMultipleVideoStreams;
+
+        [ObservableProperty]
         private string imageUrl;
+
+        [ObservableProperty]
+        private bool isEpisode;
+
+        [ObservableProperty]
+        private bool isMovie;
+
+        [ObservableProperty]
+        private bool isNotMovie;
 
         [ObservableProperty]
         private BaseItemDto mediaItem;
@@ -45,19 +66,7 @@ namespace Jellyfin.UWP.ViewModels
         private string runTime;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> similiarMediaList;
-
-        [ObservableProperty]
-        private string videoType;
-
-        [ObservableProperty]
-        private string writer;
-
-        [ObservableProperty]
-        private bool isMovie;
-
-        [ObservableProperty]
-        private string seriesNextUpUrl;
+        private ObservableCollection<UIMediaListItem> seriesMetadata;
 
         [ObservableProperty]
         private Guid? seriesNextUpId;
@@ -66,13 +75,22 @@ namespace Jellyfin.UWP.ViewModels
         private string seriesNextUpName;
 
         [ObservableProperty]
-        private bool isNotMovie;
+        private string seriesNextUpUrl;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> seriesMetadata;
+        private ObservableCollection<UIMediaListItem> similiarMediaList;
 
         [ObservableProperty]
-        private bool isEpisode;
+        private ObservableCollection<UIMediaStream> videoStreams;
+
+        [ObservableProperty]
+        private string videoType;
+
+        [ObservableProperty]
+        private string writer;
+
+        [ObservableProperty]
+        private UIMediaStream selectedAudioStream;
 
         public DetailsViewModel(
             IMemoryCache memoryCache,
@@ -88,6 +106,26 @@ namespace Jellyfin.UWP.ViewModels
             this.tvShowsClient = tvShowsClient;
         }
 
+        public async Task<Guid> GetPlayId()
+        {
+            if (IsMovie || IsEpisode)
+            {
+                return MediaItem.Id;
+            }
+
+            if (SeriesMetadata.Any(x => x.IsSelected))
+            {
+                return await GetSeriesEpisodeId();
+            }
+
+            if (SeriesNextUpId.HasValue)
+            {
+                return SeriesNextUpId.Value;
+            }
+
+            return await GetSeriesEpisodeId();
+        }
+
         public async Task LoadMediaInformationAsync(Guid id)
         {
             var user = memoryCache.Get<UserDto>("user");
@@ -97,7 +135,8 @@ namespace Jellyfin.UWP.ViewModels
 
             if (MediaItem.MediaStreams is not null)
             {
-                VideoType = MediaItem.MediaStreams.SingleOrDefault(x => x.Type == MediaStreamType.Video)?.DisplayTitle;
+                VideoType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Video && x.IsDefault)?.DisplayTitle;
+                AudioType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Audio && x.IsDefault)?.DisplayTitle;
             }
 
             if (MediaItem.RunTimeTicks.HasValue)
@@ -127,11 +166,39 @@ namespace Jellyfin.UWP.ViewModels
             if (MediaItem.Type == BaseItemKind.Movie)
             {
                 IsMovie = true;
+
+                if (MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Video) > 1)
+                {
+                    HasMultipleVideoStreams = true;
+
+                    SetVideoStreams();
+                }
+
+                if (MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Audio) > 1)
+                {
+                    HasMultipleAudioStreams = true;
+
+                    SetAudioStreams();
+                }
             }
 
             if (MediaItem.Type == BaseItemKind.Episode)
             {
                 IsEpisode = true;
+
+                if (MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Video) > 1)
+                {
+                    HasMultipleVideoStreams = true;
+
+                    SetVideoStreams();
+                }
+
+                if (MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Audio) > 1)
+                {
+                    HasMultipleAudioStreams = true;
+
+                    SetAudioStreams();
+                }
             }
 
             if (MediaItem.Type == BaseItemKind.Series)
@@ -185,33 +252,49 @@ namespace Jellyfin.UWP.ViewModels
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
         }
 
-        // TODO: Figure out how to get series episode id to play.
-        public async Task<Guid> GetPlayId()
+        private async Task<Guid> GetSeriesEpisodeId()
         {
-            if (IsMovie || IsEpisode)
-            {
-                return MediaItem.Id;
-            }
+            var user = memoryCache.Get<UserDto>("user");
+            var episodes = await tvShowsClient.GetEpisodesAsync(
+                seriesId: MediaItem.Id,
+                userId: user.Id,
+                seasonId: SeriesMetadata.SingleOrDefault(x => x.IsSelected)?.Id ?? SeriesMetadata.First().Id,
+                fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
 
-            if (SeriesMetadata.Any(x => x.IsSelected))
-            {
-                var user = memoryCache.Get<UserDto>("user");
+            return episodes.Items.First(x => !x.UserData.Played && x.UserData.PlayedPercentage < 90).Id;
+        }
 
-                var episodes = await tvShowsClient.GetEpisodesAsync(
-                    seriesId: MediaItem.Id,
-                    userId: user.Id,
-                    seasonId: SeriesMetadata.Single(x => x.IsSelected).Id,
-                    fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
+        private void SetAudioStreams()
+        {
+            AudioStreams = new ObservableCollection<UIMediaStream>(
+                                   MediaItem.MediaStreams
+                                   .Where(x => x.Type == MediaStreamType.Audio)
+                                   .Select(x => new UIMediaStream
+                                   {
+                                       Index = x.Index,
+                                       IsSelected = x.IsDefault,
+                                       Title = x.DisplayTitle,
+                                   }));
 
-                return episodes.Items.First(x => !x.UserData.Played).Id;
-            }
-
-            return SeriesNextUpId.Value;
+            SelectedAudioStream = AudioStreams.Single(x => x.IsSelected);
         }
 
         private string SetImageUrl(Guid id, string height, string width, string imageTagId)
         {
             return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
+        }
+
+        private void SetVideoStreams()
+        {
+            VideoStreams = new ObservableCollection<UIMediaStream>(
+                                   MediaItem.MediaStreams
+                                   .Where(x => x.Type == MediaStreamType.Video)
+                                   .Select(x => new UIMediaStream
+                                   {
+                                       Index = x.Index,
+                                       IsSelected = x.IsDefault,
+                                       Title = x.DisplayTitle,
+                                   }));
         }
     }
 }

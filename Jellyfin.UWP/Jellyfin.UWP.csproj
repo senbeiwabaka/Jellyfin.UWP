@@ -133,6 +133,7 @@
     <Compile Include="Models\Filters\GenreFiltersModel.cs" />
     <Compile Include="Models\SeasonSeries.cs" />
     <Compile Include="Models\UIMediaListItem.cs" />
+    <Compile Include="Models\UIMediaStream.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
