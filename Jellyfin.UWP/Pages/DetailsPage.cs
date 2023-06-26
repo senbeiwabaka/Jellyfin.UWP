@@ -40,7 +40,7 @@ namespace Jellyfin.UWP.Pages
             var playId = await ((DetailsViewModel)DataContext).GetPlayId();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
-            if (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode)
+            if (((DetailsViewModel)DataContext).HasMultipleAudioStreams && (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode))
             {
                 var selectedAudio = ((DetailsViewModel)DataContext).SelectedAudioStream.Index;
 
