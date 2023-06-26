@@ -37,7 +37,17 @@ namespace Jellyfin.UWP.Pages
 
         public async void PlayClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayId());
+            var playId = await ((DetailsViewModel)DataContext).GetPlayId();
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+            if (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode)
+            {
+                var selectedAudio = ((DetailsViewModel)DataContext).SelectedAudioStream.Index;
+
+                detailsItemPlayRecord.SelectedAudioIndex = selectedAudio;
+            }
+
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

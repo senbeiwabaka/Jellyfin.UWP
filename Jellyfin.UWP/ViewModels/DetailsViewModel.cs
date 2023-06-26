@@ -66,6 +66,9 @@ namespace Jellyfin.UWP.ViewModels
         private string runTime;
 
         [ObservableProperty]
+        private UIMediaStream selectedAudioStream;
+
+        [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesMetadata;
 
         [ObservableProperty]
@@ -88,9 +91,6 @@ namespace Jellyfin.UWP.ViewModels
 
         [ObservableProperty]
         private string writer;
-
-        [ObservableProperty]
-        private UIMediaStream selectedAudioStream;
 
         public DetailsViewModel(
             IMemoryCache memoryCache,

@@ -16,6 +16,7 @@ namespace Jellyfin.UWP
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
         private Guid itemId;
+        private BaseItemDto item;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -53,19 +54,27 @@ namespace Jellyfin.UWP
             const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
             const string audioFormarts = "aac,mp3,ac3";
 
+            long? startTimeTicks = null;
+
+            if (item.UserData.PlayedPercentage.HasValue && item.UserData.PlayedPercentage < 90)
+            {
+                startTimeTicks = item.UserData.PlaybackPositionTicks;
+            }
+
             var user = memoryCache.Get<UserDto>("user");
             var playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
                 itemId,
                 body: new PlaybackInfoDto
                 {
                     UserId = user.Id,
-                    EnableDirectPlay = false,
                     AutoOpenLiveStream = true,
                     EnableTranscoding = true,
                     AllowVideoStreamCopy = true,
                     //AllowAudioStreamCopy = true,
                     MaxStreamingBitrate = 120_000_000,
                     MaxAudioChannels = 2,
+                    StartTimeTicks = startTimeTicks,
+                    EnableDirectStream = true,
                     DeviceProfile = new DeviceProfile
                     {
                         CodecProfiles = new[]
@@ -206,7 +215,7 @@ namespace Jellyfin.UWP
             itemId = id;
 
             var user = memoryCache.Get<UserDto>("user");
-            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+            item = await userLibraryClient.GetItemAsync(user.Id, id);
 
             return item;
         }

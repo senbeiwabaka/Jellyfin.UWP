@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 using MetroLog;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Jellyfin.UWP.Pages
         private readonly ILogger Log;
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private readonly SdkClientSettings sdkClientSettings;
-        private Guid id;
+        private DetailsItemPlayRecord detailsItemPlayRecord;
 
         private readonly DisplayRequest displayRequest;
 
@@ -55,7 +56,7 @@ namespace Jellyfin.UWP.Pages
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            id = (Guid)e.Parameter;
+            detailsItemPlayRecord = (DetailsItemPlayRecord)e.Parameter;
 
             base.OnNavigatedTo(e);
         }
@@ -80,7 +81,7 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            var item = await ((MediaItemPlayerViewModel)DataContext).LoadMediaItemAsync(id);
+            var item = await ((MediaItemPlayerViewModel)DataContext).LoadMediaItemAsync(detailsItemPlayRecord.Id);
             var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync();
             var mediaStreams = mediaSourceInfo.MediaStreams;
 
@@ -99,11 +100,16 @@ namespace Jellyfin.UWP.Pages
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
 
+            var isTranscoding = false;
+
             Uri mediaUri;
 
-            if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "dts"))
+            if (detailsItemPlayRecord.SelectedAudioIndex.HasValue &&
+                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts")
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
+
+                isTranscoding = true;
             }
             else
             {
@@ -125,7 +131,7 @@ namespace Jellyfin.UWP.Pages
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
-            if (item.UserData.PlayedPercentage > 0)
+            if (!isTranscoding && item.UserData.PlayedPercentage > 0)
             {
                 mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
             }

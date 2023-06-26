@@ -129,6 +129,7 @@
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\DetailsItemPlayRecord.cs" />
     <Compile Include="Models\Filters\FiltersModel.cs" />
     <Compile Include="Models\Filters\GenreFiltersModel.cs" />
     <Compile Include="Models\SeasonSeries.cs" />

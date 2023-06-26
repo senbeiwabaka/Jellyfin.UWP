@@ -11,17 +11,20 @@ To note this will not have Live TV or Pictures. If someone would like to start a
 * Library page with basic filtering and paging
 * Specific media item page (mostly there, see `Not finished` below)
 * Media playback (see `Not finished` below)
+* Can choose audio stream now
+* Can transcode
 
 [Supported Codecs](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/supported-codecs)
 
 ### Not finished
 
-* TV show main play button
 * TV show episode page (needs work)
 * Audio options
 	* DTS is not playable through UWP MediaPlayer (see transcode below) 
 * Subtitle options
 * Bitrate selection on playing video
-* Getting more video options to correctly display controls
-* Transcoding
+* Transcoding should not display controls
 * Some weird issues with video in full-screen on some videos
+* No trailers, if present
+
+Needs general UI cleanup
