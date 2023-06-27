@@ -41,9 +41,14 @@ namespace Jellyfin.UWP
             return subtitleClient.GetSubtitleWithTicksUrl(itemId, routeId, index, 0, routeFormat);
         }
 
-        public Uri GetVideoUrl()
+        public Uri GetVideoUrl(int? selectedAudioIndex = null)
         {
-            var videoUrl = videosClient.GetVideoStreamUrl(itemId, @static: true);
+            var container = item.MediaSources.First().Container;
+            var videoUrl = videosClient.GetVideoStreamUrl(
+                itemId,
+                @static: true,
+                audioStreamIndex: selectedAudioIndex,
+                container: container);
 
             return new Uri(videoUrl);
         }

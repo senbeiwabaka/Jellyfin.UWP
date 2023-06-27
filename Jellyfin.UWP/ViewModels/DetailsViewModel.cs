@@ -92,6 +92,21 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private string writer;
 
+        [ObservableProperty]
+        private bool hasSubtitle;
+
+        [ObservableProperty]
+        private string subtitleType;
+
+        [ObservableProperty]
+        private bool hasMultipleSubtitleStreams;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaStream> subtitleStreams;
+
+        [ObservableProperty]
+        private UIMediaStream selectedSubtitleStream;
+
         public DetailsViewModel(
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
@@ -135,8 +150,27 @@ namespace Jellyfin.UWP.ViewModels
 
             if (MediaItem.MediaStreams is not null)
             {
-                VideoType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Video && x.IsDefault)?.DisplayTitle;
+                VideoType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Video)?.DisplayTitle;
                 AudioType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Audio && x.IsDefault)?.DisplayTitle;
+                SubtitleType = MediaItem.MediaStreams.FirstOrDefault(x => x.Type == MediaStreamType.Subtitle && x.IsDefault)?.DisplayTitle;
+
+                HasSubtitle = MediaItem.HasSubtitles.HasValue && MediaItem.HasSubtitles.Value;
+                HasMultipleSubtitleStreams = MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Subtitle) > 1;
+
+                if (HasMultipleSubtitleStreams)
+                {
+                    SubtitleStreams = new ObservableCollection<UIMediaStream>(
+                                      MediaItem.MediaStreams
+                                      .Where(x => x.Type == MediaStreamType.Subtitle)
+                                      .Select(x => new UIMediaStream
+                                      {
+                                          Index = x.Index,
+                                          IsSelected = x.IsDefault,
+                                          Title = x.DisplayTitle,
+                                      }));
+
+                    SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams.First();
+                }
             }
 
             if (MediaItem.RunTimeTicks.HasValue)

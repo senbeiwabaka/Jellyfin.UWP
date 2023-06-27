@@ -111,6 +111,12 @@
                             <ComboBox Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource BoolToVisibilityConverter}}" ItemsSource="{Binding AudioStreams}" DisplayMemberPath="Title" SelectedValuePath="IsSelected" SelectedItem="{Binding SelectedAudioStream, Mode=TwoWay}">
                             </ComboBox>
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding HasSubtitle, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Subtitle" Width="93" />
+                            <TextBlock Visibility="{Binding HasMultipleSubtitleStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{Binding SubtitleType}" />
+                            <ComboBox Visibility="{Binding HasMultipleSubtitleStreams, Converter={StaticResource BoolToVisibilityConverter}}" ItemsSource="{Binding SubtitleStreams}" DisplayMemberPath="Title" SelectedValuePath="IsSelected" SelectedItem="{Binding SelectedSubtitleStream, Mode=TwoWay}">
+                            </ComboBox>
+                        </StackPanel>
 
                         <TextBlock Text="{Binding MediaTagLines}" Margin="0,17,0,17" />
                         <TextBlock Text="{Binding MediaItem.Overview}" TextWrapping="WrapWholeWords" Margin="0,15,0,15" />

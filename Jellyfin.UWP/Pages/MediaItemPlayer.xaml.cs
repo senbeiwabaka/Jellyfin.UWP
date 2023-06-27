@@ -113,7 +113,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl();
+                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(detailsItemPlayRecord.SelectedAudioIndex);
             }
 
             var source = MediaSource.CreateFromUri(mediaUri);
@@ -123,9 +123,13 @@ namespace Jellyfin.UWP.Pages
                 source.ExternalTimedTextSources.Add(keyValuePair.Key);
             }
 
+            var mediaPlaybackItem = new MediaPlaybackItem(source);
+
+            //await source.OpenAsync();
+
             var mediaPlayer = new MediaPlayer
             {
-                Source = source,
+                Source = mediaPlaybackItem,
                 AudioCategory = MediaPlayerAudioCategory.Movie,
             };
 
@@ -136,7 +140,7 @@ namespace Jellyfin.UWP.Pages
                 mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
             }
 
-            mediaPlayer.Play();
+            //mediaPlayer.Play();
 
             await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
 
@@ -152,6 +156,7 @@ namespace Jellyfin.UWP.Pages
 
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
         {
+            _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
             _mediaPlayerElement.MediaPlayer.Dispose();
         }
 
