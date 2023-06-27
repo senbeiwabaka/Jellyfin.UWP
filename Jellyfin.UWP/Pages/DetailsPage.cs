@@ -42,9 +42,10 @@ namespace Jellyfin.UWP.Pages
 
             if (((DetailsViewModel)DataContext).HasMultipleAudioStreams && (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode))
             {
-                var selectedAudio = ((DetailsViewModel)DataContext).SelectedAudioStream.Index;
+                var selectedAudio = ((DetailsViewModel)DataContext).SelectedAudioStream;
 
-                detailsItemPlayRecord.SelectedAudioIndex = selectedAudio;
+                detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
+                detailsItemPlayRecord.SelectedMediaStreamIndex = selectedAudio.MediaStreamIndex;
             }
 
             ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);

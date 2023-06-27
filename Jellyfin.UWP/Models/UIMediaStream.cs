@@ -7,5 +7,7 @@
         public int Index { get; set; }
 
         public bool IsSelected { get; set; }
+
+        public int MediaStreamIndex { get; set; }
     }
 }

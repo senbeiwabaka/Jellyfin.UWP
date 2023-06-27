@@ -300,14 +300,17 @@ namespace Jellyfin.UWP.ViewModels
 
         private void SetAudioStreams()
         {
+            var index = 0;
+
             AudioStreams = new ObservableCollection<UIMediaStream>(
                                    MediaItem.MediaStreams
                                    .Where(x => x.Type == MediaStreamType.Audio)
                                    .Select(x => new UIMediaStream
                                    {
-                                       Index = x.Index,
+                                       Index = index++,
                                        IsSelected = x.IsDefault,
                                        Title = x.DisplayTitle,
+                                       MediaStreamIndex = x.Index,
                                    }));
 
             SelectedAudioStream = AudioStreams.Single(x => x.IsSelected);

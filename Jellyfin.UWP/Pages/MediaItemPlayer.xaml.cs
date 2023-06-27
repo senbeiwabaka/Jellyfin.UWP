@@ -104,8 +104,8 @@ namespace Jellyfin.UWP.Pages
 
             Uri mediaUri;
 
-            if (detailsItemPlayRecord.SelectedAudioIndex.HasValue &&
-                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts")
+            if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
+                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts")
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
@@ -123,10 +123,9 @@ namespace Jellyfin.UWP.Pages
                 source.ExternalTimedTextSources.Add(keyValuePair.Key);
             }
 
+            await source.OpenAsync();
+
             var mediaPlaybackItem = new MediaPlaybackItem(source);
-
-            //await source.OpenAsync();
-
             var mediaPlayer = new MediaPlayer
             {
                 Source = mediaPlaybackItem,
@@ -135,12 +134,20 @@ namespace Jellyfin.UWP.Pages
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
-            if (!isTranscoding && item.UserData.PlayedPercentage > 0)
+            if (!isTranscoding)
             {
-                mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
+                if (item.UserData.PlayedPercentage > 0)
+                {
+                    mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
+                }
+
+                if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
+                {
+                    mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
+                }
             }
 
-            //mediaPlayer.Play();
+            mediaPlayer.Play();
 
             await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
 

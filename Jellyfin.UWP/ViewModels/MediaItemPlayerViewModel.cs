@@ -44,11 +44,11 @@ namespace Jellyfin.UWP
         public Uri GetVideoUrl(int? selectedAudioIndex = null)
         {
             var container = item.MediaSources.First().Container;
-            var videoUrl = videosClient.GetVideoStreamUrl(
+            var videoUrl = videosClient.GetVideoStreamByContainerUrl(
                 itemId,
+                container,
                 @static: true,
-                audioStreamIndex: selectedAudioIndex,
-                container: container);
+                audioStreamIndex: selectedAudioIndex);
 
             return new Uri(videoUrl);
         }

@@ -7,5 +7,7 @@ namespace Jellyfin.UWP.Models
         public Guid Id { get; set; }
 
         public int? SelectedAudioIndex { get; set; }
+
+        public int? SelectedMediaStreamIndex { get; set; }
     }
 }
