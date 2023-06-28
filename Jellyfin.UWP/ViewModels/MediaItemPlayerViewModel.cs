@@ -47,8 +47,7 @@ namespace Jellyfin.UWP
             var videoUrl = videosClient.GetVideoStreamByContainerUrl(
                 itemId,
                 container,
-                @static: true,
-                audioStreamIndex: selectedAudioIndex);
+                @static: true);
 
             return new Uri(videoUrl);
         }
@@ -76,7 +75,7 @@ namespace Jellyfin.UWP
                     EnableTranscoding = true,
                     AllowVideoStreamCopy = true,
                     //AllowAudioStreamCopy = true,
-                    MaxStreamingBitrate = 120_000_000,
+                    MaxStreamingBitrate = 20_000_000,
                     MaxAudioChannels = 2,
                     StartTimeTicks = startTimeTicks,
                     EnableDirectStream = true,

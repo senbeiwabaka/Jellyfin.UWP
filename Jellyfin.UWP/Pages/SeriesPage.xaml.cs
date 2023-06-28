@@ -49,7 +49,7 @@ namespace Jellyfin.UWP.Pages
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((UIMediaListItem)e.ClickedItem).Id);
+            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
@@ -59,8 +59,22 @@ namespace Jellyfin.UWP.Pages
             await context.LoadMediaInformationAsync(seasonSeries);
         }
 
-        private void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
+        private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
         {
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeriesViewModel)DataContext).GetPlayIdAsync() };
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        }
+
+        private async void EpisodePlay_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+
+            item.IsSelected = true;
+
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeriesViewModel)DataContext).GetPlayIdAsync() };
+
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
     }
 }

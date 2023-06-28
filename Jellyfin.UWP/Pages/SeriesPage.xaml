@@ -82,8 +82,13 @@
                                         <StackPanel Height="150" Orientation="Horizontal">
                                             <Image Source="{x:Bind Url}" Width="186" />
                                             <StackPanel Padding="10">
-
                                                 <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                                <Button x:Name="EpisodePlay" Click="EpisodePlay_Click">
+                                                    <Button.Background>
+                                                        <SolidColorBrush Color="#000000" Opacity=".87" />
+                                                    </Button.Background>
+                                                    <SymbolIcon x:Name="play" Symbol="Play" />
+                                                </Button>
                                             </StackPanel>
                                         </StackPanel>
                                     </DataTemplate>

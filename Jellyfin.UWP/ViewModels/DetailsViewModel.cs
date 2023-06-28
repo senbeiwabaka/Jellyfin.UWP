@@ -121,7 +121,7 @@ namespace Jellyfin.UWP.ViewModels
             this.tvShowsClient = tvShowsClient;
         }
 
-        public async Task<Guid> GetPlayId()
+        public async Task<Guid> GetPlayIdAsync()
         {
             if (IsMovie || IsEpisode)
             {
@@ -130,7 +130,7 @@ namespace Jellyfin.UWP.ViewModels
 
             if (SeriesMetadata.Any(x => x.IsSelected))
             {
-                return await GetSeriesEpisodeId();
+                return await GetSeriesEpisodeIdAsync();
             }
 
             if (SeriesNextUpId.HasValue)
@@ -138,7 +138,7 @@ namespace Jellyfin.UWP.ViewModels
                 return SeriesNextUpId.Value;
             }
 
-            return await GetSeriesEpisodeId();
+            return await GetSeriesEpisodeIdAsync();
         }
 
         public async Task LoadMediaInformationAsync(Guid id)
@@ -286,7 +286,7 @@ namespace Jellyfin.UWP.ViewModels
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
         }
 
-        private async Task<Guid> GetSeriesEpisodeId()
+        private async Task<Guid> GetSeriesEpisodeIdAsync()
         {
             var user = memoryCache.Get<UserDto>("user");
             var episodes = await tvShowsClient.GetEpisodesAsync(

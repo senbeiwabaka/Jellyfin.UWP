@@ -16,6 +16,8 @@ namespace Jellyfin.UWP.ViewModels
         private readonly SdkClientSettings sdkClientSettings;
         private readonly IUserLibraryClient userLibraryClient;
 
+        private SeasonSeries seasonSeries;
+
         [ObservableProperty]
         private string imageUrl;
 
@@ -64,11 +66,40 @@ namespace Jellyfin.UWP.ViewModels
                 }));
 
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
+
+            this.seasonSeries = seasonSeries;
+        }
+
+        public async Task<Guid> GetPlayIdAsync()
+        {
+            if (!SeriesMetadata.Any(x => x.IsSelected))
+            {
+                return await GetSeriesEpisodeIdAsync();
+            }
+
+            return SeriesMetadata.Single(x => x.IsSelected).Id;
         }
 
         private string SetImageUrl(Guid id, string height, string width, string imageTagId)
         {
             return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
+        }
+
+        private async Task<Guid> GetSeriesEpisodeIdAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var episodes = await tvShowsClient.GetEpisodesAsync(
+                    seriesId: seasonSeries.SeriesId,
+                    userId: user.Id,
+                    seasonId: seasonSeries.SeasonId,
+                    fields: new[]
+                    {
+                        ItemFields.ItemCounts,
+                        ItemFields.PrimaryImageAspectRatio,
+                        ItemFields.BasicSyncInfo,
+                    });
+
+            return episodes.Items.First(x => !x.UserData.Played && (x.UserData.PlayedPercentage ?? 0) < 90).Id;
         }
     }
 }

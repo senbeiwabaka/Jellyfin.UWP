@@ -37,7 +37,7 @@ namespace Jellyfin.UWP.Pages
 
         public async void PlayClick(object sender, RoutedEventArgs e)
         {
-            var playId = await ((DetailsViewModel)DataContext).GetPlayId();
+            var playId = await ((DetailsViewModel)DataContext).GetPlayIdAsync();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
             if (((DetailsViewModel)DataContext).HasMultipleAudioStreams && (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode))
@@ -74,7 +74,9 @@ namespace Jellyfin.UWP.Pages
 
         private void NextUpButton_Click(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), ((DetailsViewModel)DataContext).SeriesNextUpId);
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = ((DetailsViewModel)DataContext).SeriesNextUpId.Value, };
+
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
@@ -84,7 +86,7 @@ namespace Jellyfin.UWP.Pages
 
             item.IsSelected = true;
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayId());
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayIdAsync());
         }
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)

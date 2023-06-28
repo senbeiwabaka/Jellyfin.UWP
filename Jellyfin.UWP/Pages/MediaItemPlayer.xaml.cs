@@ -113,7 +113,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(detailsItemPlayRecord.SelectedAudioIndex);
+                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(detailsItemPlayRecord.SelectedMediaStreamIndex);
             }
 
             var source = MediaSource.CreateFromUri(mediaUri);
