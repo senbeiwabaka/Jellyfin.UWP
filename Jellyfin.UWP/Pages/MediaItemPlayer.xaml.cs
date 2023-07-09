@@ -21,11 +21,10 @@ namespace Jellyfin.UWP.Pages
     public sealed partial class MediaItemPlayer : Page
     {
         private readonly DispatcherTimer dispatcherTimer;
-        private readonly ILogger Log;
-        private readonly Dictionary<TimedTextSource, string> ttsMap = new();
-        private readonly SdkClientSettings sdkClientSettings;
         private readonly DisplayRequest displayRequest;
-
+        private readonly ILogger Log;
+        private readonly SdkClientSettings sdkClientSettings;
+        private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private DetailsItemPlayRecord detailsItemPlayRecord;
         private bool isTranscoding;
 
@@ -158,15 +157,15 @@ namespace Jellyfin.UWP.Pages
             _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
         }
 
-        private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
-        {
-            Log.Info(args.ErrorMessage);
-        }
-
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
         {
             _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
             _mediaPlayerElement.MediaPlayer.Dispose();
+        }
+
+        private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+        {
+            Log.Info(args.ErrorMessage);
         }
 
         private void Tts_Resolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)

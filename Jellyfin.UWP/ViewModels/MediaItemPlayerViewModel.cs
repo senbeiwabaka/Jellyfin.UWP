@@ -14,12 +14,9 @@ namespace Jellyfin.UWP
         private readonly IPlaystateClient playstateClient;
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
-        private readonly IDynamicHlsClient dynamicHlsClient;
-        private readonly SdkClientSettings sdkClientSettings;
-        private readonly IApiKeyClient apiKeyClient;
         private readonly IVideosClient videosClient;
-        private Guid itemId;
         private BaseItemDto item;
+        private Guid itemId;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -27,10 +24,7 @@ namespace Jellyfin.UWP
             IPlaystateClient playstateClient,
             IMediaInfoClient mediaInfoClient,
             ISubtitleClient subtitleClient,
-            IUserLibraryClient userLibraryClient,
-            IDynamicHlsClient dynamicHlsClient,
-            SdkClientSettings sdkClientSettings,
-            IApiKeyClient apiKeyClient)
+            IUserLibraryClient userLibraryClient)
         {
             this.memoryCache = memoryCache;
             this.videosClient = videosClient;
@@ -38,9 +32,6 @@ namespace Jellyfin.UWP
             this.mediaInfoClient = mediaInfoClient;
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
-            this.dynamicHlsClient = dynamicHlsClient;
-            this.sdkClientSettings = sdkClientSettings;
-            this.apiKeyClient = apiKeyClient;
         }
 
         public string GetSubtitleUrl(int index, string routeFormat)
@@ -60,6 +51,16 @@ namespace Jellyfin.UWP
                 videoBitRate: 20_000_000);
 
             return new Uri(videoUrl);
+        }
+
+        public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
+        {
+            itemId = id;
+
+            var user = memoryCache.Get<UserDto>("user");
+            item = await userLibraryClient.GetItemAsync(user.Id, id);
+
+            return item;
         }
 
         public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync()
@@ -245,16 +246,6 @@ namespace Jellyfin.UWP
                 });
 
             return playbackInfo.MediaSources.Single();
-        }
-
-        public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
-        {
-            itemId = id;
-
-            var user = memoryCache.Get<UserDto>("user");
-            item = await userLibraryClient.GetItemAsync(user.Id, id);
-
-            return item;
         }
 
         public async Task SessionPlayingAsync()
