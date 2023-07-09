@@ -19,12 +19,16 @@ To note this will not have Live TV or Pictures. If someone would like to start a
 ### Not finished
 
 * TV show episode page (needs work)
-* Audio options
-	* DTS is not playable through UWP MediaPlayer (see transcode below) 
 * Subtitle options
 * Bitrate selection on playing video
-* Transcoding should not display controls
 * Some weird issues with video in full-screen on some videos
 * No trailers, if present
 
 Needs general UI cleanup
+
+## Notes
+Some forms of DTS just don't work but none of them play in UWP media player as the supported codecs says. Those will automatically be generate transcode URL.
+
+## Local Setup
+Jellyfin cert password `JellyfinPassword`
+
