@@ -24,9 +24,10 @@ namespace Jellyfin.UWP.Pages
         private readonly ILogger Log;
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private readonly SdkClientSettings sdkClientSettings;
-        private DetailsItemPlayRecord detailsItemPlayRecord;
-
         private readonly DisplayRequest displayRequest;
+
+        private DetailsItemPlayRecord detailsItemPlayRecord;
+        private bool isTranscoding;
 
         public MediaItemPlayer()
         {
@@ -76,19 +77,22 @@ namespace Jellyfin.UWP.Pages
 
         private async void DispatcherTimer_Tick(object sender, object e)
         {
-            await ((MediaItemPlayerViewModel)DataContext).SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
+            var mediaItemPlayerViewModel = ((MediaItemPlayerViewModel)DataContext);
+
+            await mediaItemPlayerViewModel.SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
         }
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            var item = await ((MediaItemPlayerViewModel)DataContext).LoadMediaItemAsync(detailsItemPlayRecord.Id);
-            var mediaSourceInfo = await ((MediaItemPlayerViewModel)DataContext).LoadMediaPlaybackInfoAsync();
+            var mediaItemPlayerViewModel = ((MediaItemPlayerViewModel)DataContext);
+            var item = await mediaItemPlayerViewModel.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+            var mediaSourceInfo = await mediaItemPlayerViewModel.LoadMediaPlaybackInfoAsync();
             var mediaStreams = mediaSourceInfo.MediaStreams;
 
             if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Subtitle))
             {
                 var firstSubtitle = mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Subtitle);
-                var subtitleUrl = ((MediaItemPlayerViewModel)DataContext).GetSubtitleUrl(
+                var subtitleUrl = mediaItemPlayerViewModel.GetSubtitleUrl(
                     firstSubtitle.Index,
                     string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
 
@@ -99,8 +103,6 @@ namespace Jellyfin.UWP.Pages
 
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
-
-            var isTranscoding = false;
 
             Uri mediaUri;
 
@@ -113,7 +115,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = ((MediaItemPlayerViewModel)DataContext).GetVideoUrl(detailsItemPlayRecord.SelectedMediaStreamIndex);
+                mediaUri = mediaItemPlayerViewModel.GetVideoUrl(detailsItemPlayRecord.SelectedMediaStreamIndex);
             }
 
             var source = MediaSource.CreateFromUri(mediaUri);
@@ -134,13 +136,13 @@ namespace Jellyfin.UWP.Pages
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
+            if (item.UserData.PlayedPercentage > 0)
+            {
+                mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
+            }
+
             if (!isTranscoding)
             {
-                if (item.UserData.PlayedPercentage > 0)
-                {
-                    mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
-                }
-
                 if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
                 {
                     mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
@@ -149,7 +151,7 @@ namespace Jellyfin.UWP.Pages
 
             mediaPlayer.Play();
 
-            await ((MediaItemPlayerViewModel)DataContext).SessionPlayingAsync();
+            await mediaItemPlayerViewModel.SessionPlayingAsync();
 
             displayRequest.RequestActive();
 

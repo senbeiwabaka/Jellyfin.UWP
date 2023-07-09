@@ -14,6 +14,9 @@ namespace Jellyfin.UWP
         private readonly IPlaystateClient playstateClient;
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
+        private readonly IDynamicHlsClient dynamicHlsClient;
+        private readonly SdkClientSettings sdkClientSettings;
+        private readonly IApiKeyClient apiKeyClient;
         private readonly IVideosClient videosClient;
         private Guid itemId;
         private BaseItemDto item;
@@ -24,7 +27,10 @@ namespace Jellyfin.UWP
             IPlaystateClient playstateClient,
             IMediaInfoClient mediaInfoClient,
             ISubtitleClient subtitleClient,
-            IUserLibraryClient userLibraryClient)
+            IUserLibraryClient userLibraryClient,
+            IDynamicHlsClient dynamicHlsClient,
+            SdkClientSettings sdkClientSettings,
+            IApiKeyClient apiKeyClient)
         {
             this.memoryCache = memoryCache;
             this.videosClient = videosClient;
@@ -32,6 +38,9 @@ namespace Jellyfin.UWP
             this.mediaInfoClient = mediaInfoClient;
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
+            this.dynamicHlsClient = dynamicHlsClient;
+            this.sdkClientSettings = sdkClientSettings;
+            this.apiKeyClient = apiKeyClient;
         }
 
         public string GetSubtitleUrl(int index, string routeFormat)
@@ -47,7 +56,8 @@ namespace Jellyfin.UWP
             var videoUrl = videosClient.GetVideoStreamByContainerUrl(
                 itemId,
                 container,
-                @static: true);
+                @static: true,
+                videoBitRate: 20_000_000);
 
             return new Uri(videoUrl);
         }
@@ -162,6 +172,17 @@ namespace Jellyfin.UWP
                         {
                             new TranscodingProfile
                             {
+                                Container = "ts",
+                                Type = DlnaProfileType.Audio,
+                                AudioCodec = "aac",
+                                Context = EncodingContext.Streaming,
+                                Protocol = "hls",
+                                MaxAudioChannels = "2",
+                                BreakOnNonKeyFrames = true,
+                                MinSegments = 1,
+                            },
+                            new TranscodingProfile
+                            {
                                 Container = "aac",
                                 Type = DlnaProfileType.Audio,
                                 AudioCodec = "aac",
@@ -177,6 +198,18 @@ namespace Jellyfin.UWP
                                 Context = EncodingContext.Streaming,
                                 Protocol = "http",
                                 MaxAudioChannels = "2",
+                            },
+                            new TranscodingProfile
+                            {
+                                Container = "ts",
+                                Type = DlnaProfileType.Video,
+                                VideoCodec = "h264",
+                                Context = EncodingContext.Streaming,
+                                MaxAudioChannels = "2",
+                                AudioCodec = "aac,mp3",
+                                BreakOnNonKeyFrames = true,
+                                MinSegments = 1,
+                                Protocol = "hls",
                             },
                             new TranscodingProfile
                             {

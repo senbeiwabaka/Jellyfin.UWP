@@ -11,7 +11,6 @@ using System.Net.Http;
 using System.Reflection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Media.Playback;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -34,7 +33,6 @@ namespace Jellyfin.UWP
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
-            
 
             var x = ApplicationData.Current.LocalFolder;
             LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
@@ -150,6 +148,20 @@ namespace Jellyfin.UWP
                    var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
 
                    return new SubtitleClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<IDynamicHlsClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new DynamicHlsClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<IApiKeyClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new ApiKeyClient(sdkSettings, httpClientFactory.CreateClient());
                })
                // ViewModels
                .AddTransient<LoginViewModel>()
