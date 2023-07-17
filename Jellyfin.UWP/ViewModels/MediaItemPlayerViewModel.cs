@@ -15,6 +15,7 @@ namespace Jellyfin.UWP
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
+
         private BaseItemDto item;
         private Guid itemId;
 
@@ -41,14 +42,13 @@ namespace Jellyfin.UWP
             return subtitleClient.GetSubtitleWithTicksUrl(itemId, routeId, index, 0, routeFormat);
         }
 
-        public Uri GetVideoUrl(int? selectedAudioIndex = null)
+        public Uri GetVideoUrl()
         {
-            var container = item.MediaSources.First().Container;
+            var container = item.MediaSources[0].Container;
             var videoUrl = videosClient.GetVideoStreamByContainerUrl(
                 itemId,
                 container,
-                @static: true,
-                videoBitRate: 20_000_000);
+                @static: true);
 
             return new Uri(videoUrl);
         }
@@ -85,7 +85,7 @@ namespace Jellyfin.UWP
                     AutoOpenLiveStream = true,
                     EnableTranscoding = true,
                     AllowVideoStreamCopy = true,
-                    //AllowAudioStreamCopy = true,
+                    AllowAudioStreamCopy = true,
                     MaxStreamingBitrate = 20_000_000,
                     MaxAudioChannels = 2,
                     StartTimeTicks = startTimeTicks,

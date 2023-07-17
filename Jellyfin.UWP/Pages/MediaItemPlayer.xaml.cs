@@ -4,13 +4,16 @@ using Jellyfin.UWP.Models;
 using MetroLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
@@ -25,6 +28,8 @@ namespace Jellyfin.UWP.Pages
         private readonly ILogger Log;
         private readonly SdkClientSettings sdkClientSettings;
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
+        private readonly Stopwatch stopwatch = new Stopwatch();
+
         private DetailsItemPlayRecord detailsItemPlayRecord;
         private bool isTranscoding;
 
@@ -114,7 +119,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = mediaItemPlayerViewModel.GetVideoUrl(detailsItemPlayRecord.SelectedMediaStreamIndex);
+                mediaUri = mediaItemPlayerViewModel.GetVideoUrl();
             }
 
             var source = MediaSource.CreateFromUri(mediaUri);
@@ -140,12 +145,9 @@ namespace Jellyfin.UWP.Pages
                 mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
             }
 
-            if (!isTranscoding)
+            if (!isTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
             {
-                if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
-                {
-                    mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
-                }
+                mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
             }
 
             mediaPlayer.Play();
@@ -155,12 +157,40 @@ namespace Jellyfin.UWP.Pages
             displayRequest.RequestActive();
 
             _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+
+            Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
+            Window.Current.CoreWindow.PointerCursor = null;
+        }
+
+        private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)
+        {
+            if (Window.Current.CoreWindow.PointerCursor == null)
+            {
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+            }
+
+            stopwatch.Restart();
+            await Task.Delay(1500);
+
+            if (stopwatch == null)
+            {
+                return;
+            }
+
+            if (stopwatch.ElapsedMilliseconds >= 1500)
+            {
+                Window.Current.CoreWindow.PointerCursor = null;
+            }
         }
 
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
         {
             _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
             _mediaPlayerElement.MediaPlayer.Dispose();
+
+            stopwatch.Stop();
+
+            Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
         }
 
         private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
@@ -182,6 +212,27 @@ namespace Jellyfin.UWP.Pages
 
             // Update label manually since the external SRT does not contain it
             args.Tracks[0].Label = ttsMap[sender];
+        }
+
+        private void _mediaPlayerElement_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Escape && _mediaPlayerElement.IsFullWindow)
+            {
+                _mediaPlayerElement.IsFullWindow = false;
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Space)
+            {
+                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
+                {
+                    _mediaPlayerElement.MediaPlayer.Play();
+                }
+
+                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+                {
+                    _mediaPlayerElement.MediaPlayer.Pause();
+                }
+            }
         }
     }
 }

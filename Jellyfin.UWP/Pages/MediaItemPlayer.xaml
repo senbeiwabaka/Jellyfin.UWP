@@ -18,9 +18,9 @@
         <Button Grid.Row="0" Content="Back" Click="{x:Bind BackClick}" />
 
         <MediaPlayerElement x:Name="_mediaPlayerElement" AreTransportControlsEnabled="True" HorizontalAlignment="Stretch"
-          Grid.Row="1" AutoPlay="True">
+          Grid.Row="1" AutoPlay="True" KeyDown="_mediaPlayerElement_KeyDown">
             <MediaPlayerElement.TransportControls>
-                <MediaTransportControls  IsFastForwardButtonVisible="True" IsFastForwardEnabled="True" IsFastRewindButtonVisible="True" IsFastRewindEnabled="True" IsPlaybackRateButtonVisible="True" IsPlaybackRateEnabled="True" IsCompact="False" IsSeekBarVisible="True" IsSeekEnabled="True" IsSkipForwardButtonVisible="True" IsSkipForwardEnabled="True" IsSkipBackwardButtonVisible="True" IsSkipBackwardEnabled="True" IsStopButtonVisible="True" IsStopEnabled="True"/>
+                <MediaTransportControls  IsFastForwardButtonVisible="True" IsFastForwardEnabled="True" IsFastRewindButtonVisible="True" IsFastRewindEnabled="True" IsPlaybackRateButtonVisible="True" IsPlaybackRateEnabled="True" IsCompact="False" IsSeekBarVisible="True" IsSeekEnabled="True" IsSkipForwardButtonVisible="True" IsSkipForwardEnabled="True" IsSkipBackwardButtonVisible="True" IsSkipBackwardEnabled="True" IsStopButtonVisible="False" IsStopEnabled="False" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
     </Grid>
