@@ -110,8 +110,10 @@ namespace Jellyfin.UWP.Pages
 
             Uri mediaUri;
 
-            if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
-                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts")
+            var isSelectedAndDTS = detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
+                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts";
+            var isFlacAudio = mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "flac");
+            if (isSelectedAndDTS || isFlacAudio)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
@@ -150,13 +152,13 @@ namespace Jellyfin.UWP.Pages
                 mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
             }
 
+            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+
             mediaPlayer.Play();
 
             await mediaItemPlayerViewModel.SessionPlayingAsync();
 
             displayRequest.RequestActive();
-
-            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
 
             Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
             Window.Current.CoreWindow.PointerCursor = null;
@@ -191,6 +193,9 @@ namespace Jellyfin.UWP.Pages
             stopwatch.Stop();
 
             Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
+
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+
         }
 
         private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)

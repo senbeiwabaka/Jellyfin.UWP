@@ -46,6 +46,8 @@ namespace Jellyfin.UWP
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
         private int totalRecords = 0;
 
+        private BaseItemDto parentItem;
+
         public MediaListViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
             this.httpClientFactory = httpClientFactory;
@@ -60,7 +62,7 @@ namespace Jellyfin.UWP
             var user = memoryCache.Get<UserDto>("user");
             var httpClient = httpClientFactory.CreateClient();
             var itemsClient = new ItemsClient(sdkClientSettings, httpClient);
-            var parentItem = await itemsClient.GetItemsAsync(
+            var items = await itemsClient.GetItemsAsync(
                 userId: user.Id,
                 startIndex: 0,
                 limit: 1,
@@ -68,13 +70,16 @@ namespace Jellyfin.UWP
                 sortOrder: new[] { SortOrder.Ascending, },
                 ids: new[] { parentId, });
 
-            var firstItem = parentItem.Items.First();
-            if (firstItem.CollectionType == "movies")
+            itemType = BaseItemKind.BoxSet;
+
+            parentItem = items.Items[0];
+
+            if (parentItem.CollectionType == "movies")
             {
                 itemType = BaseItemKind.Movie;
             }
 
-            if (firstItem.CollectionType == "tvshows")
+            if (parentItem.CollectionType == "tvshows")
             {
                 itemType = BaseItemKind.Series;
             }
@@ -189,6 +194,11 @@ namespace Jellyfin.UWP
                 GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id),
                 FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter),
                 cancellationToken);
+        }
+
+        public string GetTitle()
+        {
+            return parentItem?.Name ?? "No Title";
         }
 
         public void FilterReset()

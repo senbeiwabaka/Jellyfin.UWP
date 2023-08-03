@@ -30,7 +30,7 @@
             <Button Content="Back" Click="{x:Bind BackClick}" />
         </StackPanel>
 
-        <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find" Grid.Row="1" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <AutoSuggestBox Name="asbSearch" PlaceholderText="Search" QueryIcon="Find" Grid.Row="1" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
 
         <ScrollViewer Grid.Row="2">
             <StackPanel>

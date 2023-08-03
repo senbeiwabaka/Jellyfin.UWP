@@ -92,7 +92,7 @@ namespace Jellyfin.UWP.Pages
         {
             await ((MediaListViewModel)DataContext).InitialLoadAsync(id);
 
-            ApplicationView.GetForCurrentView().Title = id.ToString();
+            ApplicationView.GetForCurrentView().Title = ((MediaListViewModel)DataContext).GetTitle();
         }
     }
 }

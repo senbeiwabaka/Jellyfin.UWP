@@ -27,6 +27,10 @@
 
                 <Button x:Name="LoginButton" Content="Login" Command="{Binding LoginCommand}" Background="#00a4dc" Margin="10,0,0,0" />
             </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="btnChangeURL" Content="Change URL" Margin="0,0,10,0" Click="btnChangeURL_Click" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

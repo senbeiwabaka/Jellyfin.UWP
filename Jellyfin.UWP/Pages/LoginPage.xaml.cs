@@ -21,29 +21,6 @@ namespace Jellyfin.UWP.Pages
             this.Unloaded += LoginPage_Unloaded;
         }
 
-        private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).SuccessfullyLoggedIn -= LoginPage_SuccessfullyLoggedIn;
-        }
-
-        private void LoginPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
-        }
-
-        private void LoginPage_SuccessfullyLoggedIn()
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
-        }
-
-        private void PasswordBox_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
-            }
-        }
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             if (this.Frame.CanGoForward)
@@ -57,6 +34,34 @@ namespace Jellyfin.UWP.Pages
             }
 
             base.OnNavigatedTo(e);
+        }
+
+        private void btnChangeURL_Click(object sender, RoutedEventArgs e)
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(SetupPage));
+        }
+
+        private void LoginPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ((LoginViewModel)DataContext).SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
+        }
+
+        private void LoginPage_SuccessfullyLoggedIn()
+        {
+            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
+        }
+
+        private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ((LoginViewModel)DataContext).SuccessfullyLoggedIn -= LoginPage_SuccessfullyLoggedIn;
+        }
+
+        private void PasswordBox_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
+            }
         }
     }
 }

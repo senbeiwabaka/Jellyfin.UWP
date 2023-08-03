@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
+using Microsoft.Extensions.Caching.Memory;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -19,6 +20,10 @@ namespace Jellyfin.UWP
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
+
+            var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+
+            memoryCache.Remove("Searched-Text");
 
             this.Loaded += MainPage_Loaded;
         }
