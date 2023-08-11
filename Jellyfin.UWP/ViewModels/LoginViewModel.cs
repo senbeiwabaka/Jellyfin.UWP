@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
+using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
 using System.Threading;
@@ -15,6 +17,8 @@ namespace Jellyfin.UWP
         private readonly IHttpClientFactory httpClientFactory;
         private readonly IMemoryCache memoryCache;
         private readonly SdkClientSettings sdkClientSettings;
+
+        private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<LoginViewModel>();
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
@@ -72,6 +76,11 @@ namespace Jellyfin.UWP
             }
             catch (UserException e)
             {
+                Log.Error("Login error", e);
+            }
+            catch (Exception e)
+            {
+                Log.Error("Login error", e);
             }
         }
     }
