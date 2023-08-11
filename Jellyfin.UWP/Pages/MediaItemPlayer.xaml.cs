@@ -108,6 +108,13 @@ namespace Jellyfin.UWP.Pages
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
 
+            var codecQuery = new CodecQuery();
+            var videoCodecsInstalled = await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Encoder, "");
+            var audioCodecsInstalled = await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Encoder, "");
+
+            var x = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "")).Select(x => x.DisplayName).ToArray();
+            var y = await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, "");
+
             Uri mediaUri;
 
             var isSelectedAndDTS = detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
@@ -153,6 +160,10 @@ namespace Jellyfin.UWP.Pages
             }
 
             _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
+            _mediaPlayerElement.MediaPlayer.CurrentStateChanged += MediaPlayer_CurrentStateChanged;
+            _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
 
             mediaPlayer.Play();
 
@@ -162,6 +173,33 @@ namespace Jellyfin.UWP.Pages
 
             Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
             Window.Current.CoreWindow.PointerCursor = null;
+        }
+
+        private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No PlaybackSession_BufferingEnded args");
+        }
+
+        private void PlaybackSession_BufferingStarted(MediaPlaybackSession sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No PlaybackSession_BufferingStarted args");
+
+            if (args is MediaPlaybackSessionBufferingStartedEventArgs)
+            {
+                var value = args as MediaPlaybackSessionBufferingStartedEventArgs;
+
+                Log.Info("Is playback interrupted: {0}", value.IsPlaybackInterruption);
+            }
+        }
+
+        private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
+        }
+
+        private void MediaPlayer_CurrentStateChanged(MediaPlayer sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No MediaPlayer_CurrentStateChanged args");
         }
 
         private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)
@@ -195,7 +233,6 @@ namespace Jellyfin.UWP.Pages
             Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
 
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
-
         }
 
         private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)

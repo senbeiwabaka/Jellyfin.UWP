@@ -1,9 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
+using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace Jellyfin.UWP
 {
@@ -15,6 +20,7 @@ namespace Jellyfin.UWP
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
+        private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayerViewModel>();
 
         private BaseItemDto item;
         private Guid itemId;
@@ -284,6 +290,25 @@ namespace Jellyfin.UWP
                     ItemId = itemId,
                     SessionId = session.Id,
                 });
+        }
+
+        [RelayCommand]
+        private async Task OpenLogsAsync()
+        {
+            try
+            {
+                var path = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
+                using (Process process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo($"{path.Path}");
+
+                    process.Start();
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error("Open Logs Error", e);
+            }
         }
     }
 }

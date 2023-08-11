@@ -5,7 +5,6 @@ using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -14,10 +13,9 @@ namespace Jellyfin.UWP
 {
     internal sealed partial class LoginViewModel : ObservableValidator
     {
-        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IUserClient userClient;
         private readonly IMemoryCache memoryCache;
-        private readonly SdkClientSettings sdkClientSettings;
-
+        private readonly SdkClientSettings settings;
         private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<LoginViewModel>();
 
         [ObservableProperty]
@@ -30,11 +28,11 @@ namespace Jellyfin.UWP
         [Required(AllowEmptyStrings = false)]
         private string username;
 
-        public LoginViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public LoginViewModel(IUserClient userClient, IMemoryCache memoryCache, SdkClientSettings settings)
         {
-            this.httpClientFactory = httpClientFactory;
-            this.sdkClientSettings = sdkClientSettings;
+            this.userClient = userClient;
             this.memoryCache = memoryCache;
+            this.settings = settings;
         }
 
         public delegate void EventHandler();
@@ -53,16 +51,14 @@ namespace Jellyfin.UWP
             {
                 ValidateAllProperties();
 
-                var httpClient = httpClientFactory.CreateClient();
-                var authClient = new UserClient(sdkClientSettings, httpClient);
-                var authResult = await authClient.AuthenticateUserByNameAsync(new AuthenticateUserByName { Username = Username, Pw = Password }, cancellationToken: token);
+                var authResult = await userClient.AuthenticateUserByNameAsync(new AuthenticateUserByName { Username = Username, Pw = Password }, cancellationToken: token);
 
                 if (authResult is not null && !string.IsNullOrWhiteSpace(authResult.AccessToken))
                 {
                     var localSettings = ApplicationData.Current.LocalSettings;
                     localSettings.Values["accessToken"] = authResult.AccessToken;
 
-                    sdkClientSettings.AccessToken = authResult.AccessToken;
+                    settings.AccessToken = authResult.AccessToken;
 
                     var user = authResult.User;
                     memoryCache.Set("user", user);

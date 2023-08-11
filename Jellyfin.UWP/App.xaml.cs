@@ -34,7 +34,6 @@ namespace Jellyfin.UWP
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-            var x = ApplicationData.Current.LocalFolder;
             LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
 
             GlobalCrashHandler.Configure();
@@ -162,6 +161,13 @@ namespace Jellyfin.UWP
                    var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
 
                    return new ApiKeyClient(sdkSettings, httpClientFactory.CreateClient());
+               })
+               .AddTransient<IUserClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new UserClient(sdkSettings, httpClientFactory.CreateClient());
                })
                // ViewModels
                .AddTransient<LoginViewModel>()

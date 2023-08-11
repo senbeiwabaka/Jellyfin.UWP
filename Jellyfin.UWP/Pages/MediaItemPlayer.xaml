@@ -15,7 +15,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Button Grid.Row="0" Content="Back" Click="{x:Bind BackClick}" />
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button Content="Back" Click="{x:Bind BackClick}" Margin="10" />
+
+            <Button x:Name="OpenLogs" Content="Open Logs" Command="{Binding OpenLogsCommand}" />
+        </StackPanel>
 
         <MediaPlayerElement x:Name="_mediaPlayerElement" AreTransportControlsEnabled="True" HorizontalAlignment="Stretch"
           Grid.Row="1" AutoPlay="True" KeyDown="_mediaPlayerElement_KeyDown">
