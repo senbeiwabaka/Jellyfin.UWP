@@ -4,11 +4,10 @@ using Jellyfin.Sdk;
 using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using Windows.System;
 
 namespace Jellyfin.UWP
 {
@@ -295,20 +294,9 @@ namespace Jellyfin.UWP
         [RelayCommand]
         private async Task OpenLogsAsync()
         {
-            try
-            {
-                var path = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
-                using (Process process = new Process())
-                {
-                    process.StartInfo = new ProcessStartInfo($"{path.Path}");
+            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
 
-                    process.Start();
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error("Open Logs Error", e);
-            }
+            await Launcher.LaunchFolderAsync(folder);
         }
     }
 }

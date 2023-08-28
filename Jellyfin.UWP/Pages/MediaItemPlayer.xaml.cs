@@ -109,11 +109,10 @@ namespace Jellyfin.UWP.Pages
             }
 
             var codecQuery = new CodecQuery();
-            var videoCodecsInstalled = await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Encoder, "");
-            var audioCodecsInstalled = await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Encoder, "");
-
-            var x = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "")).Select(x => x.DisplayName).ToArray();
-            var y = await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, "");
+            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Encoder, ""))
+                .Select(x => x).ToArray();
+            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Encoder, ""))
+                .Select(x => x).ToArray();
 
             Uri mediaUri;
 
@@ -195,6 +194,8 @@ namespace Jellyfin.UWP.Pages
         private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
         {
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
+
+            ((Frame)Window.Current.Content).GoBack();
         }
 
         private void MediaPlayer_CurrentStateChanged(MediaPlayer sender, object args)
