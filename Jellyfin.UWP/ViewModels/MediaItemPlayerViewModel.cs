@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
-using MetroLog;
+using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Linq;
@@ -18,8 +18,8 @@ namespace Jellyfin.UWP
         private readonly IPlaystateClient playstateClient;
         private readonly ISubtitleClient subtitleClient;
         private readonly IUserLibraryClient userLibraryClient;
+        private readonly ITvShowsClient tvShowsClient;
         private readonly IVideosClient videosClient;
-        private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayerViewModel>();
 
         private BaseItemDto item;
         private Guid itemId;
@@ -30,7 +30,8 @@ namespace Jellyfin.UWP
             IPlaystateClient playstateClient,
             IMediaInfoClient mediaInfoClient,
             ISubtitleClient subtitleClient,
-            IUserLibraryClient userLibraryClient)
+            IUserLibraryClient userLibraryClient,
+            ITvShowsClient tvShowsClient)
         {
             this.memoryCache = memoryCache;
             this.videosClient = videosClient;
@@ -38,6 +39,7 @@ namespace Jellyfin.UWP
             this.mediaInfoClient = mediaInfoClient;
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
+            this.tvShowsClient = tvShowsClient;
         }
 
         public string GetSubtitleUrl(int index, string routeFormat)
@@ -289,6 +291,21 @@ namespace Jellyfin.UWP
                     ItemId = itemId,
                     SessionId = session.Id,
                 });
+        }
+
+        public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            return await tvShowsClient.GetEpisodesAsync(
+                    seriesId: seriesId,
+                    userId: user.Id,
+                    seasonId: seasonId,
+                    fields: new[]
+                    {
+                        ItemFields.ItemCounts,
+                        ItemFields.PrimaryImageAspectRatio,
+                        ItemFields.BasicSyncInfo,
+                    });
         }
 
         [RelayCommand]

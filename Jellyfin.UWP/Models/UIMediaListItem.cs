@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jellyfin.Sdk;
+using System;
 
 namespace Jellyfin.UWP.Models
 {
@@ -17,5 +18,7 @@ namespace Jellyfin.UWP.Models
         public string Year { get; internal set; }
 
         public bool IsSelected { get; internal set; }
+
+        public BaseItemKind Type { get; internal set; }
     }
 }

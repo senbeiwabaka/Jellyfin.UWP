@@ -32,6 +32,8 @@ namespace Jellyfin.UWP.Pages
 
         private DetailsItemPlayRecord detailsItemPlayRecord;
         private bool isTranscoding;
+        private BaseItemDto item;
+        private MediaItemPlayerViewModel context;
 
         public MediaItemPlayer()
         {
@@ -81,22 +83,43 @@ namespace Jellyfin.UWP.Pages
 
         private async void DispatcherTimer_Tick(object sender, object e)
         {
-            var mediaItemPlayerViewModel = ((MediaItemPlayerViewModel)DataContext);
+            var context = ((MediaItemPlayerViewModel)DataContext);
 
-            await mediaItemPlayerViewModel.SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
+            await context.SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
         }
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            var mediaItemPlayerViewModel = ((MediaItemPlayerViewModel)DataContext);
-            var item = await mediaItemPlayerViewModel.LoadMediaItemAsync(detailsItemPlayRecord.Id);
-            var mediaSourceInfo = await mediaItemPlayerViewModel.LoadMediaPlaybackInfoAsync();
+            context = ((MediaItemPlayerViewModel)DataContext);
+            item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+
+            var mediaPlayer = await LoadMediaPlayer();
+
+            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged; ;
+            _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+
+            mediaPlayer.Play();
+
+            await context.SessionPlayingAsync();
+
+            displayRequest.RequestActive();
+
+            Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
+            Window.Current.CoreWindow.PointerCursor = null;
+        }
+
+        private async Task<MediaPlayer> LoadMediaPlayer()
+        {
+            var mediaSourceInfo = await context.LoadMediaPlaybackInfoAsync();
             var mediaStreams = mediaSourceInfo.MediaStreams;
 
-            if (mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Subtitle))
+            if (mediaStreams.Any(x => x.Type == MediaStreamType.Subtitle))
             {
-                var firstSubtitle = mediaStreams.First(x => x.Type == Sdk.MediaStreamType.Subtitle);
-                var subtitleUrl = mediaItemPlayerViewModel.GetSubtitleUrl(
+                var firstSubtitle = mediaStreams.First(x => x.Type == MediaStreamType.Subtitle);
+                var subtitleUrl = context.GetSubtitleUrl(
                     firstSubtitle.Index,
                     string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
 
@@ -109,16 +132,16 @@ namespace Jellyfin.UWP.Pages
             }
 
             var codecQuery = new CodecQuery();
-            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Encoder, ""))
+            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
                 .Select(x => x).ToArray();
-            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Encoder, ""))
+            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
                 .Select(x => x).ToArray();
 
             Uri mediaUri;
 
             var isSelectedAndDTS = detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
-                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == Sdk.MediaStreamType.Audio).Codec == "dts";
-            var isFlacAudio = mediaStreams.Any(x => x.Type == Sdk.MediaStreamType.Audio && x.Codec == "flac");
+                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec == "dts";
+            var isFlacAudio = mediaStreams.Any(x => x.Type == MediaStreamType.Audio && x.Codec == "flac");
             if (isSelectedAndDTS || isFlacAudio)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
@@ -127,7 +150,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = mediaItemPlayerViewModel.GetVideoUrl();
+                mediaUri = context.GetVideoUrl();
             }
 
             var source = MediaSource.CreateFromUri(mediaUri);
@@ -158,20 +181,12 @@ namespace Jellyfin.UWP.Pages
                 mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
             }
 
-            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
-            _mediaPlayerElement.MediaPlayer.CurrentStateChanged += MediaPlayer_CurrentStateChanged;
-            _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+            return mediaPlayer;
+        }
 
-            mediaPlayer.Play();
-
-            await mediaItemPlayerViewModel.SessionPlayingAsync();
-
-            displayRequest.RequestActive();
-
-            Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
-            Window.Current.CoreWindow.PointerCursor = null;
+        private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No PlaybackSession_PlaybackStateChanged args");
         }
 
         private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
@@ -191,16 +206,29 @@ namespace Jellyfin.UWP.Pages
             }
         }
 
-        private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+        private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
         {
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
 
-            ((Frame)Window.Current.Content).GoBack();
-        }
+            await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
-        private void MediaPlayer_CurrentStateChanged(MediaPlayer sender, object args)
-        {
-            Log.Info(args?.ToString() ?? "No MediaPlayer_CurrentStateChanged args");
+            if (item.Type == BaseItemKind.Episode)
+            {
+                var episodes = await context.GetSeriesAsync(item.SeriesId.Value, item.SeasonId.Value);
+
+                if (episodes is not null && episodes.Items.Max(x => x.IndexNumber) != item.IndexNumber)
+                {
+                    var mediaPlayer = await LoadMediaPlayer();
+
+                    mediaPlayer.Play();
+
+                    await context.SessionPlayingAsync();
+                }
+            }
+            else
+            {
+                ((Frame)Window.Current.Content).GoBack();
+            }
         }
 
         private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)

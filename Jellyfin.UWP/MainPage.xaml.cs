@@ -3,8 +3,10 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Microsoft.Extensions.Caching.Memory;
 using Windows.Storage;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -53,6 +55,14 @@ namespace Jellyfin.UWP
             await ((MainViewModel)DataContext).LoadMediaListAsync();
             await ((MainViewModel)DataContext).LoadResumeItemsAsync();
             await ((MainViewModel)DataContext).LoadNextUpAsync();
+            await ((MainViewModel)DataContext).LoadLatestAsync();
+
+            foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
+            {
+                latest.Children.Add(new TextBlock { Text = item.Key, Foreground = new SolidColorBrush(Colors.White), });
+
+            }
+
         }
 
         private void SearchClick(object sender, RoutedEventArgs e)

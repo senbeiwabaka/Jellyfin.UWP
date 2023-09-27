@@ -169,6 +169,13 @@ namespace Jellyfin.UWP
 
                    return new UserClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IItemsClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new ItemsClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -198,11 +205,17 @@ namespace Jellyfin.UWP
 
                         resetJellyfinUrl = !response.IsSuccessStatusCode;
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         resetJellyfinUrl = true;
+
+                        Log.Error(ex.Message, ex);
                     }
                 }
+            }
+            else
+            {
+                resetJellyfinUrl = true;
             }
 
             var localSettingsSession = localSettings.Values["session"]?.ToString();
@@ -233,8 +246,7 @@ namespace Jellyfin.UWP
                 }
                 catch (UserException exception)
                 {
-                    localSettings.Values.Remove("accessToken");
-                    accessToken = string.Empty;
+                    CleanupValues(localSettings, settings);
 
                     Log.Error("Failed to get user information on startup", exception);
                 }
@@ -244,11 +256,11 @@ namespace Jellyfin.UWP
             {
                 if (rootFrame.Content == null)
                 {
-                    if (string.IsNullOrWhiteSpace(jellyfinUrl) || !Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute) || resetJellyfinUrl)
+                    if (resetJellyfinUrl)
                     {
                         rootFrame.Navigate(typeof(SetupPage));
                     }
-                    else if (string.IsNullOrWhiteSpace(accessToken))
+                    else if (string.IsNullOrWhiteSpace(settings.AccessToken))
                     {
                         rootFrame.Navigate(typeof(LoginPage));
                     }
@@ -264,6 +276,14 @@ namespace Jellyfin.UWP
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+        }
+
+        private static void CleanupValues(ApplicationDataContainer localSettings, SdkClientSettings settings)
+        {
+            localSettings.Values.Remove("accessToken");
+            localSettings.Values.Remove("session");
+
+            settings.AccessToken = default;
         }
 
         /// <summary>
