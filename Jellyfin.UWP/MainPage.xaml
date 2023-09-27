@@ -13,6 +13,13 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <DataTemplate x:Key="UiMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel>
+                <TextBlock Text="{x:Bind Name}" FontSize="25" />
+                <Image Source="{x:Bind Url}" />
+            </StackPanel>
+        </DataTemplate>
+
     </Page.Resources>
 
     <Grid>
@@ -48,20 +55,12 @@
             ScrollViewer.VerticalScrollMode="Disabled"
             ItemsSource="{Binding MediaList, Mode=OneWay}"
             ItemClick="{x:Bind ClickItemList}"
-            IsItemClickEnabled="True">
+            IsItemClickEnabled="True" ItemTemplate="{StaticResource UiMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
                 <StackPanel>
@@ -73,21 +72,13 @@
             ScrollViewer.HorizontalScrollMode="Enabled"
             ScrollViewer.VerticalScrollMode="Disabled"
             ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
-            ItemClick="{x:Bind ContinueWatchingClickItemList}"
-            IsItemClickEnabled="True" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
+            ItemClick="{x:Bind MediaClickItemList}"
+            IsItemClickEnabled="True" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}"  ItemTemplate="{StaticResource UiMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
                 <StackPanel>
@@ -99,21 +90,13 @@ ScrollViewer.HorizontalScrollBarVisibility="Visible"
 ScrollViewer.HorizontalScrollMode="Enabled"
 ScrollViewer.VerticalScrollMode="Disabled"
 ItemsSource="{Binding NextupMediaList, Mode=OneWay}"
-ItemClick="{x:Bind ClickItemList}"
-IsItemClickEnabled="True">
+ItemClick="{x:Bind MediaClickItemList}"
+IsItemClickEnabled="True" ItemTemplate="{StaticResource UiMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
 

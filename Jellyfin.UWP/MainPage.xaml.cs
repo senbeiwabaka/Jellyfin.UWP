@@ -1,14 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
 namespace Jellyfin.UWP
 {
@@ -35,7 +36,7 @@ namespace Jellyfin.UWP
             ((Frame)Window.Current.Content).Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
-        private void ContinueWatchingClickItemList(object sender, ItemClickEventArgs e)
+        private void MediaClickItemList(object sender, ItemClickEventArgs e)
         {
             ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
@@ -59,15 +60,52 @@ namespace Jellyfin.UWP
 
             foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
             {
-                latest.Children.Add(new TextBlock { Text = item.Key, Foreground = new SolidColorBrush(Colors.White), });
+                if (!item.Any())
+                {
+                    continue;
+                }
 
+                latest.Children.Add(
+                    new TextBlock
+                    {
+                        Text = $"Latest {item.Key} >",
+                        Foreground = new SolidColorBrush(Colors.White),
+                    });
+
+                var listView = new ListView
+                {
+                    ItemsSource = item.ToList(),
+                    ItemsPanel = GetItemsPanelTemplate(),
+                    ItemTemplate = (DataTemplate)Resources["UiMediaListItemDataTemplate"],
+                    IsItemClickEnabled = true,
+                };
+
+                listView.ItemClick += MediaClickItemList;
+
+                latest.Children.Add(listView);
+
+                listView.UpdateLayout();
+
+                var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
+
+                listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
+                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
+                listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
             }
-
         }
 
         private void SearchClick(object sender, RoutedEventArgs e)
         {
             ((Frame)Window.Current.Content).Navigate(typeof(SearchPage));
+        }
+
+        private ItemsPanelTemplate GetItemsPanelTemplate()
+        {
+            string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                            <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
+                    </ItemsPanelTemplate>";
+            return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
         }
     }
 }
