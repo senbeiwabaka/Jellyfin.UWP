@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -27,13 +29,13 @@ namespace Jellyfin.UWP.Pages
         private readonly DisplayRequest displayRequest;
         private readonly ILogger Log;
         private readonly SdkClientSettings sdkClientSettings;
+        private readonly Stopwatch stopwatch = new();
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
-        private readonly Stopwatch stopwatch = new Stopwatch();
 
+        private MediaItemPlayerViewModel context;
         private DetailsItemPlayRecord detailsItemPlayRecord;
         private bool isTranscoding;
         private BaseItemDto item;
-        private MediaItemPlayerViewModel context;
 
         public MediaItemPlayer()
         {
@@ -81,6 +83,48 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatingFrom(e);
         }
 
+        private void _mediaPlayerElement_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Escape && _mediaPlayerElement.IsFullWindow)
+            {
+                _mediaPlayerElement.IsFullWindow = false;
+            }
+
+            if (e.Key == Windows.System.VirtualKey.Space)
+            {
+                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
+                {
+                    _mediaPlayerElement.MediaPlayer.Play();
+                }
+
+                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+                {
+                    _mediaPlayerElement.MediaPlayer.Pause();
+                }
+            }
+        }
+
+        private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)
+        {
+            if (Window.Current.CoreWindow.PointerCursor == null)
+            {
+                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+            }
+
+            stopwatch.Restart();
+            await Task.Delay(1500);
+
+            if (stopwatch == null)
+            {
+                return;
+            }
+
+            if (stopwatch.ElapsedMilliseconds >= 1500)
+            {
+                Window.Current.CoreWindow.PointerCursor = null;
+            }
+        }
+
         private async void DispatcherTimer_Tick(object sender, object e)
         {
             var context = ((MediaItemPlayerViewModel)DataContext);
@@ -88,30 +132,7 @@ namespace Jellyfin.UWP.Pages
             await context.SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
         }
 
-        private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
-        {
-            context = ((MediaItemPlayerViewModel)DataContext);
-            item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
-
-            var mediaPlayer = await LoadMediaPlayer();
-
-            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged; ;
-            _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
-
-            mediaPlayer.Play();
-
-            await context.SessionPlayingAsync();
-
-            displayRequest.RequestActive();
-
-            Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
-            Window.Current.CoreWindow.PointerCursor = null;
-        }
-
-        private async Task<MediaPlayer> LoadMediaPlayer()
+        private async Task<MediaSource> LoadSourceAsync()
         {
             var mediaSourceInfo = await context.LoadMediaPlaybackInfoAsync();
             var mediaStreams = mediaSourceInfo.MediaStreams;
@@ -162,6 +183,15 @@ namespace Jellyfin.UWP.Pages
 
             await source.OpenAsync();
 
+            return source;
+        }
+
+        private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
+        {
+            context = ((MediaItemPlayerViewModel)DataContext);
+            item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+
+            var source = await LoadSourceAsync();
             var mediaPlaybackItem = new MediaPlaybackItem(source);
             var mediaPlayer = new MediaPlayer
             {
@@ -181,12 +211,85 @@ namespace Jellyfin.UWP.Pages
                 mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
             }
 
-            return mediaPlayer;
+            _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged; ;
+            _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+
+            mediaPlayer.Play();
+
+            await context.SessionPlayingAsync();
+
+            displayRequest.RequestActive();
+
+            Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
+            Window.Current.CoreWindow.PointerCursor = null;
+
+            ApplicationView.GetForCurrentView().Title = item.Name;
         }
 
-        private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
+        private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
         {
-            Log.Info(args?.ToString() ?? "No PlaybackSession_PlaybackStateChanged args");
+            _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
+            _mediaPlayerElement.MediaPlayer.Dispose();
+
+            stopwatch.Stop();
+
+            Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
+
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+        }
+
+        private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+        {
+            Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
+
+            await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
+
+            if (item.Type == BaseItemKind.Episode)
+            {
+                var episodes = await context.GetSeriesAsync(item.SeriesId.Value, item.SeasonId.Value);
+
+                if (episodes is not null)
+                {
+                    var nextIndex = item.IndexNumber + 1;
+
+                    if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
+                    {
+                        detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber == nextIndex).Id;
+
+                        item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+                    }
+                    else
+                    {
+                        // TODO: GET THE NEXT SEASON
+                    }
+
+                    var source = await LoadSourceAsync();
+                    var mediaPlaybackItem = new MediaPlaybackItem(source);
+
+                    sender.Source = mediaPlaybackItem;
+
+                    await context.SessionPlayingAsync();
+
+                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                        CoreDispatcherPriority.Normal,
+                        () =>
+                        {
+                            ApplicationView.GetForCurrentView().Title = item.Name;
+                        });
+                }
+            }
+            else
+            {
+                ((Frame)Window.Current.Content).GoBack();
+            }
+        }
+
+        private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+        {
+            Log.Info(args.ErrorMessage);
         }
 
         private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
@@ -206,67 +309,9 @@ namespace Jellyfin.UWP.Pages
             }
         }
 
-        private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+        private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
         {
-            Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
-
-            await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
-
-            if (item.Type == BaseItemKind.Episode)
-            {
-                var episodes = await context.GetSeriesAsync(item.SeriesId.Value, item.SeasonId.Value);
-
-                if (episodes is not null && episodes.Items.Max(x => x.IndexNumber) != item.IndexNumber)
-                {
-                    var mediaPlayer = await LoadMediaPlayer();
-
-                    mediaPlayer.Play();
-
-                    await context.SessionPlayingAsync();
-                }
-            }
-            else
-            {
-                ((Frame)Window.Current.Content).GoBack();
-            }
-        }
-
-        private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)
-        {
-            if (Window.Current.CoreWindow.PointerCursor == null)
-            {
-                Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
-            }
-
-            stopwatch.Restart();
-            await Task.Delay(1500);
-
-            if (stopwatch == null)
-            {
-                return;
-            }
-
-            if (stopwatch.ElapsedMilliseconds >= 1500)
-            {
-                Window.Current.CoreWindow.PointerCursor = null;
-            }
-        }
-
-        private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
-        {
-            _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
-            _mediaPlayerElement.MediaPlayer.Dispose();
-
-            stopwatch.Stop();
-
-            Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
-
-            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
-        }
-
-        private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
-        {
-            Log.Info(args.ErrorMessage);
+            Log.Info(args?.ToString() ?? "No PlaybackSession_PlaybackStateChanged args");
         }
 
         private void Tts_Resolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
@@ -283,27 +328,6 @@ namespace Jellyfin.UWP.Pages
 
             // Update label manually since the external SRT does not contain it
             args.Tracks[0].Label = ttsMap[sender];
-        }
-
-        private void _mediaPlayerElement_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Escape && _mediaPlayerElement.IsFullWindow)
-            {
-                _mediaPlayerElement.IsFullWindow = false;
-            }
-
-            if (e.Key == Windows.System.VirtualKey.Space)
-            {
-                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
-                {
-                    _mediaPlayerElement.MediaPlayer.Play();
-                }
-
-                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-                {
-                    _mediaPlayerElement.MediaPlayer.Pause();
-                }
-            }
         }
     }
 }

@@ -19,7 +19,6 @@
                 <Image Source="{x:Bind Url}" />
             </StackPanel>
         </DataTemplate>
-
     </Page.Resources>
 
     <Grid>
