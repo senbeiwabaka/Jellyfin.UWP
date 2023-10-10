@@ -249,37 +249,12 @@ namespace Jellyfin.UWP.Pages
 
             if (item.Type == BaseItemKind.Episode)
             {
-                var episodes = await context.GetSeriesAsync(item.SeriesId.Value, item.SeasonId.Value);
-
-                if (episodes is not null)
-                {
-                    var nextIndex = item.IndexNumber + 1;
-
-                    if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
-                    {
-                        detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber == nextIndex).Id;
-
-                        item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
-                    }
-                    else
-                    {
-                        // TODO: GET THE NEXT SEASON
-                    }
-
-                    var source = await LoadSourceAsync();
-                    var mediaPlaybackItem = new MediaPlaybackItem(source);
-
-                    sender.Source = mediaPlaybackItem;
-
-                    await context.SessionPlayingAsync();
-
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                        CoreDispatcherPriority.Normal,
-                        () =>
-                        {
-                            ApplicationView.GetForCurrentView().Title = item.Name;
-                        });
-                }
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                          CoreDispatcherPriority.Normal,
+                          () =>
+                          {
+                              NextEpisodePopup.IsOpen = true;
+                          });
             }
             else
             {
@@ -328,6 +303,38 @@ namespace Jellyfin.UWP.Pages
 
             // Update label manually since the external SRT does not contain it
             args.Tracks[0].Label = ttsMap[sender];
+        }
+
+        private async void YesButton_Click(object sender, RoutedEventArgs e)
+        {
+            var episodes = await context.GetSeriesAsync(item.SeriesId.Value, item.SeasonId.Value);
+
+            if (episodes is not null)
+            {
+                var nextIndex = item.IndexNumber + 1;
+
+                if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
+                {
+                    detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber == nextIndex).Id;
+
+                    item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+                }
+                else
+                {
+                    // TODO: GET THE NEXT SEASON
+                }
+
+                var source = await LoadSourceAsync();
+                var mediaPlaybackItem = new MediaPlaybackItem(source);
+
+                _mediaPlayerElement.Source = mediaPlaybackItem;
+
+                await context.SessionPlayingAsync();
+
+                ApplicationView.GetForCurrentView().Title = item.Name;
+
+                NextEpisodePopup.IsOpen = false;
+            }
         }
     }
 }
