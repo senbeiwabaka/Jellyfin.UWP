@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Media.Streaming.Adaptive;
 using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
@@ -78,7 +79,13 @@ namespace Jellyfin.UWP.Pages
 
             await ((MediaItemPlayerViewModel)DataContext).SessionStopAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
 
-            displayRequest.RequestRelease();
+            try
+            {
+                displayRequest.RequestRelease();
+            }
+            catch (Exception ex)
+            {
+            }
 
             base.OnNavigatingFrom(e);
         }
@@ -183,14 +190,32 @@ namespace Jellyfin.UWP.Pages
                 mediaUri = context.GetVideoUrl();
             }
 
-            var source = MediaSource.CreateFromUri(mediaUri);
+            MediaSource source;
+
+            if (isTranscoding)
+            {
+                AdaptiveMediaSourceCreationResult result = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
+
+                source = MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
+            }
+            else
+            {
+                source = MediaSource.CreateFromUri(mediaUri);
+            }
 
             foreach (var keyValuePair in ttsMap)
             {
                 source.ExternalTimedTextSources.Add(keyValuePair.Key);
             }
 
-            await source.OpenAsync();
+            try
+            {
+                await source.OpenAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("failed to open source", ex);
+            }
 
             return source;
         }
