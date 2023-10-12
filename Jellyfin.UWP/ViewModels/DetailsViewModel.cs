@@ -3,6 +3,7 @@ using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -257,7 +258,7 @@ namespace Jellyfin.UWP.ViewModels
 
                 if (nextUpItem is not null)
                 {
-                    SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", nextUpItem.ImageTags["Primary"]);
+                    SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", "Primary", nextUpItem.ImageTags);
                     SeriesNextUpId = nextUpItem.Id;
                     SeriesNextUpName = $"S{nextUpItem.ParentIndexNumber}:E{nextUpItem.IndexNumber} - {nextUpItem.Name}";
                 }
@@ -267,7 +268,7 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
+                        Url = SetImageUrl(x.Id, "505", "349", "Primary", x.ImageTags),
                     }));
             }
 
@@ -279,11 +280,11 @@ namespace Jellyfin.UWP.ViewModels
                 {
                     Id = x.Id,
                     Name = x.Name,
-                    Url = SetImageUrl(x.Id, "446", "298", x.ImageTags["Primary"]),
+                    Url = SetImageUrl(x.Id, "446", "298", "Primary", x.ImageTags),
                     Year = x.ProductionYear?.ToString() ?? "N/A",
                 }));
 
-            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
+            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", "Primary", MediaItem.ImageTags);
         }
 
         private async Task<Guid> GetSeriesEpisodeIdAsync()
@@ -316,8 +317,15 @@ namespace Jellyfin.UWP.ViewModels
             SelectedAudioStream = AudioStreams.Single(x => x.IsSelected);
         }
 
-        private string SetImageUrl(Guid id, string height, string width, string imageTagId)
+        private string SetImageUrl(Guid id, string height, string width, string tagKey, IDictionary<string, string> imageTages)
         {
+            if (imageTages is null || imageTages.Count == 0 || !imageTages.ContainsKey(tagKey))
+            {
+                return string.Empty;
+            }
+
+            var imageTagId = imageTages[tagKey];
+
             return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
         }
 

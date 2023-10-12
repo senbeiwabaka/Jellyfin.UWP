@@ -160,10 +160,19 @@ namespace Jellyfin.UWP.Pages
 
             Uri mediaUri;
 
-            var isSelectedAndDTS = detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue &&
-                mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec == "dts";
+            var isDTS = false;
+
+            if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue)
+            {
+                isDTS = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec == "dts";
+            }
+            else
+            {
+                isDTS = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec == "dts";
+            }
+
             var isFlacAudio = mediaStreams.Any(x => x.Type == MediaStreamType.Audio && x.Codec == "flac");
-            if (isSelectedAndDTS || isFlacAudio)
+            if (isDTS || isFlacAudio)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
