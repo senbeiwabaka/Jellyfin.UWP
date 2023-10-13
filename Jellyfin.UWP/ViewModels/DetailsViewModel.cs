@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
-    public partial class DetailsViewModel : ObservableObject
+    internal sealed partial class DetailsViewModel : ObservableObject
     {
         private readonly ILibraryClient libraryClient;
         private readonly IMemoryCache memoryCache;

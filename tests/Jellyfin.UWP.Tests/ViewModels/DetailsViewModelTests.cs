@@ -99,7 +99,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var viewModel = new DetailsViewModel(
+            var sut = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
@@ -119,6 +119,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
                     Type = BaseItemKind.Movie,
+                    MediaStreams = Array.Empty<MediaStream>(),
                 })
                 .Verifiable();
 
@@ -140,14 +141,14 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 .Verifiable();
 
             // Act
-            await viewModel.LoadMediaInformationAsync(itemId);
+            await sut.LoadMediaInformationAsync(itemId);
 
             // Assert
-            Assert.IsNotNull(viewModel.MediaItem);
-            Assert.AreEqual("", viewModel.VideoType);
-            Assert.AreEqual("", viewModel.RunTime);
-            Assert.AreEqual("", viewModel.MediaTags);
-            Assert.AreEqual("", viewModel.MediaTagLines);
+            Assert.IsNotNull(sut.MediaItem);
+            Assert.IsNull(sut.VideoType);
+            Assert.IsNull(sut.RunTime);
+            Assert.IsNull(sut.MediaTags);
+            Assert.IsNull(sut.MediaTagLines);
 
             userLibraryClientMock.Verify();
             libraryClientMock.Verify();
@@ -172,7 +173,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var viewModel = new DetailsViewModel(
+            var sut = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
@@ -192,6 +193,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
                     Type = BaseItemKind.Series,
+                    MediaStreams = Array.Empty<MediaStream>(),
                 })
                 .Verifiable();
 
@@ -212,11 +214,38 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 })
                 .Verifiable();
 
+            tvShowsClientMock.Setup(x => x.GetSeasonsAsync(
+                itemId,
+                userId,
+                new[]
+                    {
+                        ItemFields.ItemCounts,
+                        ItemFields.PrimaryImageAspectRatio,
+                        ItemFields.BasicSyncInfo,
+                        ItemFields.MediaSourceCount,
+                    },
+                null, null, null, null, null, null, null, default))
+                .ReturnsAsync(new BaseItemDtoQueryResult { Items = Array.Empty<BaseItemDto>(), })
+                .Verifiable();
+
+            tvShowsClientMock.Setup(x => x.GetNextUpAsync(
+                userId,
+                null,
+                null,
+                new[]
+                    {
+                        ItemFields.MediaSourceCount,
+                    },
+                itemId.ToString(),
+                null, null, null, null, null, null, null, null, null, default))
+                .ReturnsAsync(new BaseItemDtoQueryResult { Items = Array.Empty<BaseItemDto>(), })
+                .Verifiable();
+
             // Act
-            await viewModel.LoadMediaInformationAsync(itemId);
+            await sut.LoadMediaInformationAsync(itemId);
 
             // Assert
-            Assert.IsNotNull(viewModel.MediaItem);
+            Assert.IsNotNull(sut.MediaItem);
 
             userLibraryClientMock.Verify();
             libraryClientMock.Verify();

@@ -41,12 +41,14 @@ namespace Jellyfin.UWP.Pages
             ((Frame)Window.Current.Content).Navigate(typeof(SetupPage));
         }
 
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            ((LoginViewModel)DataContext).OpenPopup = false;
+        }
+
         private void LoginPage_Loaded(object sender, RoutedEventArgs e)
         {
             ((LoginViewModel)DataContext).SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
-
-            //MessagePopup.Width = MainCenterStack.Width;
-            //MessagePopup.Height = MainCenterStack.Height;
         }
 
         private void LoginPage_SuccessfullyLoggedIn()
@@ -65,15 +67,6 @@ namespace Jellyfin.UWP.Pages
             {
                 ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
             }
-        }
-
-        private void MessagePopup_LayoutUpdated(object sender, object e)
-        {
-        }
-
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).OpenPopup = false;
         }
     }
 }

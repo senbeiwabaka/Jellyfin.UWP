@@ -1,4 +1,5 @@
-﻿using Jellyfin.Sdk;
+﻿using FluentAssertions;
+using Jellyfin.Sdk;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -12,11 +13,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
     public sealed class LoginViewModelTests
     {
         [TestMethod]
-        public async Task LoadMediaInformationAsync()
+        public async Task LoginCommand()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var itemId = Guid.NewGuid();
             var sdkSettings = new SdkClientSettings
             {
                 ClientName = "client",
@@ -39,14 +39,25 @@ namespace Jellyfin.UWP.Tests.ViewModels
 
             sut.SuccessfullyLoggedIn += () => { successRan = true; };
 
+            sut.Username = "test";
+            sut.Password = "test";
+
+            userClientMock.Setup(x => x.AuthenticateUserByNameAsync(It.IsAny<AuthenticateUserByName>(), It.IsAny<CancellationToken>()))
+                .Callback<AuthenticateUserByName, CancellationToken>((x, y) =>
+                {
+                    x.Should().BeEquivalentTo(new AuthenticateUserByName { Username = sut.Username, Pw = sut.Password, });
+                })
+                .ReturnsAsync(new AuthenticationResult { AccessToken = "1", SessionInfo = new SessionInfo(), })
+                .Verifiable();
+
             // Act
-            //await sut.LoadMediaInformationAsync(itemId);
             await sut.LoginCommand.ExecuteAsync(CancellationToken.None);
 
             // Assert
-            //Assert.IsNotNull(sut.MediaItem);
-
             Assert.IsTrue(successRan);
+            Assert.IsNull(sut.Message);
+
+            userClientMock.VerifyAll();
         }
     }
 }
