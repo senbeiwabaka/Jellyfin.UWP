@@ -194,7 +194,7 @@ namespace Jellyfin.UWP.Pages
 
             if (isTranscoding)
             {
-                AdaptiveMediaSourceCreationResult result = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
+                var result = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
 
                 source = MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
             }

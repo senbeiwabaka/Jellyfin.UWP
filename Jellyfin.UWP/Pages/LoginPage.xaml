@@ -11,7 +11,7 @@
 
     <Grid>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10" x:Name="MainCenterStack">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="Username: " Padding="10" />
                 <TextBox Text="{Binding Username, Mode=TwoWay}" Width="150" Padding="10" />
@@ -32,5 +32,12 @@
                 <Button x:Name="btnChangeURL" Content="Change URL" Click="btnChangeURL_Click" />
             </StackPanel>
         </StackPanel>
+
+        <Popup IsOpen="{Binding OpenPopup}" x:Name="MessagePopup" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Background="Black" >
+                <TextBlock FontSize="36" Foreground="White" Text="{Binding Message}"></TextBlock>
+                <Button x:Name="CloseButton" Content="Close" Click="CloseButton_Click"></Button>
+            </StackPanel>
+        </Popup>
     </Grid>
 </Page>

@@ -1,18 +1,15 @@
 ﻿using Jellyfin.Sdk;
-using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.Tests.ViewModels
 {
     [TestClass]
-    internal sealed class LoginViewModelTests
+    public sealed class LoginViewModelTests
     {
         [TestMethod]
         public async Task LoadMediaInformationAsync()
@@ -30,56 +27,26 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 DeviceId = "client",
             };
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var libraryClientMock = new Mock<ILibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var userClientMock = new Mock<IUserClient>();
             var sut = new LoginViewModel(
+                userClientMock.Object,
                 memoryCache,
-                userLibraryClientMock.Object,
-                libraryClientMock.Object,
-                sdkSettings,
-                tvShowsClientMock.Object);
+                sdkSettings);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 
-            userLibraryClientMock
-                .Setup(x => x.GetItemAsync(userId, itemId, default))
-                .ReturnsAsync(new BaseItemDto
-                {
-                    Id = itemId,
-                    Tags = Array.Empty<string>(),
-                    Taglines = Array.Empty<string>(),
-                    Genres = Array.Empty<string>(),
-                    People = Array.Empty<BaseItemPerson>(),
-                    ImageTags = new Dictionary<string, string> { { "Primary", "" } },
-                })
-                .Verifiable();
+            var successRan = false;
 
-            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, null, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
-                .ReturnsAsync(new BaseItemDtoQueryResult
-                {
-                    Items = new[]
-                    {
-                        new BaseItemDto
-                        {
-                            Tags = Array.Empty<string>(),
-                            Taglines = Array.Empty<string>(),
-                            Genres = Array.Empty<string>(),
-                            People = Array.Empty<BaseItemPerson>(),
-                            ImageTags = new Dictionary<string, string> { { "Primary", "" } },
-                        }
-                    }
-                })
-                .Verifiable();
+            sut.SuccessfullyLoggedIn += () => { successRan = true; };
 
             // Act
-            await sut.LoadMediaInformationAsync(itemId);
+            //await sut.LoadMediaInformationAsync(itemId);
+            await sut.LoginCommand.ExecuteAsync(CancellationToken.None);
 
             // Assert
-            Assert.IsNotNull(sut.MediaItem);
+            //Assert.IsNotNull(sut.MediaItem);
 
-            userLibraryClientMock.Verify();
-            libraryClientMock.Verify();
+            Assert.IsTrue(successRan);
         }
     }
 }

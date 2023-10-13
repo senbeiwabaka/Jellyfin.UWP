@@ -21,12 +21,20 @@ namespace Jellyfin.UWP
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         [Required(AllowEmptyStrings = false)]
+        [NotifyDataErrorInfo]
         private string password;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
         [Required(AllowEmptyStrings = false)]
+        [NotifyDataErrorInfo]
         private string username;
+
+        [ObservableProperty]
+        private string message;
+
+        [ObservableProperty]
+        private bool openPopup;
 
         public LoginViewModel(IUserClient userClient, IMemoryCache memoryCache, SdkClientSettings settings)
         {
@@ -44,12 +52,23 @@ namespace Jellyfin.UWP
             return !string.IsNullOrWhiteSpace(Username) && !string.IsNullOrWhiteSpace(Password);
         }
 
-        [RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanLogIn))]
+        [RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanLogIn), AllowConcurrentExecutions = false)]
         private async Task LoginAsync(CancellationToken token)
         {
             try
             {
                 ValidateAllProperties();
+
+                if (HasErrors)
+                {
+                    Log.Debug("has errors so can't log in.");
+
+                    Message = "Either username or password were wrong";
+
+                    OpenPopup = true;
+
+                    return;
+                }
 
                 var authResult = await userClient.AuthenticateUserByNameAsync(new AuthenticateUserByName { Username = Username, Pw = Password }, cancellationToken: token);
 
@@ -69,14 +88,26 @@ namespace Jellyfin.UWP
 
                     SuccessfullyLoggedIn?.Invoke();
                 }
+                else
+                {
+                    Message = "Either username or password were wrong";
+                }
             }
             catch (UserException e)
             {
                 Log.Error("Login error", e);
+
+                Message = "An error occurred. Please try again.";
+
+                OpenPopup = true;
             }
             catch (Exception e)
             {
                 Log.Error("Login error", e);
+
+                Message = "An error occurred. Please try again.";
+
+                OpenPopup = true;
             }
         }
     }
