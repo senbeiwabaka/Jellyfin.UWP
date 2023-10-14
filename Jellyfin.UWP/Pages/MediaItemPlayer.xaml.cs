@@ -284,7 +284,12 @@ namespace Jellyfin.UWP.Pages
         {
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
 
-            dispatcherTimer.Stop();
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                          CoreDispatcherPriority.Normal,
+                          () =>
+                          {
+                              dispatcherTimer.Stop();
+                          });
 
             await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
