@@ -52,7 +52,7 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
 
-            dispatcherTimer.Start();
+
 
             Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
 
@@ -136,7 +136,10 @@ namespace Jellyfin.UWP.Pages
         {
             var context = ((MediaItemPlayerViewModel)DataContext);
 
-            await context.SessionProgressAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
+            await context.SessionProgressAsync(
+                _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
+                isTranscoding,
+                _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
         }
 
         private async Task<MediaSource> LoadSourceAsync()
@@ -246,14 +249,16 @@ namespace Jellyfin.UWP.Pages
             }
 
             _mediaPlayerElement.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted; ;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded; ;
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged; ;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingStarted += PlaybackSession_BufferingStarted;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.BufferingEnded += PlaybackSession_BufferingEnded;
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
             _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
 
             mediaPlayer.Play();
 
-            await context.SessionPlayingAsync();
+            await context.SessionPlayingAsync(isTranscoding);
+
+            dispatcherTimer.Start();
 
             displayRequest.RequestActive();
 
@@ -278,6 +283,8 @@ namespace Jellyfin.UWP.Pages
         private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
         {
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
+
+            dispatcherTimer.Stop();
 
             await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
@@ -363,7 +370,9 @@ namespace Jellyfin.UWP.Pages
 
                 _mediaPlayerElement.Source = mediaPlaybackItem;
 
-                await context.SessionPlayingAsync();
+                await context.SessionPlayingAsync(isTranscoding);
+
+                dispatcherTimer.Start();
 
                 ApplicationView.GetForCurrentView().Title = item.Name;
 

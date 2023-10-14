@@ -23,6 +23,7 @@ namespace Jellyfin.UWP
 
         private BaseItemDto item;
         private Guid itemId;
+        private string playbackSessionId = string.Empty;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -94,7 +95,7 @@ namespace Jellyfin.UWP
                     AllowVideoStreamCopy = true,
                     AllowAudioStreamCopy = true,
                     MaxStreamingBitrate = 20_000_000,
-                    MaxAudioChannels = 2,
+                    MaxAudioChannels = 5,
                     StartTimeTicks = startTimeTicks,
                     EnableDirectStream = true,
                     DeviceProfile = new DeviceProfile
@@ -252,32 +253,44 @@ namespace Jellyfin.UWP
                     },
                 });
 
+            playbackSessionId = playbackInfo.PlaySessionId;
+
             return playbackInfo.MediaSources.Single();
         }
 
-        public async Task SessionPlayingAsync()
+        public async Task SessionPlayingAsync(bool isTranscoding)
         {
             var session = memoryCache.Get<SessionInfo>("session");
+            var playbackStartInfo = new PlaybackStartInfo
+            {
+                ItemId = itemId,
+                SessionId = session.Id,
+                PlayMethod = isTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                CanSeek = true,
+                IsMuted = false,
+                IsPaused = false,
+                PlaySessionId = playbackSessionId,
+            };
 
-            await playstateClient.ReportPlaybackStartAsync(
-                new PlaybackStartInfo
-                {
-                    ItemId = itemId,
-                    SessionId = session.Id,
-                });
+            await playstateClient.ReportPlaybackStartAsync(playbackStartInfo);
         }
 
-        public async Task SessionProgressAsync(long position)
+        public async Task SessionProgressAsync(long position, bool isTranscoding, bool isPaused)
         {
             var session = memoryCache.Get<SessionInfo>("session");
+            var playbackProgressInfo = new PlaybackProgressInfo
+            {
+                SessionId = session.Id,
+                ItemId = itemId,
+                PositionTicks = position,
+                PlayMethod = isTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                CanSeek = true,
+                IsMuted = false,
+                IsPaused = isPaused,
+                PlaySessionId = playbackSessionId,
+            };
 
-            await playstateClient.ReportPlaybackProgressAsync(
-                new PlaybackProgressInfo
-                {
-                    SessionId = session.Id,
-                    ItemId = itemId,
-                    PositionTicks = position,
-                });
+            await playstateClient.ReportPlaybackProgressAsync(playbackProgressInfo);
         }
 
         public async Task SessionStopAsync(long position)
@@ -290,6 +303,7 @@ namespace Jellyfin.UWP
                     PositionTicks = position,
                     ItemId = itemId,
                     SessionId = session.Id,
+                    PlaySessionId = playbackSessionId,
                 });
         }
 
