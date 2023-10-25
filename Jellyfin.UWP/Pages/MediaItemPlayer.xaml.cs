@@ -182,7 +182,8 @@ namespace Jellyfin.UWP.Pages
             }
 
             var isFlacAudio = mediaStreams.Any(x => x.Type == MediaStreamType.Audio && x.Codec == "flac");
-            if (isDTS || isFlacAudio)
+            var is10Bit = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
+            if (isDTS || isFlacAudio || is10Bit)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
@@ -310,7 +311,7 @@ namespace Jellyfin.UWP.Pages
 
         private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
         {
-            Log.Info(args.ErrorMessage);
+            Log.Error($"Error: {args.Error} with Message: {args.ErrorMessage}", args.ExtendedErrorCode);
         }
 
         private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
