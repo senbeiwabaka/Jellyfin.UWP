@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:platform="Any CPU" /p:configuration="Release"
+          msbuild.exe Jellyfin.UWP.sln /p:platform="x64" /p:configuration="Release" -v:q
         
       - name: Run Tests
         run: vstest.console.exe .\tests\Jellyfin.UWP.Tests\bin\Release\Jellyfin.UWP.Tests.dll
