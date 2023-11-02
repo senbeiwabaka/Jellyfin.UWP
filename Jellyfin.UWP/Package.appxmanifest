@@ -8,7 +8,7 @@
 
   <Identity
     Name="37f5d397-a198-4841-bbf2-13fd6f373f27"
-    Publisher="CN=Jellyfin, O=Jellyfin, C=US"
+    Publisher="CN=Micha"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="37f5d397-a198-4841-bbf2-13fd6f373f27" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
