@@ -1,0 +1,36 @@
+name: Build and Tests
+
+on:  
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:  
+  build:    
+    runs-on: windows-latest
+    
+    steps:      
+      - uses: actions/checkout@v4.1.1
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+        
+      - name: Setup VSTest
+        uses: darenm/Setup-VSTest@v1
+
+      - name: Navigate to Workspace
+        run: cd $GITHUB_WORKSPACE
+
+      - name: Restore Packages
+        run: nuget restore Jellyfin.UWP.sln
+
+      - name: Build Solution
+        run: |
+          msbuild.exe Jellyfin.UWP.sln /p:platform="Any CPU" /p:configuration="Release"
+        
+      - name: Run Tests
+        run: vstest.console.exe .\tests\Jellyfin.UWP.Tests\bin\Release\Jellyfin.UWP.Tests.dll
