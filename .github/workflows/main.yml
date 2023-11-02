@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:platform="x64" /p:configuration="Release" -v:q
+          msbuild.exe Jellyfin.UWP.sln /p:platform="x64" /p:configuration="Release" /p:AppxBundlePlatforms="x64" /p:AppxBundle=Always /p:UapAppxPackageBuildMode=CI -v:q
         
       - name: Run Tests
         run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
