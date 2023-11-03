@@ -8,7 +8,7 @@ on:
 
 jobs:  
   build:    
-    runs-on: windows-latest
+    runs-on: windows-2022
     
     steps:      
       - uses: actions/checkout@v4.1.1
@@ -17,10 +17,10 @@ jobs:
         uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v1.0.5
+        uses: NuGet/setup-nuget@v1.2.0
         
       - name: Setup VSTest
-        uses: darenm/Setup-VSTest@v1
+        uses: darenm/Setup-VSTest@v1.2
 
       - name: Navigate to Workspace
         run: cd $GITHUB_WORKSPACE
@@ -30,7 +30,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:q
+          msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:m
         env:
           AppxBundle: Always
           BuildMode: CI
