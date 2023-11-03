@@ -1,6 +1,8 @@
 # Jellyfin.UWP
 ----------------------------
 
+[![Build and Tests](https://github.com/senbeiwabaka/Jellyfin.UWP/actions/workflows/main.yml/badge.svg)](https://github.com/senbeiwabaka/Jellyfin.UWP/actions/workflows/main.yml)
+
 This is a UWP application for Windows store and Xbox to use Jellyfin.
 It should operate very similiar to the website.
 It is NOT hosting a browser version of the website.
