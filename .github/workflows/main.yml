@@ -107,6 +107,8 @@ jobs:
     
       - name: Display version
         run: echo "NBGV_SemVer2 $NBGV_SemVer2"
+      - run: echo 'SemVer2=${{ steps.nbgv.outputs.SemVer2 }}'
+      - run: ls
         
       - name: Update manifest version
         shell: powershell
