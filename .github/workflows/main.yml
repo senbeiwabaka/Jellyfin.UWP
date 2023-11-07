@@ -20,8 +20,8 @@ jobs:
       
       - name: something
         run: |
-          echo ${{ github.TOKEN }}
-          echo ${{ secrets.GITHUB_TOKEN }}
+          echo $Platform
+          echo $Configuration
       
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -92,8 +92,9 @@ jobs:
     runs-on: windows-latest
     
     steps:      
-      - name: Create release
-        uses: actions/upload-artifact@v3.1.3
-        with:
-          name: Jellyfin UWP
-          path: Jellyfin.UWP\\AppPackages
+      - name: Creates a release in GitHub and uploads attachments
+        run: |
+          gh release create v0.1.0 Jellyfin.UWP\\AppPackages\\*
+        env:
+          GITHUB_TOKEN: ${{ github.TOKEN }}
+        shell: powershell
