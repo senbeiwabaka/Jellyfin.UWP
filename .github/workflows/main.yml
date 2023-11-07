@@ -41,7 +41,7 @@ jobs:
       - name: Build solution
         shell: powershell
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64" -v:m
+          msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64" /p:UapAppxPackageBuildMode=StoreUpload -v:m
         env:
           AppxBundle: Always
           BuildMode: CI
