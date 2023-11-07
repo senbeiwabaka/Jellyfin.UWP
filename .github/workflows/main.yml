@@ -99,7 +99,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64" /p:UseDotNetNativeToolchain=true -v:q
+          msbuild.exe Jellyfin.UWP\Jellyfin.UWP.csproj /p:configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:AppxBundlePlatforms="x64" /p:UseDotNetNativeToolchain=true /p:UapAppxPackageBuildMode=SideloadOnly -v:m
         env:
           AppxBundle: Always
           BuildMode: CI
@@ -107,11 +107,23 @@ jobs:
           
       - name: something
         run: |
+          ls .
+          ls .\Jellyfin.UWP\AppPackages
+          
+      - name: Zip Package
+        uses: vimtor/action-zip@v1.1
+        with:
+          files: .\Jellyfin.UWP\AppPackages\Jellyfin.UWP_1.0.0.0_Test
+          dest: Jellyfin.UWP.zip
+          
+      - name: something2
+        run: |
+          ls .
           ls .\Jellyfin.UWP\AppPackages
           
       - name: Creates a release in GitHub and uploads attachments
         run: |
-          gh release create v0.1.0 .\Jellyfin.UWP\AppPackages\*
+          gh release create v0.1.0 Jellyfin.UWP.zip
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         shell: powershell
