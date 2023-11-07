@@ -101,13 +101,14 @@ jobs:
         run: cd $GITHUB_WORKSPACE
         
       - name: Setup NBGV
-        uses: dotnet/nbgv@v0.4.1
+        uses: dotnet/nbgv@master
         with:
           setAllVars: true
     
       - name: Display version
         run: echo "NBGV_SemVer2 $NBGV_SemVer2"
       - run: echo 'SemVer2=${{ steps.nbgv.outputs.SemVer2 }}'
+      - run: echo 'NBGV_SemVer2 $env:NBGV_SemVer2  $env:SimpleVersion'
       - run: ls
         
       - name: Update manifest version
