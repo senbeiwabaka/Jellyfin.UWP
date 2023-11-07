@@ -20,8 +20,8 @@ jobs:
       
       - name: something
         run: |
-          echo ${{ env:Platform }}
-          echo ${{ env:Configuration }}
+          echo "$Platform"
+          echo "$Configuration"
       
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -41,7 +41,7 @@ jobs:
       - name: Build solution
         shell: powershell
         run: |
-          msbuild.exe Jellyfin.UWP.sln /p:configuration=$Configuration /p:Platform=$Platform /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms=$Platform -v:m
+          msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=$env:Platform /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms=$env:Platform -v:m
         env:
           AppxBundle: Always
           BuildMode: CI
