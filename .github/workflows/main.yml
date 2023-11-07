@@ -106,8 +106,7 @@ jobs:
           setAllVars: true
     
       - name: Display version
-        shell: powershell
-        run: echo "NBGV_SemVer2 $NBGV_SemVer2 ;; NBGV_SimpleVersion $NBGV_SimpleVersion"
+        run: echo "NBGV_SemVer2 $NBGV_SemVer2"
         
       - name: Update manifest version
         shell: powershell
