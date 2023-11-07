@@ -19,6 +19,8 @@ jobs:
     
     steps:      
       - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
       
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -139,7 +141,7 @@ jobs:
       - name: Zip Package
         uses: vimtor/action-zip@v1.1
         with:
-          files: .\Jellyfin.UWP\AppPackages\Jellyfin.UWP_1.0.0.0_Test
+          files: .\Jellyfin.UWP\AppPackages\Jellyfin.UWP_${{ env.NBGV_SimpleVersion }}.0_Test
           dest: Jellyfin.UWP.zip
           
       - name: something2
@@ -149,7 +151,7 @@ jobs:
           
       - name: Creates a release in GitHub and uploads attachments
         run: |
-          gh release create v0.1.0 Jellyfin.UWP.zip --title "Release $NBGV_SimpleVersion"
+          gh release create "v${{ env.NBGV_SimpleVersion }}.0" Jellyfin.UWP.zip --title "Release ${{ env.NBGV_SimpleVersion }}.0"
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         shell: powershell
