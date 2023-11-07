@@ -44,6 +44,10 @@ jobs:
           msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=$env:Platform /p:AppxBundlePlatforms=$env:Platform -v:m
         env:
           BuildMode: CI
+          
+      - name: something2
+        run: |
+          ls .\tests\Jellyfin.UWP.Tests\bin\x64\Release\
         
       - name: Run tests
         shell: powershell
