@@ -1,0 +1,10 @@
+{
+  "version": "0.1",
+  "cloudBuild": {
+    "buildNumber": {
+      "enabled": true
+    },
+    "setVersionVariables": true,
+    "setAllVariables": true
+  }
+}
