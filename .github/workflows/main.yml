@@ -8,6 +8,9 @@ on:
     
 env:
   Platform: x64
+  
+permissions:
+  contents: write
 
 jobs:  
   build:    
