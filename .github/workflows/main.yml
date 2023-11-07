@@ -8,6 +8,7 @@ on:
     
 env:
   Platform: x64
+  Wap_Project_Directory: Jellyfin.UWP
   
 permissions:
   contents: write
@@ -84,6 +85,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
       
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -96,6 +99,22 @@ jobs:
 
       - name: Navigate to Workspace
         run: cd $GITHUB_WORKSPACE
+        
+      - name: Setup NBGV
+        uses: dotnet/nbgv@v0.4.1
+        with:
+          setAllVars: true
+    
+      - name: Display version
+        shell: powershell
+        run: echo "NBGV_SemVer2 $NBGV_SemVer2 ;; NBGV_SimpleVersion $NBGV_SimpleVersion"
+        
+      - name: Update manifest version
+        shell: powershell
+        run: |
+          [xml]$manifest = get-content ".\$env:Wap_Project_Directory\Package.appxmanifest"
+          $manifest.Package.Identity.Version = "${{ steps.nbgv.outputs.SimpleVersion }}.0"
+          $manifest.save(".\$env:Wap_Project_Directory\Package.appxmanifest")
 
       - name: Restore Packages
         run: nuget restore Jellyfin.UWP.sln -Verbosity quiet
@@ -126,7 +145,7 @@ jobs:
           
       - name: Creates a release in GitHub and uploads attachments
         run: |
-          gh release create v0.1.0 Jellyfin.UWP.zip
+          gh release create v0.1.0 Jellyfin.UWP.zip --title "Release $NBGV_SimpleVersion"
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         shell: powershell
