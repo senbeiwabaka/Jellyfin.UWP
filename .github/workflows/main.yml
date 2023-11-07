@@ -105,9 +105,13 @@ jobs:
           BuildMode: CI
           Configuration: Release
           
+      - name: something
+        run: |
+          ls .\Jellyfin.UWP\AppPackages
+          
       - name: Creates a release in GitHub and uploads attachments
         run: |
-          gh release create v0.1.0 .\Jellyfin.UWP\\AppPackages\\*
+          gh release create v0.1.0 .\Jellyfin.UWP\AppPackages\*
         env:
           GITHUB_TOKEN: ${{ github.TOKEN }}
         shell: powershell
