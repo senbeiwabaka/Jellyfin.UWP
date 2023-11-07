@@ -5,6 +5,9 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    
+env:
+  Platform: x64
 
 jobs:  
   build:    
@@ -68,11 +71,12 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"senbeiwabaka_Jellyfin.UWP_AYuW2VkcOTfeuyv7RdaP" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-          msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:m
+          msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:q
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
     # if: ${{ github.ref == 'refs/heads/master' }}
+    needs: build
     runs-on: windows-latest
     
     steps:      
