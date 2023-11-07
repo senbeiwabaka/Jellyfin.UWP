@@ -20,8 +20,8 @@ jobs:
       
       - name: something
         run: |
-          echo $Platform
-          echo $Configuration
+          echo ${{ env:Platform }}
+          echo ${{ env:Configuration }}
       
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
