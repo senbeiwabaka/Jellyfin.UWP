@@ -81,8 +81,7 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
-    # if: ${{ github.ref == 'refs/heads/master' }}
-    # needs: build
+    if: ${{ github.ref == 'refs/heads/master' }}
     runs-on: windows-2022
     
     steps:
@@ -107,14 +106,6 @@ jobs:
         with:
           setAllVars: true
     
-      - name: Display version
-        run: echo "NBGV_SemVer2 $NBGV_SemVer2"
-      - run: echo 'SemVer2=${{ steps.nbgv.outputs.NBGV_SemVer2 }}'
-      - run: echo 'NBGV_SemVer2 $env:NBGV_SemVer2  $env:SimpleVersion'
-      - run: echo "NBGV_SemVer2 $env:NBGV_SemVer2  $env:NBGV_SimpleVersion"
-      - run: echo "NBGV_SemVer2 $env.NBGV_SemVer2  $env.NBGV_SimpleVersion"
-      - run: ls
-        
       - name: Update manifest version
         shell: powershell
         run: |
@@ -133,21 +124,11 @@ jobs:
           BuildMode: CI
           Configuration: Release
           
-      - name: something
-        run: |
-          ls .
-          ls .\Jellyfin.UWP\AppPackages
-          
       - name: Zip Package
         uses: vimtor/action-zip@v1.1
         with:
           files: .\Jellyfin.UWP\AppPackages\Jellyfin.UWP_${{ env.NBGV_SimpleVersion }}.0_Test
           dest: Jellyfin.UWP.zip
-          
-      - name: something2
-        run: |
-          ls .
-          ls .\Jellyfin.UWP\AppPackages
           
       - name: Creates a release in GitHub and uploads attachments
         run: |
