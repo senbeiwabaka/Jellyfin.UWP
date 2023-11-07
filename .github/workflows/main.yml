@@ -76,10 +76,35 @@ jobs:
 
   deploy:
     # if: ${{ github.ref == 'refs/heads/master' }}
-    needs: build
-    runs-on: windows-latest
+    # needs: build
+    runs-on: windows-2022
     
-    steps:      
+    steps:
+      - uses: actions/checkout@v4.1.1
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.2.0
+        
+      - name: Setup VSTest
+        uses: darenm/Setup-VSTest@v1.2
+
+      - name: Navigate to Workspace
+        run: cd $GITHUB_WORKSPACE
+
+      - name: Restore Packages
+        run: nuget restore Jellyfin.UWP.sln -Verbosity quiet
+
+      - name: Build Solution
+        run: |
+          msbuild.exe Jellyfin.UWP.sln /p:configuration=$env:Configuration /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64" /p:UseDotNetNativeToolchain=true -v:q
+        env:
+          AppxBundle: Always
+          BuildMode: CI
+          Configuration: Release
+          
       - name: Creates a release in GitHub and uploads attachments
         run: |
           gh release create v0.1.0 .\Jellyfin.UWP\\AppPackages\\*
