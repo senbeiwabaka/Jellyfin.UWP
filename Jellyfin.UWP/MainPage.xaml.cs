@@ -38,7 +38,16 @@ namespace Jellyfin.UWP
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            var mediaItem = ((UIMediaListItem)e.ClickedItem);
+
+            if (mediaItem.Type == Sdk.BaseItemKind.Episode)
+            {
+                ((Frame)Window.Current.Content).Navigate(typeof(EpisodePage), mediaItem.Id);
+            }
+            else
+            {
+                ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
@@ -70,6 +79,7 @@ namespace Jellyfin.UWP
                     {
                         Text = $"Latest {item.Key} >",
                         Foreground = new SolidColorBrush(Colors.White),
+                        FontSize = 40.0d,
                     });
 
                 var listView = new ListView

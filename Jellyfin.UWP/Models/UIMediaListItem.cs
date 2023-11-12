@@ -3,7 +3,7 @@ using System;
 
 namespace Jellyfin.UWP.Models
 {
-    public sealed class UIMediaListItem
+    public class UIMediaListItem
     {
         public Guid Id { get; internal set; }
 
@@ -20,5 +20,11 @@ namespace Jellyfin.UWP.Models
         public bool IsSelected { get; internal set; }
 
         public BaseItemKind Type { get; internal set; }
+
+        public bool HasBeenWatched { get; internal set; }
+
+        public int? IndexNumber { get; internal set; }
+
+        public bool IsFavorite { get; internal set; }
     }
 }

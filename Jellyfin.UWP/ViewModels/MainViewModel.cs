@@ -24,7 +24,7 @@ namespace Jellyfin.UWP
         private ObservableCollection<UIMediaListItem> resumeMediaList;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> nextupMediaList;
+        private ObservableCollection<UIMediaListItemEpisode> nextupMediaList;
 
         [ObservableProperty]
         private bool hasResumeMedia;
@@ -92,15 +92,17 @@ namespace Jellyfin.UWP
             var user = memoryCache.Get<UserDto>("user");
             var itemsResult = await tvShowsClient.GetNextUpAsync(userId: user.Id, startIndex: 0, limit: 10);
 
-            NextupMediaList = new ObservableCollection<UIMediaListItem>(
+            NextupMediaList = new ObservableCollection<UIMediaListItemEpisode>(
                 itemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItem
+                        new UIMediaListItemEpisode
                         {
                             Id = x.Id,
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Type = x.Type,
+                            SeriesName = x.SeriesName,
                         }));
         }
 
