@@ -25,7 +25,7 @@ namespace Jellyfin.UWP.ViewModels
         private BaseItemDto mediaItem;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> seriesMetadata;
+        private ObservableCollection<UIMediaListItemEpisode> seriesMetadata;
 
         public SeriesViewModel(
             IMemoryCache memoryCache,
@@ -55,14 +55,18 @@ namespace Jellyfin.UWP.ViewModels
                         ItemFields.ItemCounts,
                         ItemFields.PrimaryImageAspectRatio,
                         ItemFields.BasicSyncInfo,
+                        ItemFields.Overview,
                     });
 
-            SeriesMetadata = new ObservableCollection<UIMediaListItem>(
-                episodes.Items.Select(x => new UIMediaListItem
+            SeriesMetadata = new ObservableCollection<UIMediaListItemEpisode>(
+                episodes.Items.Select(x => new UIMediaListItemEpisode
                 {
                     Id = x.Id,
                     Name = x.Name,
                     Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
+                    HasBeenWatched = x.UserData.Played,
+                    IsFavorite = x.UserData.IsFavorite,
+                    Description = x.Overview,
                 }));
 
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);

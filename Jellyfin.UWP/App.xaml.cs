@@ -188,6 +188,7 @@ namespace Jellyfin.UWP
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()
                .AddTransient<SeriesViewModel>()
+               .AddTransient<EpisodeViewModel>()
                .BuildServiceProvider());
 
             var resetJellyfinUrl = false;

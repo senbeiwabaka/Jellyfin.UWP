@@ -49,7 +49,7 @@ namespace Jellyfin.UWP.Pages
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            ((Frame)Window.Current.Content).Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
