@@ -91,14 +91,17 @@
                         ItemsSource="{Binding NextupMediaList, Mode=OneWay}"
                         ItemClick="{x:Bind MediaClickItemList}"
                         IsItemClickEnabled="True">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="Transparent" Orientation="Horizontal" Height="202" HorizontalAlignment="Left" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItemEpisode">
-                                <StackPanel Background="Transparent" Orientation="Horizontal"  Height="202" HorizontalAlignment="Left">
-                                    <StackPanel >
-                                        <Image Source="{x:Bind Url}" Width="278" Height="156" HorizontalAlignment="Center" />
-                                        <TextBlock Text="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" />
-                                        <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
-                                    </StackPanel>
+                                <StackPanel>
+                                    <Image Source="{x:Bind Url}" Width="278" Height="156" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>

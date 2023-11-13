@@ -82,6 +82,7 @@ namespace Jellyfin.UWP
                             Id = x.Id,
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Type = x.Type,
                         }));
 
             HasResumeMedia = ResumeMediaList.Count > 0;
