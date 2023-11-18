@@ -26,6 +26,21 @@ namespace Jellyfin.UWP.Pages
     /// </summary>
     public sealed partial class MediaItemPlayer : Page
     {
+        /*
+         * These aren't actually sketchy but you can't just get a DTS decoder from the store.
+         * You need to get DTS Sound Unbound from the store and then purchase the DTS decoder from there.
+         * Screw that. It isn't super expensive as of this time but I don't want to pay for it.
+         * Especially after all of the time it took to figure out how/where to get the freaking thing.
+         * After some digging, didn't find anything for FLAC for Media Foundation which is what Media Player uses.
+         * Media Player used here is the same one that Windows Media Player (modern) uses.
+        */
+
+        private readonly string[] sketchyAudioTypes = new string[2]
+        {
+            "DTS",
+            "FLAC",
+        };
+
         private readonly DispatcherTimer dispatcherTimer;
         private readonly DisplayRequest displayRequest;
         private readonly ILogger Log;
@@ -51,8 +66,6 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
-
-
 
             Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
 
@@ -85,6 +98,7 @@ namespace Jellyfin.UWP.Pages
             }
             catch (Exception ex)
             {
+                Log.Error(ex.Message, ex);
             }
 
             base.OnNavigatingFrom(e);
@@ -134,8 +148,6 @@ namespace Jellyfin.UWP.Pages
 
         private async void DispatcherTimer_Tick(object sender, object e)
         {
-            var context = ((MediaItemPlayerViewModel)DataContext);
-
             await context.SessionProgressAsync(
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
                 isTranscoding,
@@ -162,28 +174,46 @@ namespace Jellyfin.UWP.Pages
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
 
-            var codecQuery = new CodecQuery();
-            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
-            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
-
             Uri mediaUri;
 
-            var isDTS = false;
+            var selectedCodec = string.Empty;
 
+            // Get the selected codec, if one was, or the default (first) codec.
             if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue)
             {
-                isDTS = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec == "dts";
+                selectedCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec;
             }
             else
             {
-                isDTS = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec == "dts";
+                selectedCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
             }
 
-            var isFlacAudio = mediaStreams.Any(x => x.Type == MediaStreamType.Audio && x.Codec == "flac");
+            // Checks if the selected codec is one of the sketchy ones. We need to know this so we can see if there is a decoder for it installed.
+            var isSketchyCodec = Array.Exists(sketchyAudioTypes, x => x.Contains(selectedCodec, StringComparison.InvariantCultureIgnoreCase));
+            var doesDecoderExistForSketchyCodec = false;
+
+            if (isSketchyCodec)
+            {
+                var codecQuery = new CodecQuery();
+                var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
+                    .Select(x => x).ToArray();
+
+                foreach (var sketchyCodec in sketchyAudioTypes)
+                {
+                    doesDecoderExistForSketchyCodec = Array.Exists(audioCodecsInstalled, x => x.DisplayName.Contains("dts", StringComparison.InvariantCultureIgnoreCase));
+
+                    // If the codec is found then don't search the rest as that probably will set it to false.
+                    if (doesDecoderExistForSketchyCodec)
+                    {
+                        break;
+                    }
+                }
+            }
+
             var is10Bit = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
-            if (isDTS || isFlacAudio || is10Bit)
+
+            // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
+            if ((isSketchyCodec && !doesDecoderExistForSketchyCodec) || is10Bit)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
@@ -286,7 +316,7 @@ namespace Jellyfin.UWP.Pages
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                          CoreDispatcherPriority.Normal,
+                      CoreDispatcherPriority.Normal,
                           () =>
                           {
                               dispatcherTimer.Stop();
@@ -341,6 +371,8 @@ namespace Jellyfin.UWP.Pages
             // Handle errors
             if (args.Error != null)
             {
+                Log.Error($"Subtitle error: {args.Error.ErrorCode}", args.Error.ExtendedError);
+
                 var ignoreAwaitWarning = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     //rootPage.NotifyUser("Error resolving track " + ttsUri + " due to error " + args.Error.ErrorCode, NotifyType.ErrorMessage);
