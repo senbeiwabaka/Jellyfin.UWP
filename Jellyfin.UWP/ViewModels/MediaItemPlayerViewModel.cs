@@ -35,7 +35,6 @@ namespace Jellyfin.UWP
         {
             { "mp4v", CodecSubtypes.VideoFormatMP4V },
             { "h264", CodecSubtypes.VideoFormatH264 },
-            { "h265", CodecSubtypes.VideoFormatH265 },
             { "hevc", CodecSubtypes.VideoFormatHevc },
             { "h263", CodecSubtypes.VideoFormatH263 },
         };
@@ -120,7 +119,6 @@ namespace Jellyfin.UWP
                 selectedAudioCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
             }
 
-            var needsToTranscodeAudio = false;
             var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
                 .Select(x => x).ToArray();
 
@@ -130,22 +128,19 @@ namespace Jellyfin.UWP
                 var audioCodecId = supportedAudioCodecs[selectedAudioCodec];
 
                 // Check to make sure the codec actually is there to use
-                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
+                return !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
             }
+
             // Check the "unsupported" as in not built in list
-            else if (unSupportedAudioCodecs.ContainsKey(selectedAudioCodec))
+            if (unSupportedAudioCodecs.ContainsKey(selectedAudioCodec))
             {
                 var audioCodecId = unSupportedAudioCodecs[selectedAudioCodec];
 
                 // Check to make sure the codec actually is there to use
-                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
-            }
-            else
-            {
-                needsToTranscodeAudio = true;
+                return !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
             }
 
-            return needsToTranscodeAudio;
+            return true;
         }
 
         public async Task<bool> IsTranscodingNeededBecauseOfVideo(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)
@@ -163,31 +158,24 @@ namespace Jellyfin.UWP
                 selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStreamType.Video).Codec;
             }
 
-            var needsToTranscodeVideo = false;
-            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
-
             // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
             if (mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10))
             {
-                needsToTranscodeVideo = true;
+                return true;
             }
-            else if (supportedVideoCodecs.ContainsKey(selectedVideoCodec))
+
+            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
+                .Select(x => x).ToArray();
+
+            if (supportedVideoCodecs.ContainsKey(selectedVideoCodec))
             {
                 var videoCodecId = supportedVideoCodecs[selectedVideoCodec];
 
-                var hevcs = videoCodecsInstalled.Where(x => x.DisplayName.Contains("hevc", StringComparison.InvariantCultureIgnoreCase)).ToArray();
-                var subtypes = hevcs.SelectMany(x => x.Subtypes).ToArray();
-
                 // Check to make sure the codec actually is there to use
-                needsToTranscodeVideo = !Array.Exists(videoCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
-            }
-            else
-            {
-                needsToTranscodeVideo = true;
+                return !Array.Exists(videoCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
             }
 
-            return needsToTranscodeVideo;
+            return true;
         }
 
         public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
