@@ -26,19 +26,17 @@ namespace Jellyfin.UWP.Pages
     /// </summary>
     public sealed partial class MediaItemPlayer : Page
     {
-        /*
-         * These aren't actually sketchy but you can't just get a DTS decoder from the store.
-         * You need to get DTS Sound Unbound from the store and then purchase the DTS decoder from there.
-         * Screw that. It isn't super expensive as of this time but I don't want to pay for it.
-         * Especially after all of the time it took to figure out how/where to get the freaking thing.
-         * After some digging, didn't find anything for FLAC for Media Foundation which is what Media Player uses.
-         * Media Player used here is the same one that Windows Media Player (modern) uses.
-        */
-
-        private readonly string[] sketchyAudioTypes = new string[2]
+        private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
         {
-            "DTS",
-            "FLAC",
+            { "aac", CodecSubtypes.AudioFormatAac },
+            { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
+            { "alac", CodecSubtypes.AudioFormatAlac },
+            { "flac", CodecSubtypes.AudioFormatFlac },
+        };
+
+        private readonly IReadOnlyDictionary<string, string> unSupportedAudioCodecs = new Dictionary<string, string>
+        {
+            { "dts", CodecSubtypes.AudioFormatDts },
         };
 
         private readonly DispatcherTimer dispatcherTimer;
@@ -188,32 +186,38 @@ namespace Jellyfin.UWP.Pages
                 selectedCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
             }
 
-            // Checks if the selected codec is one of the sketchy ones. We need to know this so we can see if there is a decoder for it installed.
-            var isSketchyCodec = Array.Exists(sketchyAudioTypes, x => x.Contains(selectedCodec, StringComparison.InvariantCultureIgnoreCase));
-            var doesDecoderExistForSketchyCodec = false;
+            var needsToTranscodeAudio = false;
+            var audioCodecId = string.Empty;
+            var codecQuery = new CodecQuery();
+            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
+                .Select(x => x).ToArray();
 
-            if (isSketchyCodec)
+            // Check if the selected audio codec is a supported, by default, audio codec
+            if (supportedAudioCodecs.ContainsKey(selectedCodec))
             {
-                var codecQuery = new CodecQuery();
-                var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
-                    .Select(x => x).ToArray();
+                audioCodecId = supportedAudioCodecs[selectedCodec];
 
-                foreach (var sketchyCodec in sketchyAudioTypes)
-                {
-                    doesDecoderExistForSketchyCodec = Array.Exists(audioCodecsInstalled, x => x.DisplayName.Contains("dts", StringComparison.InvariantCultureIgnoreCase));
+                // Check to make sure the codec actually is there to use
+                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
+            }
+            // Check the "unsupported" as in not built in list
+            else if (unSupportedAudioCodecs.ContainsKey(selectedCodec))
+            {
+                audioCodecId = unSupportedAudioCodecs[selectedCodec];
 
-                    // If the codec is found then don't search the rest as that probably will set it to false.
-                    if (doesDecoderExistForSketchyCodec)
-                    {
-                        break;
-                    }
-                }
+                // Check to make sure the codec actually is there to use
+                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
+            }
+            else
+            {
+                needsToTranscodeAudio = true;
             }
 
-            var is10Bit = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
+            // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
+            var needsToTranscodeVideo = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
 
             // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
-            if ((isSketchyCodec && !doesDecoderExistForSketchyCodec) || is10Bit)
+            if (needsToTranscodeAudio || needsToTranscodeVideo)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
