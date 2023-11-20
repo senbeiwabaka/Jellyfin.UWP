@@ -26,19 +26,6 @@ namespace Jellyfin.UWP.Pages
     /// </summary>
     public sealed partial class MediaItemPlayer : Page
     {
-        private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
-        {
-            { "aac", CodecSubtypes.AudioFormatAac },
-            { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
-            { "alac", CodecSubtypes.AudioFormatAlac },
-            { "flac", CodecSubtypes.AudioFormatFlac },
-        };
-
-        private readonly IReadOnlyDictionary<string, string> unSupportedAudioCodecs = new Dictionary<string, string>
-        {
-            { "dts", CodecSubtypes.AudioFormatDts },
-        };
-
         private readonly DispatcherTimer dispatcherTimer;
         private readonly DisplayRequest displayRequest;
         private readonly ILogger Log;
@@ -172,49 +159,10 @@ namespace Jellyfin.UWP.Pages
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
 
+            var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
+            var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(detailsItemPlayRecord, mediaStreams);
+
             Uri mediaUri;
-
-            var selectedCodec = string.Empty;
-
-            // Get the selected codec, if one was, or the default (first) codec.
-            if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue)
-            {
-                selectedCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec;
-            }
-            else
-            {
-                selectedCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
-            }
-
-            var needsToTranscodeAudio = false;
-            var audioCodecId = string.Empty;
-            var codecQuery = new CodecQuery();
-            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
-
-            // Check if the selected audio codec is a supported, by default, audio codec
-            if (supportedAudioCodecs.ContainsKey(selectedCodec))
-            {
-                audioCodecId = supportedAudioCodecs[selectedCodec];
-
-                // Check to make sure the codec actually is there to use
-                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
-            }
-            // Check the "unsupported" as in not built in list
-            else if (unSupportedAudioCodecs.ContainsKey(selectedCodec))
-            {
-                audioCodecId = unSupportedAudioCodecs[selectedCodec];
-
-                // Check to make sure the codec actually is there to use
-                needsToTranscodeAudio = !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
-            }
-            else
-            {
-                needsToTranscodeAudio = true;
-            }
-
-            // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
-            var needsToTranscodeVideo = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
 
             // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
             if (needsToTranscodeAudio || needsToTranscodeVideo)

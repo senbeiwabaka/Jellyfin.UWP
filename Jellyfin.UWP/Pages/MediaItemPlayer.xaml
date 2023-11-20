@@ -21,7 +21,7 @@
             <Button x:Name="OpenLogs" Content="Open Logs" Command="{Binding OpenLogsCommand}" />
         </StackPanel>
 
-        <Popup x:Name="NextEpisodePopup" IsOpen="False" PlacementTarget="{Binding ElementName=TopRow}" DesiredPlacement="BottomEdgeAlignedRight" Canvas.ZIndex="2" >
+        <Popup x:Name="NextEpisodePopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2">
             <StackPanel Background="Black" Margin="10" Padding="20">
                 <TextBlock FontSize="20"  Foreground="White">Play next episode?</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
