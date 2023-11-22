@@ -40,7 +40,7 @@ namespace Jellyfin.UWP
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> mediaList;
 
-        private Guid parentId;
+        private Guid? parentId;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
@@ -57,6 +57,11 @@ namespace Jellyfin.UWP
 
         public async Task InitialLoadAsync(Guid id)
         {
+            if (parentId is not null && parentItem is not null)
+            {
+                return;
+            }
+
             parentId = id;
 
             var user = memoryCache.Get<UserDto>("user");
@@ -68,7 +73,7 @@ namespace Jellyfin.UWP
                 limit: 1,
                 sortBy: new[] { "SortName", },
                 sortOrder: new[] { SortOrder.Ascending, },
-                ids: new[] { parentId, });
+                ids: new[] { parentId.Value, });
 
             itemType = BaseItemKind.BoxSet;
 
@@ -145,7 +150,7 @@ namespace Jellyfin.UWP
             }
             else
             {
-                CountInformation = $"{CurrentIndex + 1}-{CurrentIndex + Limit} of {itemsResult.TotalRecordCount}";
+                CountInformation = $"{CurrentIndex}-{(CurrentIndex - 1) + Limit} of {itemsResult.TotalRecordCount}";
             }
 
             MediaList = new ObservableCollection<UIMediaListItem>(
@@ -181,13 +186,18 @@ namespace Jellyfin.UWP
         [RelayCommand(CanExecute = nameof(CanLoadPrevious))]
         public async Task LoadPreviousAsync(CancellationToken cancellationToken)
         {
-            if (CurrentIndex <= 0)
+            if (CurrentIndex < 0)
             {
-                CurrentIndex += 1;
+                CurrentIndex = 0;
             }
             else
             {
-                CurrentIndex -= Limit + 1;
+                CurrentIndex -= Limit;
+            }
+
+            if (CurrentIndex == 1)
+            {
+                CurrentIndex = 0;
             }
 
             await LoadMediaAsync(

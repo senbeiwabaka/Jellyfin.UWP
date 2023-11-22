@@ -4,13 +4,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:j="using:Jellyfin.Sdk"
-    xmlns:app1="using:Jellyfin.UWP"
+    xmlns:uwp="using:Jellyfin.UWP"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
-    d:DataContext="{d:DesignInstance Type=app1:MediaListViewModel}"
+    d:DataContext="{d:DesignInstance Type=uwp:MediaListViewModel}"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    NavigationCacheMode="Enabled">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -27,7 +27,7 @@
             <Button Content="Back" Click="{x:Bind BackClick}" />
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="{Binding CountInformation}"></TextBlock>
 
             <Button Content="Previous" Margin="0, 0, 10, 0" Command="{Binding LoadPreviousCommand}"></Button>
@@ -88,7 +88,7 @@
             Grid.Row="2"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             ScrollViewer.HorizontalScrollMode="Disabled"
-            ScrollViewer.VerticalScrollBarVisibility="Visible"
+            ScrollViewer.VerticalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollMode="Auto"
             ItemClick="{x:Bind ClickItemList}"
             IsItemClickEnabled="True">
@@ -106,22 +106,5 @@
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
         </GridView>
-
-        <!--<ListView
-
-            ItemsSource="{Binding MediaList, Mode=OneWay}"
-            Grid.Row="2"
-            ItemClick="{x:Bind ClickItemList}"
-            IsItemClickEnabled="True">
-
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="m:UIMediaListItem">
-                    <StackPanel>
-                        <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                        <Image Source="{x:Bind Url}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>-->
     </Grid>
 </Page>
