@@ -53,6 +53,8 @@ namespace Jellyfin.UWP
         private Guid itemId;
         private string playbackSessionId = string.Empty;
 
+        private readonly UserDto user;
+
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
             IVideosClient videosClient,
@@ -69,11 +71,12 @@ namespace Jellyfin.UWP
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
             this.tvShowsClient = tvShowsClient;
+
+            user = memoryCache.Get<UserDto>("user");
         }
 
         public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
         {
-            var user = memoryCache.Get<UserDto>("user");
             return await tvShowsClient.GetEpisodesAsync(
                    seriesId: seriesId,
                    userId: user.Id,
@@ -182,7 +185,6 @@ namespace Jellyfin.UWP
         {
             itemId = id;
 
-            var user = memoryCache.Get<UserDto>("user");
             item = await userLibraryClient.GetItemAsync(user.Id, id);
 
             return item;
@@ -201,7 +203,6 @@ namespace Jellyfin.UWP
                 startTimeTicks = item.UserData.PlaybackPositionTicks;
             }
 
-            var user = memoryCache.Get<UserDto>("user");
             var playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
                 itemId,
                 body: new PlaybackInfoDto
@@ -215,6 +216,7 @@ namespace Jellyfin.UWP
                     MaxAudioChannels = 5,
                     StartTimeTicks = startTimeTicks,
                     EnableDirectStream = true,
+
                     DeviceProfile = new DeviceProfile
                     {
                         CodecProfiles = new[]
