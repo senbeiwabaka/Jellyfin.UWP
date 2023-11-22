@@ -4,8 +4,10 @@ using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Media.Core;
 using Windows.Storage;
 using Windows.System;
 
@@ -14,16 +16,44 @@ namespace Jellyfin.UWP
     public sealed partial class MediaItemPlayerViewModel : ObservableObject
     {
         private readonly IMediaInfoClient mediaInfoClient;
+
         private readonly IMemoryCache memoryCache;
+
         private readonly IPlaystateClient playstateClient;
+
         private readonly ISubtitleClient subtitleClient;
-        private readonly IUserLibraryClient userLibraryClient;
+
+        private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
+        {
+            { "aac", CodecSubtypes.AudioFormatAac },
+            { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
+            { "alac", CodecSubtypes.AudioFormatAlac },
+            { "flac", CodecSubtypes.AudioFormatFlac },
+        };
+
+        private readonly IReadOnlyDictionary<string, string> supportedVideoCodecs = new Dictionary<string, string>
+        {
+            { "mp4v", CodecSubtypes.VideoFormatMP4V },
+            { "h264", CodecSubtypes.VideoFormatH264 },
+            { "hevc", CodecSubtypes.VideoFormatHevc },
+            { "h263", CodecSubtypes.VideoFormatH263 },
+        };
+
         private readonly ITvShowsClient tvShowsClient;
+
+        private readonly IReadOnlyDictionary<string, string> unSupportedAudioCodecs = new Dictionary<string, string>
+        {
+            { "dts", CodecSubtypes.AudioFormatDts },
+        };
+
+        private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
 
         private BaseItemDto item;
         private Guid itemId;
         private string playbackSessionId = string.Empty;
+
+        private readonly UserDto user;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -41,6 +71,22 @@ namespace Jellyfin.UWP
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
             this.tvShowsClient = tvShowsClient;
+
+            user = memoryCache.Get<UserDto>("user");
+        }
+
+        public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
+        {
+            return await tvShowsClient.GetEpisodesAsync(
+                   seriesId: seriesId,
+                   userId: user.Id,
+                   seasonId: seasonId,
+                   fields: new[]
+                   {
+                       ItemFields.ItemCounts,
+                       ItemFields.PrimaryImageAspectRatio,
+                       ItemFields.BasicSyncInfo,
+                   });
         }
 
         public string GetSubtitleUrl(int index, string routeFormat)
@@ -61,11 +107,84 @@ namespace Jellyfin.UWP
             return new Uri(videoUrl);
         }
 
+        public async Task<bool> IsTranscodingNeededBecauseOfAudio(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)
+        {
+            var codecQuery = new CodecQuery();
+            var selectedAudioCodec = string.Empty;
+
+            // Get the selected audio codec, if one was, or the default (first) codec.
+            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex.HasValue)
+            {
+                selectedAudioCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec;
+            }
+            else
+            {
+                selectedAudioCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
+            }
+
+            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
+                .Select(x => x).ToArray();
+
+            // Check if the selected audio codec is a supported, by default, audio codec
+            if (supportedAudioCodecs.ContainsKey(selectedAudioCodec))
+            {
+                var audioCodecId = supportedAudioCodecs[selectedAudioCodec];
+
+                // Check to make sure the codec actually is there to use
+                return !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
+            }
+
+            // Check the "unsupported" as in not built in list
+            if (unSupportedAudioCodecs.ContainsKey(selectedAudioCodec))
+            {
+                var audioCodecId = unSupportedAudioCodecs[selectedAudioCodec];
+
+                // Check to make sure the codec actually is there to use
+                return !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(audioCodecId, StringComparison.InvariantCultureIgnoreCase)));
+            }
+
+            return true;
+        }
+
+        public async Task<bool> IsTranscodingNeededBecauseOfVideo(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)
+        {
+            var codecQuery = new CodecQuery();
+            var selectedVideoCodec = string.Empty;
+
+            // Get the selected video codec, if one was, or the default(first) codec.
+            if (detailsItemPlayRecord.SelectedVideoMediaStreamIndex.HasValue)
+            {
+                selectedVideoCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedVideoMediaStreamIndex.Value && x.Type == MediaStreamType.Video).Codec;
+            }
+            else
+            {
+                selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStreamType.Video).Codec;
+            }
+
+            // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
+            if (mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10))
+            {
+                return true;
+            }
+
+            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
+                .Select(x => x).ToArray();
+
+            if (supportedVideoCodecs.ContainsKey(selectedVideoCodec))
+            {
+                var videoCodecId = supportedVideoCodecs[selectedVideoCodec];
+
+                // Check to make sure the codec actually is there to use
+                return !Array.Exists(videoCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
+            }
+
+            return true;
+        }
+
         public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
         {
             itemId = id;
 
-            var user = memoryCache.Get<UserDto>("user");
             item = await userLibraryClient.GetItemAsync(user.Id, id);
 
             return item;
@@ -84,7 +203,6 @@ namespace Jellyfin.UWP
                 startTimeTicks = item.UserData.PlaybackPositionTicks;
             }
 
-            var user = memoryCache.Get<UserDto>("user");
             var playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
                 itemId,
                 body: new PlaybackInfoDto
@@ -98,6 +216,7 @@ namespace Jellyfin.UWP
                     MaxAudioChannels = 5,
                     StartTimeTicks = startTimeTicks,
                     EnableDirectStream = true,
+
                     DeviceProfile = new DeviceProfile
                     {
                         CodecProfiles = new[]
@@ -305,21 +424,6 @@ namespace Jellyfin.UWP
                     SessionId = session.Id,
                     PlaySessionId = playbackSessionId,
                 });
-        }
-
-        public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            return await tvShowsClient.GetEpisodesAsync(
-                    seriesId: seriesId,
-                    userId: user.Id,
-                    seasonId: seasonId,
-                    fields: new[]
-                    {
-                        ItemFields.ItemCounts,
-                        ItemFields.PrimaryImageAspectRatio,
-                        ItemFields.BasicSyncInfo,
-                    });
         }
 
         [RelayCommand]

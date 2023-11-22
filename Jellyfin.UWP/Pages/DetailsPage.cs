@@ -27,28 +27,37 @@ namespace Jellyfin.UWP.Pages
 
         public void BackClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).GoBack();
+            Frame.GoBack();
         }
 
         public void HomeClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
+            Frame.Navigate(typeof(MainPage));
         }
 
         public async void PlayClick(object sender, RoutedEventArgs e)
         {
-            var playId = await ((DetailsViewModel)DataContext).GetPlayIdAsync();
+            var context = ((DetailsViewModel)DataContext);
+            var playId = await context.GetPlayIdAsync();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
-            if (((DetailsViewModel)DataContext).HasMultipleAudioStreams && (((DetailsViewModel)DataContext).IsMovie || ((DetailsViewModel)DataContext).IsEpisode))
+            if (context.HasMultipleAudioStreams && (context.IsMovie || context.IsEpisode))
             {
-                var selectedAudio = ((DetailsViewModel)DataContext).SelectedAudioStream;
+                var selected = context.SelectedAudioStream;
 
-                detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
-                detailsItemPlayRecord.SelectedMediaStreamIndex = selectedAudio.MediaStreamIndex;
+                detailsItemPlayRecord.SelectedAudioIndex = selected.Index;
+                detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selected.MediaStreamIndex;
             }
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            if (context.HasMultipleVideoStreams && (context.IsMovie || context.IsEpisode))
+            {
+                var selected = context.SelectedAudioStream;
+
+                detailsItemPlayRecord.SelectedVideoIndex = selected.Index;
+                detailsItemPlayRecord.SelectedVideoMediaStreamIndex = selected.MediaStreamIndex;
+            }
+
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -76,7 +85,7 @@ namespace Jellyfin.UWP.Pages
         {
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = ((DetailsViewModel)DataContext).SeriesNextUpId.Value, };
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
@@ -86,17 +95,17 @@ namespace Jellyfin.UWP.Pages
 
             item.IsSelected = true;
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayIdAsync());
+            Frame.Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayIdAsync());
         }
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(SeriesPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
+            Frame.Navigate(typeof(SeriesPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
         }
 
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
     }
 }

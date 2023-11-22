@@ -52,8 +52,6 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
 
-
-
             Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
 
             displayRequest = new DisplayRequest();
@@ -85,6 +83,7 @@ namespace Jellyfin.UWP.Pages
             }
             catch (Exception ex)
             {
+                Log.Error(ex.Message, ex);
             }
 
             base.OnNavigatingFrom(e);
@@ -134,8 +133,6 @@ namespace Jellyfin.UWP.Pages
 
         private async void DispatcherTimer_Tick(object sender, object e)
         {
-            var context = ((MediaItemPlayerViewModel)DataContext);
-
             await context.SessionProgressAsync(
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
                 isTranscoding,
@@ -162,28 +159,13 @@ namespace Jellyfin.UWP.Pages
                 ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
             }
 
-            var codecQuery = new CodecQuery();
-            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
-            var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
+            var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
+            var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(detailsItemPlayRecord, mediaStreams);
 
             Uri mediaUri;
 
-            var isDTS = false;
-
-            if (detailsItemPlayRecord.SelectedMediaStreamIndex.HasValue)
-            {
-                isDTS = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec == "dts";
-            }
-            else
-            {
-                isDTS = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec == "dts";
-            }
-
-            var isFlacAudio = mediaStreams.Any(x => x.Type == MediaStreamType.Audio && x.Codec == "flac");
-            var is10Bit = mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10);
-            if (isDTS || isFlacAudio || is10Bit)
+            // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
+            if (needsToTranscodeAudio || needsToTranscodeVideo)
             {
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
@@ -286,7 +268,7 @@ namespace Jellyfin.UWP.Pages
             Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                          CoreDispatcherPriority.Normal,
+                      CoreDispatcherPriority.Normal,
                           () =>
                           {
                               dispatcherTimer.Stop();
@@ -341,6 +323,8 @@ namespace Jellyfin.UWP.Pages
             // Handle errors
             if (args.Error != null)
             {
+                Log.Error($"Subtitle error: {args.Error.ErrorCode}", args.Error.ExtendedError);
+
                 var ignoreAwaitWarning = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
                     //rootPage.NotifyUser("Error resolving track " + ttsUri + " due to error " + args.Error.ErrorCode, NotifyType.ErrorMessage);

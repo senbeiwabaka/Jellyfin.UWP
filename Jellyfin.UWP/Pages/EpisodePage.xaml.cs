@@ -76,7 +76,7 @@ namespace Jellyfin.UWP.Pages
                 var selectedAudio = context.SelectedAudioStream;
 
                 detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
-                detailsItemPlayRecord.SelectedMediaStreamIndex = selectedAudio.MediaStreamIndex;
+                detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
             }
 
             ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
