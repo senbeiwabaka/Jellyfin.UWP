@@ -22,27 +22,44 @@ namespace Jellyfin.UWP.Pages
         public MediaListPage()
         {
             this.InitializeComponent();
-
-            DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
-
-            this.Loaded += MediaListPage_Loaded;
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).GoBack();
+            Frame.GoBack();
         }
 
         public void ClickItemList(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            if (e.NavigationMode == NavigationMode.Back)
+            {
+                NavigationCacheMode = NavigationCacheMode.Disabled;
+
+                this.Loaded -= MediaListPage_Loaded;
+
+                ResetPageCache();
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            id = (Guid)e.Parameter;
-
             base.OnNavigatedTo(e);
+
+            if (e.NavigationMode == NavigationMode.New)
+            {
+                DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
+
+                this.Loaded += MediaListPage_Loaded;
+            }
+
+            id = (Guid)e.Parameter;
         }
 
         private async void FiltersButton_Click(object sender, RoutedEventArgs e)
@@ -93,6 +110,14 @@ namespace Jellyfin.UWP.Pages
             await ((MediaListViewModel)DataContext).InitialLoadAsync(id);
 
             ApplicationView.GetForCurrentView().Title = ((MediaListViewModel)DataContext).GetTitle();
+        }
+
+        private void ResetPageCache()
+        {
+            int cacheSize = Frame.CacheSize;
+
+            Frame.CacheSize = 0;
+            Frame.CacheSize = cacheSize;
         }
     }
 }

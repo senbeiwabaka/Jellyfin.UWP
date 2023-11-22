@@ -10,6 +10,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP
 {
@@ -31,9 +32,24 @@ namespace Jellyfin.UWP
             this.Loaded += MainPage_Loaded;
         }
 
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (Frame.CanGoForward)
+            {
+                Frame.ForwardStack.Clear();
+            }
+
+            if (Frame.CanGoBack)
+            {
+                Frame.BackStack.Clear();
+            }
+
+            base.OnNavigatedTo(e);
+        }
+
         private void ClickItemList(object sender, ItemClickEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
+            Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -42,11 +58,11 @@ namespace Jellyfin.UWP
 
             if (mediaItem.Type == Sdk.BaseItemKind.Episode)
             {
-                ((Frame)Window.Current.Content).Navigate(typeof(EpisodePage), mediaItem.Id);
+                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
             else
             {
-                ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), mediaItem.Id);
+                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
             }
         }
 
@@ -57,7 +73,7 @@ namespace Jellyfin.UWP
             localSettings.Values.Remove("accessToken");
             localSettings.Values.Remove("session");
 
-            ((Frame)Window.Current.Content).Navigate(typeof(LoginPage));
+            Frame.Navigate(typeof(LoginPage));
         }
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
@@ -107,7 +123,7 @@ namespace Jellyfin.UWP
 
         private void SearchClick(object sender, RoutedEventArgs e)
         {
-            ((Frame)Window.Current.Content).Navigate(typeof(SearchPage));
+            Frame.Navigate(typeof(SearchPage));
         }
 
         private ItemsPanelTemplate GetItemsPanelTemplate()
