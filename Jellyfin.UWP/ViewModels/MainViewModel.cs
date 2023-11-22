@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.Collections;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP
 {
@@ -16,6 +16,7 @@ namespace Jellyfin.UWP
         private readonly IItemsClient itemsClient;
         private readonly ITvShowsClient tvShowsClient;
         private readonly IUserLibraryClient userLibraryClient;
+        private readonly IUserViewsClient userViewsClient;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> mediaList;
@@ -37,22 +38,24 @@ namespace Jellyfin.UWP
             IMemoryCache memoryCache,
             IItemsClient itemsClient,
             ITvShowsClient tvShowsClient,
-            IUserLibraryClient userLibraryClient)
+            IUserLibraryClient userLibraryClient,
+            IUserViewsClient userViewsClient)
         {
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
             this.itemsClient = itemsClient;
             this.tvShowsClient = tvShowsClient;
             this.userLibraryClient = userLibraryClient;
+            this.userViewsClient = userViewsClient;
         }
 
         public async Task LoadMediaListAsync()
         {
             var user = memoryCache.Get<UserDto>("user");
-            var parentItemsResult = await itemsClient.GetItemsAsync(userId: user.Id);
+            var viewsItemsResult = await userViewsClient.GetUserViewsAsync(userId: user.Id);
 
             MediaList = new ObservableCollection<UIMediaListItem>(
-                parentItemsResult
+                viewsItemsResult
                     .Items
                     .Select(x =>
                         new UIMediaListItem

@@ -34,7 +34,22 @@
         <MediaPlayerElement x:Name="_mediaPlayerElement" AreTransportControlsEnabled="True" HorizontalAlignment="Stretch"
           Grid.Row="1" AutoPlay="True" KeyDown="_mediaPlayerElement_KeyDown" Canvas.ZIndex="1">
             <MediaPlayerElement.TransportControls>
-                <MediaTransportControls  IsFastForwardButtonVisible="True" IsFastForwardEnabled="True" IsFastRewindButtonVisible="True" IsFastRewindEnabled="True" IsPlaybackRateButtonVisible="True" IsPlaybackRateEnabled="True" IsCompact="False" IsSeekBarVisible="True" IsSeekEnabled="True" IsSkipForwardButtonVisible="True" IsSkipForwardEnabled="True" IsSkipBackwardButtonVisible="True" IsSkipBackwardEnabled="True" IsStopButtonVisible="False" IsStopEnabled="False" />
+                <MediaTransportControls
+                    IsFastForwardButtonVisible="True"
+                    IsFastForwardEnabled="True"
+                    IsFastRewindButtonVisible="True"
+                    IsFastRewindEnabled="True"
+                    IsPlaybackRateButtonVisible="False"
+                    IsPlaybackRateEnabled="False"
+                    IsCompact="False"
+                    IsSeekBarVisible="True"
+                    IsSeekEnabled="True"
+                    IsSkipForwardButtonVisible="True"
+                    IsSkipForwardEnabled="True"
+                    IsSkipBackwardButtonVisible="True"
+                    IsSkipBackwardEnabled="True"
+                    IsStopButtonVisible="False"
+                    IsStopEnabled="False" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
     </Grid>
