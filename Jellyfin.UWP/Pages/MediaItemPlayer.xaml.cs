@@ -213,10 +213,21 @@ namespace Jellyfin.UWP.Pages
 
             var source = await LoadSourceAsync();
             var mediaPlaybackItem = new MediaPlaybackItem(source);
+
+            var props = mediaPlaybackItem.GetDisplayProperties();
+            props.Type = Windows.Media.MediaPlaybackType.Video;
+
+            foreach (var genre in item.Genres)
+            {
+                props.VideoProperties.Genres.Add(genre);
+            }
+
+            mediaPlaybackItem.ApplyDisplayProperties(props);
+
             var mediaPlayer = new MediaPlayer
             {
                 Source = mediaPlaybackItem,
-                AudioCategory = MediaPlayerAudioCategory.Movie,
+                AudioCategory = MediaPlayerAudioCategory.Media,
             };
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
