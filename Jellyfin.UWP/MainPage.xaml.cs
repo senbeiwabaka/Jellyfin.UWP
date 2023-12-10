@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
@@ -54,6 +55,8 @@ namespace Jellyfin.UWP
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
         {
+            var listviewxx = (ListView)sender;
+
             var mediaItem = ((UIMediaListItem)e.ClickedItem);
 
             if (mediaItem.Type == Sdk.BaseItemKind.Episode)
@@ -78,6 +81,7 @@ namespace Jellyfin.UWP
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
+            ((MainViewModel)DataContext).LoadInitial();
             await ((MainViewModel)DataContext).LoadMediaListAsync();
             await ((MainViewModel)DataContext).LoadResumeItemsAsync();
             await ((MainViewModel)DataContext).LoadNextUpAsync();
@@ -100,11 +104,20 @@ namespace Jellyfin.UWP
 
                 var listView = new ListView
                 {
-                    ItemsSource = item.ToList(),
+                    ItemsSource = item,
                     ItemsPanel = GetItemsPanelTemplate(),
-                    ItemTemplate = (DataTemplate)Resources["UiMediaListItemDataTemplate"],
                     IsItemClickEnabled = true,
+                    Name = item.Key,
                 };
+
+                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    listView.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
+                }
+                else
+                {
+                    listView.ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"];
+                }
 
                 listView.ItemClick += MediaClickItemList;
 
@@ -132,6 +145,16 @@ namespace Jellyfin.UWP
                             <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
                     </ItemsPanelTemplate>";
             return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
+        }
+
+        private async void EpisodeItemPlayClick_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+            var playId = await MediaHelpers.GetPlayIdAsync(item);
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
     }
 }

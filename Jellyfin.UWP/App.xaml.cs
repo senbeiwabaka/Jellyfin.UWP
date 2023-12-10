@@ -37,7 +37,11 @@ namespace Jellyfin.UWP
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
+#if DEBUG
+            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Debug, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
+#else
             LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
+#endif
 
             GlobalCrashHandler.Configure();
 

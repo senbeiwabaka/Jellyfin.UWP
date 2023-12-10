@@ -113,7 +113,7 @@
                                                     </Grid>
                                                 </Canvas>
                                             </Canvas>
-                                            <Image Source="{x:Bind Url}" Canvas.ZIndex="-1" Height="150" VerticalAlignment="Top" />
+                                            <Image Source="{x:Bind Url}" Canvas.ZIndex="-1" Height="150" VerticalAlignment="Center" />
                                             <StackPanel Padding="10">
                                                 <TextBlock Text="{x:Bind Name}" FontSize="15" />
 
@@ -141,8 +141,6 @@
                                                         </Button>
                                                     </StackPanel>
                                                 </StackPanel>
-
-
                                             </StackPanel>
                                         </StackPanel>
                                     </DataTemplate>

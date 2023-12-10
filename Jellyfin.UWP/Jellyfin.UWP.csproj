@@ -132,6 +132,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\MediaHelpers.cs" />
     <Compile Include="JellyfinServices\BaseClient.cs" />
     <Compile Include="JellyfinServices\JsonConverters\JsonGuidConverter.cs" />
     <Compile Include="JellyfinServices\JsonConverters\JsonNullableGuidConverter.cs" />

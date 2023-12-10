@@ -144,21 +144,6 @@ namespace Jellyfin.UWP.Pages
             var mediaSourceInfo = await context.LoadMediaPlaybackInfoAsync();
             var mediaStreams = mediaSourceInfo.MediaStreams;
 
-            if (mediaStreams.Any(x => x.Type == MediaStreamType.Subtitle))
-            {
-                var firstSubtitle = mediaStreams.First(x => x.Type == MediaStreamType.Subtitle);
-                var subtitleUrl = context.GetSubtitleUrl(
-                    firstSubtitle.Index,
-                    string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
-
-                var subtitleUri = new Uri(subtitleUrl);
-                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUri);
-
-                timedTextSource.Resolved += Tts_Resolved;
-
-                ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
-            }
-
             var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
             var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(detailsItemPlayRecord, mediaStreams);
 
@@ -189,9 +174,24 @@ namespace Jellyfin.UWP.Pages
                 source = MediaSource.CreateFromUri(mediaUri);
             }
 
-            foreach (var keyValuePair in ttsMap)
+            if (mediaStreams.Any(x => x.Type == MediaStreamType.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
             {
-                source.ExternalTimedTextSources.Add(keyValuePair.Key);
+                var firstSubtitle = mediaStreams.First(x => x.Type == MediaStreamType.Subtitle);
+                var subtitleUrl = context.GetSubtitleUrl(
+                    firstSubtitle.Index,
+                    string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
+
+                var subtitleUri = new Uri(subtitleUrl);
+                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUri);
+
+                timedTextSource.Resolved += Tts_Resolved;
+
+                ttsMap[timedTextSource] = firstSubtitle.DisplayTitle;
+
+                foreach (var keyValuePair in ttsMap)
+                {
+                    source.ExternalTimedTextSources.Add(keyValuePair.Key);
+                }
             }
 
             try
@@ -214,6 +214,8 @@ namespace Jellyfin.UWP.Pages
             var source = await LoadSourceAsync();
             var mediaPlaybackItem = new MediaPlaybackItem(source);
 
+            mediaPlaybackItem.TimedMetadataTracksChanged += MediaPlaybackItem_TimedMetadataTracksChanged;
+
             var props = mediaPlaybackItem.GetDisplayProperties();
             props.Type = Windows.Media.MediaPlaybackType.Video;
 
@@ -222,12 +224,15 @@ namespace Jellyfin.UWP.Pages
                 props.VideoProperties.Genres.Add(genre);
             }
 
+            props.VideoProperties.Title = item.Name;
+
             mediaPlaybackItem.ApplyDisplayProperties(props);
 
             var mediaPlayer = new MediaPlayer
             {
                 Source = mediaPlaybackItem,
                 AudioCategory = MediaPlayerAudioCategory.Media,
+                RealTimePlayback = true,
             };
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
@@ -274,9 +279,14 @@ namespace Jellyfin.UWP.Pages
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
 
+        private void MediaPlaybackItem_TimedMetadataTracksChanged(MediaPlaybackItem sender, Windows.Foundation.Collections.IVectorChangedEventArgs args)
+        {
+            Log.Debug("Timed metadata track has changed");
+        }
+
         private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
         {
-            Log.Info(args?.ToString() ?? "No MediaPlayer_MediaEnded args");
+            Log.Debug("Media has ended playback");
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                       CoreDispatcherPriority.Normal,
@@ -309,24 +319,24 @@ namespace Jellyfin.UWP.Pages
 
         private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
         {
-            Log.Info(args?.ToString() ?? "No PlaybackSession_BufferingEnded args");
+            Log.Debug("Buffering has ended");
         }
 
         private void PlaybackSession_BufferingStarted(MediaPlaybackSession sender, object args)
         {
-            Log.Info(args?.ToString() ?? "No PlaybackSession_BufferingStarted args");
+            Log.Debug("Buffering has started");
 
             if (args is MediaPlaybackSessionBufferingStartedEventArgs)
             {
                 var value = args as MediaPlaybackSessionBufferingStartedEventArgs;
 
-                Log.Info("Is playback interrupted: {0}", value.IsPlaybackInterruption);
+                Log.Info("Buffering: Is playback interrupted: {0}", value.IsPlaybackInterruption);
             }
         }
 
         private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
         {
-            Log.Info(args?.ToString() ?? "No PlaybackSession_PlaybackStateChanged args");
+            Log.Debug("Playback state has changed");
         }
 
         private void Tts_Resolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -122,24 +123,9 @@ namespace Jellyfin.UWP.ViewModels
             this.tvShowsClient = tvShowsClient;
         }
 
-        public async Task<Guid> GetPlayIdAsync()
+        public Task<Guid> GetPlayIdAsync()
         {
-            if (IsMovie || IsEpisode)
-            {
-                return MediaItem.Id;
-            }
-
-            if (SeriesMetadata.Any(x => x.IsSelected))
-            {
-                return await GetSeriesEpisodeIdAsync();
-            }
-
-            if (SeriesNextUpId.HasValue)
-            {
-                return SeriesNextUpId.Value;
-            }
-
-            return await GetSeriesEpisodeIdAsync();
+            return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray(), SeriesNextUpId);
         }
 
         public async Task LoadMediaInformationAsync(Guid id)

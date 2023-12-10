@@ -1,11 +1,11 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.Collections;
+﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP
 {
@@ -33,6 +33,9 @@ namespace Jellyfin.UWP
         [ObservableProperty]
         private ObservableGroupedCollection<string, UIMediaListItem> mediaListGrouped;
 
+        [ObservableProperty]
+        private string userName;
+
         public MainViewModel(
             SdkClientSettings sdkClientSettings,
             IMemoryCache memoryCache,
@@ -47,6 +50,13 @@ namespace Jellyfin.UWP
             this.tvShowsClient = tvShowsClient;
             this.userLibraryClient = userLibraryClient;
             this.userViewsClient = userViewsClient;
+        }
+
+        public void LoadInitial()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            UserName = $"User: {user.Name}";
         }
 
         public async Task LoadMediaListAsync()
@@ -126,16 +136,34 @@ namespace Jellyfin.UWP
                     enableImageTypes: new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, },
                     parentId: item.Id);
 
-                MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
+                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item.CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
                     item.Name,
                     itemsResult
                     .Select(x =>
-                        new UIMediaListItem
+                        new UIMediaListItemEpisode
                         {
                             Id = x.Id,
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            CollectionType = item.CollectionType,
+                            UnPlayedCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
                         })));
+                }
+                else
+                {
+                    MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
+                        item.Name,
+                        itemsResult
+                        .Select(x =>
+                            new UIMediaListItem
+                            {
+                                Id = x.Id,
+                                Name = x.Name,
+                                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            })));
+                }
             }
         }
     }
