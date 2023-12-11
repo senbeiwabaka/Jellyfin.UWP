@@ -27,7 +27,7 @@ namespace Jellyfin.UWP.Helpers
                     });
             var nextUp = await tvShowsClient.GetNextUpAsync(
                 user.Id,
-                seriesId: mediaItem.Id.ToString(),
+                seriesId: mediaItem.Id,
                 fields: new[] { ItemFields.MediaSourceCount, });
             var nextUpItem = nextUp.Items.FirstOrDefault();
 

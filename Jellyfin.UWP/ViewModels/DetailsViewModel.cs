@@ -177,11 +177,11 @@ namespace Jellyfin.UWP.ViewModels
             }
 
             Genres = string.Join(", ", MediaItem.Genres);
-            Director = string.Join(", ", MediaItem.People.Where(x => x.Role == "Director" && x.Type == "Director").Select(x => x.Name));
-            Writer = string.Join(", ", MediaItem.People.Where(x => x.Role == "Writer" && x.Type == "Writer").Select(x => x.Name));
+            Director = string.Join(", ", MediaItem.People.Where(x => x.Role == "Director" && x.Type == PersonKind.Director).Select(x => x.Name));
+            Writer = string.Join(", ", MediaItem.People.Where(x => x.Role == "Writer" && x.Type == PersonKind.Writer).Select(x => x.Name));
             CastAndCrew = new ObservableCollection<UIPersonItem>(
                 MediaItem.People
-                .Where(x => x.Type == "Actor")
+                .Where(x => x.Type == PersonKind.Actor)
                 .Select(x => new UIPersonItem { Id = x.Id, Name = x.Name, Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=446&fillWidth=298&quality=96&tag={x.PrimaryImageTag}", Role = x.Role, }));
 
             if (MediaItem.Type == BaseItemKind.Movie)
@@ -238,7 +238,7 @@ namespace Jellyfin.UWP.ViewModels
                     });
                 var nextUp = await tvShowsClient.GetNextUpAsync(
                     user.Id,
-                    seriesId: MediaItem.Id.ToString(),
+                    seriesId: MediaItem.Id,
                     fields: new[] { ItemFields.MediaSourceCount, });
                 var nextUpItem = nextUp.Items.FirstOrDefault();
 

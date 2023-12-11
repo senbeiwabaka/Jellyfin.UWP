@@ -152,10 +152,10 @@ namespace Jellyfin.UWP.ViewModels
             }
 
             Genres = string.Join(", ", MediaItem.Genres);
-            Writer = string.Join(", ", MediaItem.People.Where(x => x.Role == "Writer" && x.Type == "Writer").Select(x => x.Name));
+            Writer = string.Join(", ", MediaItem.People.Where(x => x.Role == "Writer" && x.Type == PersonKind.Writer).Select(x => x.Name));
             CastAndCrew = new ObservableCollection<UIPersonItem>(
                 MediaItem.People
-                .Where(x => x.Type == "Actor")
+                .Where(x => x.Type == PersonKind.Actor)
                 .Select(x => new UIPersonItem { Id = x.Id, Name = x.Name, Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=446&fillWidth=298&quality=96&tag={x.PrimaryImageTag}", Role = x.Role, }));
 
             if (MediaItem.MediaStreams.Count(x => x.Type == MediaStreamType.Video) > 1)
