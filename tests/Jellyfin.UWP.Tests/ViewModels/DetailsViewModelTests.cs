@@ -236,7 +236,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     {
                         ItemFields.MediaSourceCount,
                     },
-                itemId.ToString(),
+                itemId,
                 null, null, null, null, null, null, null, null, null, default))
                 .ReturnsAsync(new BaseItemDtoQueryResult { Items = Array.Empty<BaseItemDto>(), })
                 .Verifiable();

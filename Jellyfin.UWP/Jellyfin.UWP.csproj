@@ -133,11 +133,6 @@
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\MediaHelpers.cs" />
-    <Compile Include="JellyfinServices\BaseClient.cs" />
-    <Compile Include="JellyfinServices\JsonConverters\JsonGuidConverter.cs" />
-    <Compile Include="JellyfinServices\JsonConverters\JsonNullableGuidConverter.cs" />
-    <Compile Include="JellyfinServices\SdkClientSettings.cs" />
-    <Compile Include="JellyfinServices\JellyfinApi.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -291,6 +286,9 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm">
       <Version>8.2.2</Version>
+    </PackageReference>
+    <PackageReference Include="Jellyfin.Sdk">
+      <Version>2023.6.10-unstable.202306100047</Version>
     </PackageReference>
     <PackageReference Include="MetroLog">
       <Version>1.0.1</Version>
