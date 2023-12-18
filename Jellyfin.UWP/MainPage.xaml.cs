@@ -4,7 +4,9 @@ using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
 using System.Linq;
+using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -53,20 +55,22 @@ namespace Jellyfin.UWP
             Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
-        private void MediaClickItemList(object sender, ItemClickEventArgs e)
+        private async void EpisodeItemPlayClick_Click(object sender, RoutedEventArgs e)
         {
-            var listviewxx = (ListView)sender;
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+            var playId = await MediaHelpers.GetPlayIdAsync(item);
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
-            var mediaItem = ((UIMediaListItem)e.ClickedItem);
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        }
 
-            if (mediaItem.Type == Sdk.BaseItemKind.Episode)
-            {
-                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
-            }
-            else
-            {
-                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
-            }
+        private ItemsPanelTemplate GetItemsPanelTemplate()
+        {
+            string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                            <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
+                    </ItemsPanelTemplate>";
+            return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
@@ -128,33 +132,129 @@ namespace Jellyfin.UWP
                 var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
 
                 listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
-                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
+                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
                 listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+            }
+        }
+
+        private void MediaClickItemList(object sender, ItemClickEventArgs e)
+        {
+            var mediaItem = ((UIMediaListItem)e.ClickedItem);
+
+            if (mediaItem.Type == BaseItemKind.Episode)
+            {
+                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
+            }
+            else
+            {
+                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
+        }
+
+        private void ScrollLeft_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var listView = button.FindParent<StackPanel>().FindParent<Grid>().FindParent<StackPanel>().FindChild<ListView>();
+            var itemsPanelChildren = listView.ItemsPanelRoot.Children;
+            var maxItemWidth = itemsPanelChildren.Max(x => x.ActualSize.X);
+
+            ScrollViewer scrollViewer = listView.FindVisualChild<ScrollViewer>();
+            if (scrollViewer != null)
+            {
+                var viewportWidth = scrollViewer.ViewportWidth;
+                var index = -1;
+
+                foreach (var item in itemsPanelChildren)
+                {
+                    var itemToVisualBounds = item.TransformToVisual(scrollViewer).TransformBounds(new Rect(0, 0, item.ActualSize.X, item.ActualSize.Y));
+
+                    if (itemToVisualBounds.Left > 0)
+                    {
+                        break;
+                    }
+
+                    index = listView.IndexFromContainer(item);
+                }
+
+                var maxViewable = (int)(viewportWidth / maxItemWidth);
+
+                var scrollToIndex = index - maxViewable;
+
+                listView.UpdateLayout();
+
+                if (scrollToIndex < 0)
+                {
+                    listView.ScrollIntoView(listView.Items[0]);
+
+                    button.IsEnabled = false;
+                }
+                else
+                {
+                    listView.ScrollIntoView(listView.Items[scrollToIndex]);
+                }
+
+                listView.UpdateLayout();
+
+                var nextButton = (Button)button.FindParent<StackPanel>().Children.Last();
+
+                nextButton.IsEnabled = true;
+            }
+        }
+
+        private void ScrollRight_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var listView = button.FindParent<StackPanel>().FindParent<Grid>().FindParent<StackPanel>().FindChild<ListView>();
+            var itemsPanelChildren = listView.ItemsPanelRoot.Children;
+            var maxItemWidth = itemsPanelChildren.Max(x => x.ActualSize.X);
+
+            ScrollViewer scrollViewer = listView.FindVisualChild<ScrollViewer>();
+            if (scrollViewer != null)
+            {
+                var viewportWidth = scrollViewer.ViewportWidth;
+                var lastIndex = -1;
+
+                foreach (var item in itemsPanelChildren)
+                {
+                    var itemToVisualBounds = item.TransformToVisual(scrollViewer).TransformBounds(new Rect(0, 0, item.ActualSize.X, item.ActualSize.Y));
+
+                    if (itemToVisualBounds.Left > viewportWidth)
+                    {
+                        break;
+                    }
+
+                    ++lastIndex;
+                }
+
+                var maxViewable = (int)(viewportWidth / maxItemWidth);
+
+                var scrollToIndex = lastIndex + maxViewable;
+
+                listView.UpdateLayout();
+
+                if (scrollToIndex >= listView.Items.Count)
+                {
+                    listView.ScrollIntoView(listView.Items.Count - 1);
+
+                    button.IsEnabled = false;
+                }
+                else
+                {
+                    listView.ScrollIntoView(listView.Items[scrollToIndex]);
+                }
+
+                listView.UpdateLayout();
+
+                var previousButton = (Button)button.FindParent<StackPanel>().Children.First();
+
+                previousButton.IsEnabled = true;
             }
         }
 
         private void SearchClick(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(SearchPage));
-        }
-
-        private ItemsPanelTemplate GetItemsPanelTemplate()
-        {
-            string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-                            <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
-                    </ItemsPanelTemplate>";
-            return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
-        }
-
-        private async void EpisodeItemPlayClick_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-            var playId = await MediaHelpers.GetPlayIdAsync(item);
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
     }
 }

@@ -69,19 +69,25 @@
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Margin="10">
+        <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <TextBlock Text="My Media" Foreground="White" FontSize="40" />
 
                     <ListView
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ItemsSource="{Binding MediaList, Mode=OneWay}"
-            ItemClick="{x:Bind ClickItemList}"
-            IsItemClickEnabled="True" ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding MediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind ClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        <ListView.Template>
+                            <ControlTemplate>
+                                <ItemsPresenter></ItemsPresenter>
+                            </ControlTemplate>
+                        </ListView.Template>
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -89,17 +95,36 @@
                         </ListView.ItemsPanel>
                     </ListView>
                 </StackPanel>
+
                 <StackPanel Margin="0,0,0,10">
-                    <TextBlock Text="Continue Watching" Foreground="White" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}" FontSize="40" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Continue Watching" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
 
                     <ListView
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Auto"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
-            ItemClick="{x:Bind MediaClickItemList}"
-            IsItemClickEnabled="True" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}"  ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}"
+                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
@@ -107,13 +132,30 @@
                         </ListView.ItemsPanel>
                     </ListView>
                 </StackPanel>
-                <StackPanel Margin="0,0,0,10" HorizontalAlignment="Left">
-                    <TextBlock Text="Next Up" Foreground="White" FontSize="40" />
+                
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Next Up" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
 
                     <ListView
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
                         ItemsSource="{Binding NextupMediaList, Mode=OneWay}"
                         ItemClick="{x:Bind MediaClickItemList}"

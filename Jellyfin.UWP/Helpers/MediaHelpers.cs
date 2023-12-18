@@ -42,7 +42,7 @@ namespace Jellyfin.UWP.Helpers
                     Name = x.Name,
                 })
                 .ToArray(),
-                nextUpItem is not null ? nextUpItem.Id : null);
+                nextUpItem?.Id);
         }
 
         public static Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seriesData, Guid? seriesNextUpId)
@@ -88,7 +88,7 @@ namespace Jellyfin.UWP.Helpers
             var episodes = await tvShowsClient.GetEpisodesAsync(
                 seriesId: mediaId,
                 userId: user.Id,
-                seasonId: seriesData.SingleOrDefault(x => x.IsSelected)?.Id ?? seriesData.First().Id,
+                seasonId: seriesData.SingleOrDefault(x => x.IsSelected)?.Id ?? seriesData[0].Id,
                 fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
 
             return episodes.Items.First(x => !x.UserData.Played && x.UserData.PlayedPercentage < 90).Id;
