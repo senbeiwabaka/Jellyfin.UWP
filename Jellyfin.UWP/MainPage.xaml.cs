@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
-using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
@@ -55,16 +55,6 @@ namespace Jellyfin.UWP
             Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
-        private async void EpisodeItemPlayClick_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-            var playId = await MediaHelpers.GetPlayIdAsync(item);
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
-
         private ItemsPanelTemplate GetItemsPanelTemplate()
         {
             string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -91,51 +81,7 @@ namespace Jellyfin.UWP
             await ((MainViewModel)DataContext).LoadNextUpAsync();
             await ((MainViewModel)DataContext).LoadLatestAsync();
 
-            foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
-            {
-                if (!item.Any())
-                {
-                    continue;
-                }
-
-                latest.Children.Add(
-                    new TextBlock
-                    {
-                        Text = $"Latest {item.Key} >",
-                        Foreground = new SolidColorBrush(Colors.White),
-                        FontSize = 40.0d,
-                    });
-
-                var listView = new ListView
-                {
-                    ItemsSource = item,
-                    ItemsPanel = GetItemsPanelTemplate(),
-                    IsItemClickEnabled = true,
-                    Name = item.Key,
-                };
-
-                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
-                }
-                else
-                {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"];
-                }
-
-                listView.ItemClick += MediaClickItemList;
-
-                latest.Children.Add(listView);
-
-                listView.UpdateLayout();
-
-                var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
-
-                listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
-                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
-                listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-            }
+            SetupLatest();
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -149,6 +95,27 @@ namespace Jellyfin.UWP
             else
             {
                 Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
+        }
+
+        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+
+            if (item.Type == BaseItemKind.AggregateFolder)
+            {
+                var playId = await MediaHelpers.GetPlayIdAsync(item);
+                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            }
+
+            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
+            {
+                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
+
+                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
         }
 
@@ -255,6 +222,78 @@ namespace Jellyfin.UWP
         private void SearchClick(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(SearchPage));
+        }
+
+        private void SetupLatest()
+        {
+            foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
+            {
+                if (!item.Any())
+                {
+                    continue;
+                }
+
+                var stackPanel = new StackPanel
+                {
+                    Name = item.Key,
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = $"Latest {item.Key}",
+                    Foreground = new SolidColorBrush(Colors.White),
+                    FontSize = 40.0d,
+                });
+
+                var greaterThanFontIcon = new FontIcon
+                {
+                    FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                    Glyph = "\xE76C",
+                };
+
+                var viewAllLatestButton = new Button
+                {
+                    Name = $"button_{item.Key}",
+                    Content = greaterThanFontIcon,
+                    Background = new SolidColorBrush(Colors.Black),
+                };
+
+                stackPanel.Children.Add(viewAllLatestButton);
+
+                latest.Children.Add(stackPanel);
+
+                var listView = new ListView
+                {
+                    ItemsSource = item,
+                    ItemsPanel = GetItemsPanelTemplate(),
+                    IsItemClickEnabled = true,
+                    Name = $"listview_{item.Key}",
+                };
+
+                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    listView.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
+                }
+                else
+                {
+                    listView.ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"];
+                }
+
+                listView.ItemClick += MediaClickItemList;
+
+                latest.Children.Add(listView);
+
+                listView.UpdateLayout();
+
+                var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
+
+                listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
+                listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+            }
         }
     }
 }
