@@ -190,6 +190,13 @@ namespace Jellyfin.UWP
 
                    return new UserViewsClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IFilterClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new FilterClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()

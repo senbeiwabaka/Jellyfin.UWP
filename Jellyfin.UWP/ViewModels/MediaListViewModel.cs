@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,8 +17,9 @@ namespace Jellyfin.UWP
     {
         private const int Limit = 100;
 
-        private readonly IHttpClientFactory httpClientFactory;
         private readonly IMemoryCache memoryCache;
+        private readonly IItemsClient itemsClient;
+        private readonly IFilterClient filterClient;
         private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
@@ -48,9 +48,10 @@ namespace Jellyfin.UWP
 
         private BaseItemDto parentItem;
 
-        public MediaListViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public MediaListViewModel(IItemsClient itemsClient, IFilterClient filterClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
-            this.httpClientFactory = httpClientFactory;
+            this.itemsClient = itemsClient;
+            this.filterClient = filterClient;
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
         }
@@ -65,8 +66,6 @@ namespace Jellyfin.UWP
             parentId = id;
 
             var user = memoryCache.Get<UserDto>("user");
-            var httpClient = httpClientFactory.CreateClient();
-            var itemsClient = new ItemsClient(sdkClientSettings, httpClient);
             var items = await itemsClient.GetItemsAsync(
                 userId: user.Id,
                 startIndex: 0,
@@ -100,9 +99,6 @@ namespace Jellyfin.UWP
             }
 
             var user = memoryCache.Get<UserDto>("user");
-            var httpClient = httpClientFactory.CreateClient();
-            var filterClient = new FilterClient(sdkClientSettings, httpClient);
-
             var filtersResult = await filterClient.GetQueryFiltersAsync(
                 userId: user.Id,
                 parentId: parentId,
@@ -128,8 +124,6 @@ namespace Jellyfin.UWP
             CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
-            var httpClient = httpClientFactory.CreateClient();
-            var itemsClient = new ItemsClient(sdkClientSettings, httpClient);
             var itemsResult = await itemsClient.GetItemsAsync(
                 userId: user.Id,
                 parentId: parentId,

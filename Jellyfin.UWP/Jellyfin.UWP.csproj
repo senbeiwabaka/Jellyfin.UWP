@@ -319,9 +319,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json">
-      <Version>7.0.3</Version>
-    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Jellyfin.UWP_TemporaryKey.pfx" />
