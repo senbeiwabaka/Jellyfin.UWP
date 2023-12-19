@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
+using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
@@ -86,7 +86,7 @@ namespace Jellyfin.UWP
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
         {
-            var mediaItem = ((UIMediaListItem)e.ClickedItem);
+            var mediaItem = (UIMediaListItem)e.ClickedItem;
 
             if (mediaItem.Type == BaseItemKind.Episode)
             {
@@ -222,6 +222,14 @@ namespace Jellyfin.UWP
         private void SearchClick(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(SearchPage));
+        }
+
+        private async void SeriesLink_Click(object sender, RoutedEventArgs e)
+        {
+            var mediaItem = (UIMediaListItemEpisode)((HyperlinkButton)sender).DataContext;
+            var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+
+            Frame.Navigate(typeof(DetailsPage), seriesId);
         }
 
         private void SetupLatest()

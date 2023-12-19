@@ -55,6 +55,16 @@ namespace Jellyfin.UWP.Helpers
                 seriesNextUpId);
         }
 
+        public static async Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId)
+        {
+            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
+            var user = memoryCache.Get<UserDto>("user");
+            var userLibraryClient = Ioc.Default.GetService<IUserLibraryClient>();
+            var episodeItem = await userLibraryClient.GetItemAsync(user.Id, episodeId);
+
+            return episodeItem.SeriesId.Value;
+        }
+
         private static async Task<Guid> GetPlayIdAsync(
             Guid mediaId,
             bool isMovie,

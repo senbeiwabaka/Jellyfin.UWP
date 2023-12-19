@@ -195,7 +195,7 @@
                                         </Canvas>
                                     </Canvas>
                                     <Image Source="{x:Bind Url}" Width="250" Height="150" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
-                                    <TextBlock Text="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" />
+                                    <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
