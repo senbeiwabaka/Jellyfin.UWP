@@ -125,8 +125,8 @@ namespace Jellyfin.UWP
             var listView = button.FindParent<StackPanel>().FindParent<Grid>().FindParent<StackPanel>().FindChild<ListView>();
             var itemsPanelChildren = listView.ItemsPanelRoot.Children;
             var maxItemWidth = itemsPanelChildren.Max(x => x.ActualSize.X);
+            var scrollViewer = listView.FindVisualChild<ScrollViewer>();
 
-            ScrollViewer scrollViewer = listView.FindVisualChild<ScrollViewer>();
             if (scrollViewer != null)
             {
                 var viewportWidth = scrollViewer.ViewportWidth;
@@ -150,7 +150,7 @@ namespace Jellyfin.UWP
 
                 listView.UpdateLayout();
 
-                if (scrollToIndex < 0)
+                if (scrollToIndex <= 0)
                 {
                     listView.ScrollIntoView(listView.Items[0]);
 
@@ -163,7 +163,7 @@ namespace Jellyfin.UWP
 
                 listView.UpdateLayout();
 
-                var nextButton = (Button)button.FindParent<StackPanel>().Children.Last();
+                var nextButton = (Button)button.FindParent<StackPanel>().Children[1];
 
                 nextButton.IsEnabled = true;
             }
@@ -213,7 +213,7 @@ namespace Jellyfin.UWP
 
                 listView.UpdateLayout();
 
-                var previousButton = (Button)button.FindParent<StackPanel>().Children.First();
+                var previousButton = (Button)button.FindParent<StackPanel>().Children[0];
 
                 previousButton.IsEnabled = true;
             }
