@@ -273,18 +273,6 @@ namespace Jellyfin.UWP.ViewModels
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", "Primary", MediaItem.ImageTags);
         }
 
-        private async Task<Guid> GetSeriesEpisodeIdAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            var episodes = await tvShowsClient.GetEpisodesAsync(
-                seriesId: MediaItem.Id,
-                userId: user.Id,
-                seasonId: SeriesMetadata.SingleOrDefault(x => x.IsSelected)?.Id ?? SeriesMetadata.First().Id,
-                fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
-
-            return episodes.Items.First(x => !x.UserData.Played && x.UserData.PlayedPercentage < 90).Id;
-        }
-
         private void SetAudioStreams()
         {
             var index = 0;

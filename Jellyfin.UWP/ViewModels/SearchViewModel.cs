@@ -4,7 +4,6 @@ using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Jellyfin.UWP
@@ -12,8 +11,7 @@ namespace Jellyfin.UWP
     internal sealed partial class SearchViewModel : ObservableObject
     {
         private const int Limit = 24;
-
-        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IItemsClient itemsClient;
         private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
 
@@ -35,9 +33,9 @@ namespace Jellyfin.UWP
         [ObservableProperty]
         private bool hasEpisodesResult;
 
-        public SearchViewModel(IHttpClientFactory httpClientFactory, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public SearchViewModel(IItemsClient itemsClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
-            this.httpClientFactory = httpClientFactory;
+            this.itemsClient = itemsClient;
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
         }
@@ -45,9 +43,6 @@ namespace Jellyfin.UWP
         public async Task LoadSearchAsync(string query)
         {
             var user = memoryCache.Get<UserDto>("user");
-            var httpClient = httpClientFactory.CreateClient();
-            var itemsClient = new ItemsClient(sdkClientSettings, httpClient);
-
             var movieItemsResult = await itemsClient.GetItemsByUserIdAsync(
                 user.Id,
                 searchTerm: query,

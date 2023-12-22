@@ -3,5 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Jellyfin.UWP">
-
+    <Application.Resources>
+        <SolidColorBrush x:Key="ButtonBackgroundPointerOver">#4d4d4d</SolidColorBrush>
+    </Application.Resources>
 </Application>

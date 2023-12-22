@@ -12,7 +12,6 @@ namespace Jellyfin.UWP.ViewModels
 {
     public sealed partial class EpisodeViewModel : ObservableObject
     {
-        private readonly ILibraryClient libraryClient;
         private readonly IMemoryCache memoryCache;
         private readonly SdkClientSettings sdkClientSettings;
         private readonly ITvShowsClient tvShowsClient;
@@ -87,13 +86,11 @@ namespace Jellyfin.UWP.ViewModels
         public EpisodeViewModel(
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
-            ILibraryClient libraryClient,
             SdkClientSettings sdkClientSettings,
             ITvShowsClient tvShowsClient)
         {
             this.memoryCache = memoryCache;
             this.userLibraryClient = userLibraryClient;
-            this.libraryClient = libraryClient;
             this.sdkClientSettings = sdkClientSettings;
             this.tvShowsClient = tvShowsClient;
         }
