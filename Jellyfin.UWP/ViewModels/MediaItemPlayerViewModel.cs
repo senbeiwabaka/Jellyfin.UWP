@@ -29,6 +29,8 @@ namespace Jellyfin.UWP
             { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
             { "alac", CodecSubtypes.AudioFormatAlac },
             { "flac", CodecSubtypes.AudioFormatFlac },
+            { "eac3", CodecSubtypes.AudioFormatAac },
+            { "mp3", CodecSubtypes.AudioFormatMP3 },
         };
 
         private readonly IReadOnlyDictionary<string, string> supportedVideoCodecs = new Dictionary<string, string>

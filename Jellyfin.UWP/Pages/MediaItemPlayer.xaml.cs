@@ -137,6 +137,18 @@ namespace Jellyfin.UWP.Pages
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
                 isTranscoding,
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
+
+            if (_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.TotalSeconds + 30 >= _mediaPlayerElement.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds
+                && item.Type == BaseItemKind.Episode
+                && !NextEpisodePopup.IsOpen)
+            {
+                await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                          CoreDispatcherPriority.Normal,
+                          () =>
+                          {
+                              NextEpisodePopup.IsOpen = true;
+                          });
+            }
         }
 
         private async Task<MediaSource> LoadSourceAsync()
@@ -155,6 +167,8 @@ namespace Jellyfin.UWP.Pages
                 mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
 
                 isTranscoding = true;
+
+                Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
             }
             else
             {
@@ -297,7 +311,7 @@ namespace Jellyfin.UWP.Pages
 
             await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
-            if (item.Type == BaseItemKind.Episode)
+            if (item.Type == BaseItemKind.Episode && !NextEpisodePopup.IsOpen)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                           CoreDispatcherPriority.Normal,
@@ -308,7 +322,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                ((Frame)Window.Current.Content).GoBack();
+                Frame.GoBack();
             }
         }
 
