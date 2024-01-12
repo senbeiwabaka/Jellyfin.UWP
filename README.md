@@ -14,15 +14,21 @@ To note this will not have Live TV or Pictures.
 If someone would like to start adding that to this, that would be cool.
 I have neither so I can not build or test.
 
-As an additional note, this only works on Windows 11 and above as certain elements were only added in 11.
-This should not be a problem as 10 is losing support soon enough.
+The primary purpose/use of this app is for the Xbox. 
+There is another Windows based client that seems far better than this one.
+This is being built with the default Windows media items.
+In fact, this will operate more or less exactly like the windows media player that ships with new Windows.
+The reason that is is because Xbox only has so many functions available.
+The reason to even build this is because no one is maintaining the current Jellyfin UWP.
+I would pick up maintaining that but to me that would be more of a nightmare versus just rolling this native one.
+
 
 ## Features
 * Load your libraries
 * Basic search/filtering
 * Library page with basic filtering and paging
 * Specific media item page (mostly there, see `Not finished` below)
-* Media playback (see `Not finished` below)
+* Media playback
 * Can choose audio stream
 * Can transcode (from jellyfin itself, does not transcode itself)
 
@@ -30,7 +36,6 @@ This should not be a problem as 10 is losing support soon enough.
 
 ### Not finished
 
-* TV show episode page (needs work)
 * Subtitle options
 * Bitrate selection on playing video (may not be possible)
 * Some weird issues with video in full-screen on some videos

@@ -147,6 +147,7 @@
     <Compile Include="Models\UIMediaListItemEpisode.cs" />
     <Compile Include="Models\UIMediaStream.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
+    <Compile Include="Models\UIUserData.cs" />
     <Compile Include="Pages\EpisodePage.xaml.cs">
       <DependentUpon>EpisodePage.xaml</DependentUpon>
     </Compile>

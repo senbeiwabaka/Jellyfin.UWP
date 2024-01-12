@@ -1,5 +1,5 @@
-﻿using Jellyfin.Sdk;
-using System;
+﻿using System;
+using Jellyfin.Sdk;
 
 namespace Jellyfin.UWP.Models
 {
@@ -21,10 +21,8 @@ namespace Jellyfin.UWP.Models
 
         public BaseItemKind Type { get; internal set; }
 
-        public bool HasBeenWatched { get; internal set; }
-
         public int? IndexNumber { get; internal set; }
 
-        public bool IsFavorite { get; internal set; }
+        public UIUserData UserData { get; internal set; } = new UIUserData();
     }
 }

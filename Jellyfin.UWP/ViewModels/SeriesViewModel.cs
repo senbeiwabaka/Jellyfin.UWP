@@ -59,14 +59,20 @@ namespace Jellyfin.UWP.ViewModels
                     });
 
             SeriesMetadata = new ObservableCollection<UIMediaListItemEpisode>(
-                episodes.Items.Select(x => new UIMediaListItemEpisode
+                episodes.Items.Select(x =>
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
-                    HasBeenWatched = x.UserData.Played,
-                    IsFavorite = x.UserData.IsFavorite,
-                    Description = x.Overview,
+                    var item = new UIMediaListItemEpisode
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
+                        Description = x.Overview,
+                    };
+
+                    item.UserData.IsFavorite = x.UserData.IsFavorite;
+                    item.UserData.HasBeenWatched = x.UserData.Played;
+
+                    return item;
                 }));
 
             ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);

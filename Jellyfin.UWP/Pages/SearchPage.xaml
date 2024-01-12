@@ -35,16 +35,16 @@
             <StackPanel>
                 <!-- Movie Results -->
                 <StackPanel Visibility="{Binding HasMoviesResult, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Movies" />
+                    <TextBlock Text="Movies" FontSize="22" FontWeight="Bold" />
 
                     <ListView
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-                ItemClick="ListView_ItemClick"
-            ItemsSource="{Binding MovieMediaList, Mode=OneWay}"
-                IsItemClickEnabled="True">
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemClick="ListView_ItemClick"
+                        ItemsSource="{Binding MovieMediaList, Mode=OneWay}"
+                        IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -52,9 +52,21 @@
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
+                                <StackPanel Width="220">
+                                    <Canvas>
+                                        <Canvas Background="Transparent">
+                                            <Grid Canvas.Left="90" Canvas.Top="142" Canvas.ZIndex="2">
+                                                <Button Click="MediaPlayButton_Click">
+                                                    <Button.Background>
+                                                        <SolidColorBrush Color="#000000" />
+                                                    </Button.Background>
+                                                    <SymbolIcon Symbol="Play" />
+                                                </Button>
+                                            </Grid>
+                                        </Canvas>
+                                    </Canvas>
+                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -63,16 +75,16 @@
 
                 <!-- Series Results -->
                 <StackPanel Visibility="{Binding HasSeriesResult, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Shows" />
+                    <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
 
                     <ListView
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-                ItemClick="ListView_ItemClick"
-            ItemsSource="{Binding SeriesMediaList, Mode=OneWay}"
-                IsItemClickEnabled="True">
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemClick="ListView_ItemClick"
+                        ItemsSource="{Binding SeriesMediaList, Mode=OneWay}"
+                        IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -80,9 +92,29 @@
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
+                                <StackPanel Width="220">
+                                    <Canvas>
+                                        <Canvas Background="Transparent">
+                                            <Grid Canvas.Left="180" Canvas.Top="10" Canvas.ZIndex="2">
+                                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="25" />
+                                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                                            </Grid>
+                                        </Canvas>
+                                    </Canvas>
+                                    <Canvas>
+                                        <Canvas Background="Transparent">
+                                            <Grid Canvas.Left="90" Canvas.Top="142" Canvas.ZIndex="2">
+                                                <Button Click="MediaPlayButton_Click">
+                                                    <Button.Background>
+                                                        <SolidColorBrush Color="#000000" />
+                                                    </Button.Background>
+                                                    <SymbolIcon Symbol="Play" />
+                                                </Button>
+                                            </Grid>
+                                        </Canvas>
+                                    </Canvas>
+                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -91,16 +123,16 @@
 
                 <!-- Episodes Results -->
                 <StackPanel Visibility="{Binding HasEpisodesResult, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Shows" />
+                    <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
 
                     <ListView
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-                ItemClick="ListView_ItemClick"
-            ItemsSource="{Binding EpisodesMediaList, Mode=OneWay}"
-                IsItemClickEnabled="True">
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemClick="ListView_ItemClick"
+                        ItemsSource="{Binding EpisodesMediaList, Mode=OneWay}"
+                        IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -108,9 +140,21 @@
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel>
-                                    <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                    <Image Source="{x:Bind Url}" />
+                                <StackPanel Width="380">
+                                    <Canvas>
+                                        <Canvas Background="Transparent">
+                                            <Grid Canvas.Left="175" Canvas.Top="90" Canvas.ZIndex="2">
+                                                <Button Click="MediaPlayButton_Click">
+                                                    <Button.Background>
+                                                        <SolidColorBrush Color="#000000" />
+                                                    </Button.Background>
+                                                    <SymbolIcon Symbol="Play" />
+                                                </Button>
+                                            </Grid>
+                                        </Canvas>
+                                    </Canvas>
+                                    <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>

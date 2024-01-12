@@ -37,7 +37,7 @@
                     <Canvas Background="Transparent">
                         <Grid Canvas.Left="130" Canvas.Top="5" Canvas.ZIndex="2">
                             <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
-                            <TextBlock Text="{x:Bind UnPlayedCount}" Margin="6" />
+                            <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
                         </Grid>
                     </Canvas>
                 </Canvas>

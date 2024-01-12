@@ -126,7 +126,7 @@ namespace Jellyfin.UWP.ViewModels
 
             MediaListGrouped = new ObservableGroupedCollection<string, UIMediaListItem>();
 
-            foreach (var item in MediaList.Where(x => !string.Equals(CollectionTypeOptions.BoxSets.ToString(), x.CollectionType, System.StringComparison.CurrentCultureIgnoreCase)))
+            foreach (var record in MediaList.Where(x => !string.Equals(CollectionTypeOptions.BoxSets.ToString(), x.CollectionType, System.StringComparison.CurrentCultureIgnoreCase)))
             {
                 var itemsResult = await userLibraryClient.GetLatestMediaAsync(
                     userId: user.Id,
@@ -134,27 +134,34 @@ namespace Jellyfin.UWP.ViewModels
                     fields: new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.BasicSyncInfo, ItemFields.Path, },
                     imageTypeLimit: 1,
                     enableImageTypes: new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, },
-                    parentId: item.Id);
+                    parentId: record.Id);
 
-                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item.CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), record.CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
-                    item.Name,
+                    record.Name,
                     itemsResult
                     .Select(x =>
-                        new UIMediaListItemEpisode
+                    {
+                        var item = new UIMediaListItemEpisode
                         {
                             Id = x.Id,
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
-                            CollectionType = item.CollectionType,
-                            UnPlayedCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
-                        })));
+                            CollectionType = record.CollectionType,
+                        };
+
+                        item.UserData.IsFavorite = x.UserData.IsFavorite;
+                        item.UserData.HasBeenWatched = x.UserData.Played;
+                        item.UserData.UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0;
+
+                        return item;
+                    })));
                 }
                 else
                 {
                     MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
-                        item.Name,
+                        record.Name,
                         itemsResult
                         .Select(x =>
                             new UIMediaListItem

@@ -61,9 +61,10 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=330&fillWidth=220&quality=96&tag={x.ImageTags["Primary"]}",
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
+                            Type = x.Type,
                         }));
 
             HasMoviesResult = MovieMediaList.Count > 0;
@@ -75,22 +76,29 @@ namespace Jellyfin.UWP.ViewModels
                 recursive: true,
                 enableTotalRecordCount: false,
                 imageTypeLimit: 1,
-                //isMovie: false,
-                //isSeries: true,
                 includeItemTypes: new[] { BaseItemKind.Series });
 
             SeriesMediaList = new ObservableCollection<UIMediaListItem>(
                 seriesItemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItem
+                    {
+                        var item = new UIMediaListItem
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=330&fillWidth=220&quality=96&tag={x.ImageTags["Primary"]}",
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
-                        }));
+                            Type = x.Type,
+                        };
+
+                        item.UserData.IsFavorite = x.UserData.IsFavorite;
+                        item.UserData.HasBeenWatched = x.UserData.Played;
+                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
+
+                        return item;
+                    }));
 
             HasSeriesResult = SeriesMediaList.Count > 0;
 
@@ -101,8 +109,6 @@ namespace Jellyfin.UWP.ViewModels
                 recursive: true,
                 enableTotalRecordCount: false,
                 imageTypeLimit: 1,
-                //isMovie: false,
-                //isSeries: false,
                 includeItemTypes: new[] { BaseItemKind.Episode });
 
             EpisodesMediaList = new ObservableCollection<UIMediaListItem>(
@@ -113,9 +119,10 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=215&fillWidth=380&quality=96&tag={x.ImageTags["Primary"]}",
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
+                            Type = x.Type,
                         }));
 
             HasEpisodesResult = EpisodesMediaList.Count > 0;
