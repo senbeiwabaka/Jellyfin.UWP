@@ -18,21 +18,11 @@ namespace Jellyfin.UWP.Pages
 
         public DetailsPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            this.DataContext = Ioc.Default.GetRequiredService<DetailsViewModel>();
+            DataContext = Ioc.Default.GetRequiredService<DetailsViewModel>();
 
-            this.Loaded += DetailsPage_Loaded;
-        }
-
-        public void BackClick(object sender, RoutedEventArgs e)
-        {
-            Frame.GoBack();
-        }
-
-        public void HomeClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(MainPage));
+            Loaded += DetailsPage_Loaded;
         }
 
         public async void PlayClick(object sender, RoutedEventArgs e)
@@ -64,9 +54,9 @@ namespace Jellyfin.UWP.Pages
         {
             id = (Guid)e.Parameter;
 
-            if (this.Frame.CanGoForward)
+            if (Frame.CanGoForward)
             {
-                this.Frame.ForwardStack.Clear();
+                Frame.ForwardStack.Clear();
             }
 
             base.OnNavigatedTo(e);

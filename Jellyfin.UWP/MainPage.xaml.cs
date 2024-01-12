@@ -3,6 +3,8 @@ using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
+using Jellyfin.UWP.Pages.Latest;
+using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Toolkit.Uwp.UI;
 using System.Linq;
@@ -267,6 +269,30 @@ namespace Jellyfin.UWP
                     Content = greaterThanFontIcon,
                     Background = new SolidColorBrush(Colors.Black),
                 };
+
+                if (string.Equals(item.Key, "Movies", System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    viewAllLatestButton.Click += (obj, e) =>
+                    {
+                        Frame.Navigate(typeof(LatestMoviesPage));
+                    };
+                }
+
+                if (string.Equals(item.Key, "Anime", System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    viewAllLatestButton.Click += (obj, e) =>
+                    {
+                        Frame.Navigate(typeof(LatestAnimePage));
+                    };
+                }
+
+                if (string.Equals(item.Key, "Shows", System.StringComparison.CurrentCultureIgnoreCase))
+                {
+                    viewAllLatestButton.Click += (obj, e) =>
+                    {
+                        Frame.Navigate(typeof(LatestTvShowsPage));
+                    };
+                }
 
                 stackPanel.Children.Add(viewAllLatestButton);
 

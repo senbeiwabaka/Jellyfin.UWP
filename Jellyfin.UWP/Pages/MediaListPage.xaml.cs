@@ -1,14 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
+using Jellyfin.UWP.ViewModels;
 using System;
 using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Jellyfin.UWP.Pages
 {
@@ -22,11 +21,6 @@ namespace Jellyfin.UWP.Pages
         public MediaListPage()
         {
             this.InitializeComponent();
-        }
-
-        public void BackClick(object sender, RoutedEventArgs e)
-        {
-            Frame.GoBack();
         }
 
         public void ClickItemList(object sender, ItemClickEventArgs e)

@@ -1,15 +1,12 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 using Windows.Media.Core;
-using Windows.Storage;
-using Windows.System;
 
 namespace Jellyfin.UWP
 {
@@ -48,14 +45,13 @@ namespace Jellyfin.UWP
             { "dts", CodecSubtypes.AudioFormatDts },
         };
 
+        private readonly UserDto user;
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
 
         private BaseItemDto item;
         private Guid itemId;
         private string playbackSessionId = string.Empty;
-
-        private readonly UserDto user;
 
         public MediaItemPlayerViewModel(
             IMemoryCache memoryCache,
@@ -426,14 +422,6 @@ namespace Jellyfin.UWP
                     SessionId = session.Id,
                     PlaySessionId = playbackSessionId,
                 });
-        }
-
-        [RelayCommand]
-        private async Task OpenLogsAsync()
-        {
-            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
-
-            await Launcher.LaunchFolderAsync(folder);
         }
     }
 }

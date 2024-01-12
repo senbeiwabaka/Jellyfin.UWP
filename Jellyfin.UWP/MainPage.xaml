@@ -4,10 +4,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:app1="using:Jellyfin.UWP"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    d:DataContext="{d:DesignInstance Type=app1:MainViewModel}"
+    d:DataContext="{d:DesignInstance Type=uwp:MainViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 

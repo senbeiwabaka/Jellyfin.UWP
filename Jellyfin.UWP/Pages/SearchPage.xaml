@@ -4,9 +4,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uwp="using:Jellyfin.UWP"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     d:DataContext="{d:DesignInstance Type=uwp:SearchViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -17,7 +18,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="75" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="75" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -26,9 +27,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0">
-            <Button Content="Back" Click="{x:Bind BackClick}" />
-        </StackPanel>
+        <uc:BackHomeControl Grid.Row="0" />
 
         <AutoSuggestBox Name="asbSearch" PlaceholderText="Search" QueryIcon="Find" Grid.Row="1" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
 

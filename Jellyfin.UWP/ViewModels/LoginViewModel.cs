@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 
-namespace Jellyfin.UWP
+namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class LoginViewModel : ObservableValidator
     {

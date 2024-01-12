@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using MetroLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
+using MetroLog;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -57,11 +57,6 @@ namespace Jellyfin.UWP.Pages
             displayRequest = new DisplayRequest();
         }
 
-        public void BackClick(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).GoBack();
-        }
-
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             detailsItemPlayRecord = (DetailsItemPlayRecord)e.Parameter;
@@ -87,27 +82,6 @@ namespace Jellyfin.UWP.Pages
             }
 
             base.OnNavigatingFrom(e);
-        }
-
-        private void _mediaPlayerElement_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Escape && _mediaPlayerElement.IsFullWindow)
-            {
-                _mediaPlayerElement.IsFullWindow = false;
-            }
-
-            if (e.Key == Windows.System.VirtualKey.Space)
-            {
-                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
-                {
-                    _mediaPlayerElement.MediaPlayer.Play();
-                }
-
-                if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
-                {
-                    _mediaPlayerElement.MediaPlayer.Pause();
-                }
-            }
         }
 
         private async void CoreWindow_PointerMoved(CoreWindow sender, PointerEventArgs args)
@@ -277,8 +251,31 @@ namespace Jellyfin.UWP.Pages
 
             Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
             Window.Current.CoreWindow.PointerCursor = null;
+            Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
             ApplicationView.GetForCurrentView().Title = item.Name;
+        }
+
+        private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
+        {
+            if (args.VirtualKey == Windows.System.VirtualKey.Escape && _mediaPlayerElement.IsFullWindow)
+            {
+                _mediaPlayerElement.IsFullWindow = false;
+            }
+
+            var mediaPlayerSession = _mediaPlayerElement.MediaPlayer.PlaybackSession;
+
+            if (args.VirtualKey == Windows.System.VirtualKey.Right || args.VirtualKey == Windows.System.VirtualKey.GamepadRightShoulder)
+            {
+                var newTime = TimeSpan.FromSeconds(30);
+                mediaPlayerSession.Position += newTime;
+            }
+
+            if (args.VirtualKey == Windows.System.VirtualKey.Left || args.VirtualKey == Windows.System.VirtualKey.GamepadLeftShoulder)
+            {
+                var newTime = TimeSpan.FromSeconds(10);
+                mediaPlayerSession.Position += newTime;
+            }
         }
 
         private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
@@ -391,6 +388,7 @@ namespace Jellyfin.UWP.Pages
                 }
 
                 var source = await LoadSourceAsync();
+
                 var mediaPlaybackItem = new MediaPlaybackItem(source);
 
                 _mediaPlayerElement.Source = mediaPlaybackItem;

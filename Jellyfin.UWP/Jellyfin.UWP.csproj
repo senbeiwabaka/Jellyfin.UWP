@@ -131,6 +131,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\BackHomeControl.xaml.cs">
+      <DependentUpon>BackHomeControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\MediaHelpers.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -146,6 +149,15 @@
     <Compile Include="Models\UIPersonItem.cs" />
     <Compile Include="Pages\EpisodePage.xaml.cs">
       <DependentUpon>EpisodePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Latest\LatestAnimePage.xaml.cs">
+      <DependentUpon>LatestAnimePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Latest\LatestMoviesPage.xaml.cs">
+      <DependentUpon>LatestMoviesPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Latest\LatestTvShowsPage.xaml.cs">
+      <DependentUpon>LatestTvShowsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -174,7 +186,6 @@
     <Compile Include="ViewModels\DetailsViewModel.cs" />
     <Compile Include="ViewModels\MediaItemPlayerViewModel.cs" />
     <Compile Include="ViewModels\MediaListViewModel.cs" />
-    <Compile Include="ViewModels\MediaViewModel.cs" />
     <Compile Include="ViewModels\SearchViewModel.cs" />
     <Compile Include="ViewModels\SeriesViewModel.cs" />
     <Compile Include="ViewModels\SetupViewModel.cs" />
@@ -243,11 +254,27 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Controls\BackHomeControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Pages\EpisodePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\Latest\LatestAnimePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\Latest\LatestMoviesPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\Latest\LatestTvShowsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -323,9 +350,7 @@
   <ItemGroup>
     <None Include="Jellyfin.UWP_TemporaryKey.pfx" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Controls\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

@@ -4,8 +4,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:app1="using:Jellyfin.UWP"
-    d:DataContext="{d:DesignInstance Type=app1:LoginViewModel}"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    d:DataContext="{d:DesignInstance Type=uwp:LoginViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
