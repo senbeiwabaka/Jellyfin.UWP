@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Jellyfin.Sdk;
+using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

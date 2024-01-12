@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Jellyfin.UWP
+namespace Jellyfin.UWP.ViewModels
 {
     public partial class MediaListViewModel : ObservableObject
     {

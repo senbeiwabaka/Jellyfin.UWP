@@ -5,8 +5,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace Jellyfin.UWP.Pages
 {
     /// <summary>
@@ -35,16 +33,6 @@ namespace Jellyfin.UWP.Pages
             }
 
             base.OnNavigatedTo(e);
-        }
-
-        private void Back_Click(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).GoBack();
-        }
-
-        private void Home_Click(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
         }
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)

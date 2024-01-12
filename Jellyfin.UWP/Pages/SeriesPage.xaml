@@ -8,6 +8,7 @@
     xmlns:viewmodels="using:Jellyfin.UWP.ViewModels"
     xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     d:DataContext="{d:DesignInstance Type=viewmodels:SeriesViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -21,7 +22,7 @@
 
     <Grid Background="#101010">
         <Grid.RowDefinitions>
-            <RowDefinition Height="75" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -29,14 +30,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" >
-            <StackPanel.Background>
-                <SolidColorBrush Color="#000000" Opacity="0.25" />
-            </StackPanel.Background>
-            <Button Content="Back" x:Name="Back" Click="Back_Click" Margin="8" />
-
-            <Button Content="Home" Margin="8" x:Name="Home" Click="Home_Click" />
-        </StackPanel>
+        <uc:BackHomeControl Grid.Row="0" />
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>

@@ -1,10 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
+using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace Jellyfin.UWP.Pages
 {
@@ -44,11 +43,6 @@ namespace Jellyfin.UWP.Pages
             await ((SearchViewModel)DataContext).LoadSearchAsync(args.QueryText);
 
             searchText = args.QueryText;
-        }
-
-        private void BackClick(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).GoBack();
         }
 
         private void ListView_ItemClick(object sender, ItemClickEventArgs e)
