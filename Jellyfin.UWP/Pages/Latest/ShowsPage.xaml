@@ -1,0 +1,205 @@
+﻿<Page
+    x:Class="Jellyfin.UWP.Pages.Latest.ShowsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    d:DataContext="{d:DesignInstance Type=uwp:ShowsViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel Width="380">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="170" Canvas.Top="95" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="UIShowMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel Width="380">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="350" Canvas.Top="5" Canvas.ZIndex="2">
+                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
+                            <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="170" Canvas.Top="95" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="UIEpisodeMediaListItemDataTemplate" x:DataType="m:UIMediaListItemEpisode">
+            <StackPanel Width="380">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="170" Canvas.Top="95" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />
+                <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <uc:BackHomeControl Grid.Row="0" />
+
+        <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <StackPanel Margin="0,0,0,10"  Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Continue Watching" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForContinueScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_Continue"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10" Grid.Row="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Latest Episodes" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForLatestScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_Latest"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding LatestMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIShowMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Next Up" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForNextUpScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_NextUp"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding NextupMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIEpisodeMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

@@ -2,6 +2,7 @@
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Latest;
 using MetroLog;
 using MetroLog.Targets;
 using Microsoft.Extensions.Caching.Memory;
@@ -207,6 +208,8 @@ namespace Jellyfin.UWP
                .AddTransient<SetupViewModel>()
                .AddTransient<SeriesViewModel>()
                .AddTransient<EpisodeViewModel>()
+               .AddTransient<ShowsViewModel>()
+               .AddTransient<MoviesViewModel>()
                .BuildServiceProvider());
 
             var resetJellyfinUrl = false;

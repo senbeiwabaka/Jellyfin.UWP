@@ -204,7 +204,7 @@ namespace Jellyfin.UWP
 
                 if (scrollToIndex >= listView.Items.Count)
                 {
-                    listView.ScrollIntoView(listView.Items.Count - 1);
+                    listView.ScrollIntoView(listView.Items[listView.Items.Count - 1]);
 
                     button.IsEnabled = false;
                 }
@@ -245,14 +245,14 @@ namespace Jellyfin.UWP
 
                 var stackPanel = new StackPanel
                 {
-                    Name = item.Key,
+                    Name = item.Key.Name,
                     Orientation = Orientation.Horizontal,
                     VerticalAlignment = VerticalAlignment.Center,
                 };
 
                 stackPanel.Children.Add(new TextBlock
                 {
-                    Text = $"Latest {item.Key}",
+                    Text = $"Latest {item.Key.Name}",
                     Foreground = new SolidColorBrush(Colors.White),
                     FontSize = 40.0d,
                 });
@@ -265,32 +265,24 @@ namespace Jellyfin.UWP
 
                 var viewAllLatestButton = new Button
                 {
-                    Name = $"button_{item.Key}",
+                    Name = $"button_{item.Key.Name}",
                     Content = greaterThanFontIcon,
                     Background = new SolidColorBrush(Colors.Black),
                 };
 
-                if (string.Equals(item.Key, "Movies", System.StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     viewAllLatestButton.Click += (obj, e) =>
                     {
-                        Frame.Navigate(typeof(LatestMoviesPage));
+                        Frame.Navigate(typeof(MoviesPage), item.Key.Id);
                     };
                 }
 
-                if (string.Equals(item.Key, "Anime", System.StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.TvShows.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     viewAllLatestButton.Click += (obj, e) =>
                     {
-                        Frame.Navigate(typeof(LatestAnimePage));
-                    };
-                }
-
-                if (string.Equals(item.Key, "Shows", System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    viewAllLatestButton.Click += (obj, e) =>
-                    {
-                        Frame.Navigate(typeof(LatestTvShowsPage));
+                        Frame.Navigate(typeof(ShowsPage), item.Key.Id);
                     };
                 }
 
@@ -303,7 +295,7 @@ namespace Jellyfin.UWP
                     ItemsSource = item,
                     ItemsPanel = GetItemsPanelTemplate(),
                     IsItemClickEnabled = true,
-                    Name = $"listview_{item.Key}",
+                    Name = $"listview_{item.Key.Name}",
                 };
 
                 if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))

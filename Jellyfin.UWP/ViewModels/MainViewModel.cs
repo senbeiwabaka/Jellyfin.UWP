@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
-    public partial class MainViewModel : ObservableObject
+    internal sealed partial class MainViewModel : ObservableObject
     {
         private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
@@ -31,7 +31,7 @@ namespace Jellyfin.UWP.ViewModels
         private bool hasResumeMedia;
 
         [ObservableProperty]
-        private ObservableGroupedCollection<string, UIMediaListItem> mediaListGrouped;
+        private ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> mediaListGrouped;
 
         [ObservableProperty]
         private string userName;
@@ -124,7 +124,7 @@ namespace Jellyfin.UWP.ViewModels
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            MediaListGrouped = new ObservableGroupedCollection<string, UIMediaListItem>();
+            MediaListGrouped = new ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>();
 
             foreach (var record in MediaList.Where(x => !string.Equals(CollectionTypeOptions.BoxSets.ToString(), x.CollectionType, System.StringComparison.CurrentCultureIgnoreCase)))
             {
@@ -135,11 +135,12 @@ namespace Jellyfin.UWP.ViewModels
                     imageTypeLimit: 1,
                     enableImageTypes: new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, },
                     parentId: record.Id);
+                var itemType = new MediaGroupItem { Id = record.Id, Name = record.Name, Type = record.Type, CollectionType = record.CollectionType, };
 
                 if (string.Equals(CollectionTypeOptions.TvShows.ToString(), record.CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
-                    record.Name,
+                    MediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
+                    itemType,
                     itemsResult
                     .Select(x =>
                     {
@@ -160,8 +161,8 @@ namespace Jellyfin.UWP.ViewModels
                 }
                 else
                 {
-                    MediaListGrouped.Add(new ObservableGroup<string, UIMediaListItem>(
-                        record.Name,
+                    MediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
+                        itemType,
                         itemsResult
                         .Select(x =>
                             new UIMediaListItem

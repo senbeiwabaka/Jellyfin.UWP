@@ -123,7 +123,7 @@
 
                 <!-- Episodes Results -->
                 <StackPanel Visibility="{Binding HasEpisodesResult, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="Episodes" FontSize="22" FontWeight="Bold" />
 
                     <ListView
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
