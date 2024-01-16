@@ -1,14 +1,16 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using Microsoft.Toolkit.Uwp.UI;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
-using Microsoft.Toolkit.Uwp.UI;
-using System;
-using System.Linq;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages.Latest
@@ -35,6 +37,8 @@ namespace Jellyfin.UWP.Pages.Latest
 
             ((MoviesViewModel)DataContext).HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
             ((MoviesViewModel)DataContext).HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
+
+            SetupRecommendation();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -181,6 +185,53 @@ namespace Jellyfin.UWP.Pages.Latest
                 var previousButton = (Button)button.FindParent<StackPanel>().Children[0];
 
                 previousButton.IsEnabled = true;
+            }
+        }
+
+        private void SetupRecommendation()
+        {
+            foreach (var item in ((MoviesViewModel)DataContext).RecommendationListGrouped)
+            {
+                if (!item.Any())
+                {
+                    continue;
+                }
+
+                var stackPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+
+                stackPanel.Children.Add(new TextBlock
+                {
+                    Text = item.Key.DisplayName,
+                    Foreground = new SolidColorBrush(Colors.White),
+                    FontSize = 40.0d,
+                });
+
+                sp_Recommendations.Children.Add(stackPanel);
+
+                var listView = new ListView
+                {
+                    ItemsSource = item,
+                    ItemsPanel = PageHelpers.GetItemsPanelTemplate(),
+                    IsItemClickEnabled = true,
+                    ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"]
+                };
+
+                listView.ItemClick += MediaClickItemList;
+
+                sp_Recommendations.Children.Add(listView);
+
+                listView.UpdateLayout();
+
+                var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
+
+                listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
+                listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
             }
         }
     }

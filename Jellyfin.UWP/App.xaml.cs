@@ -198,6 +198,13 @@ namespace Jellyfin.UWP
 
                    return new FilterClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IMoviesClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new MoviesClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()

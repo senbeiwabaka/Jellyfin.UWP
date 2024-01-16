@@ -37,7 +37,7 @@
             <StackPanel Width="220">
                 <Canvas>
                     <Canvas Background="Transparent">
-                        <Grid Canvas.Left="170" Canvas.Top="95" Canvas.ZIndex="2">
+                        <Grid Canvas.Left="95" Canvas.Top="150" Canvas.ZIndex="2">
                             <Button Click="MediaPlayButton_Click">
                                 <Button.Background>
                                     <SolidColorBrush Color="#000000" />
@@ -83,15 +83,15 @@
                     </Grid>
 
                     <ListView
-                    x:Name="lv_Continue"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                    ScrollViewer.HorizontalScrollMode="Disabled"
-                    ScrollViewer.VerticalScrollMode="Disabled"
-                    ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
-                    ItemClick="{x:Bind MediaClickItemList}"
-                    IsItemClickEnabled="True"
-                    ItemTemplate="{StaticResource UIContinueMediaListItemDataTemplate}">
+                        x:Name="lv_Continue"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIContinueMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
@@ -120,15 +120,15 @@
                     </Grid>
 
                     <ListView
-                    x:Name="lv_Latest"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                    ScrollViewer.HorizontalScrollMode="Disabled"
-                    ScrollViewer.VerticalScrollMode="Disabled"
-                    ItemsSource="{Binding LatestMediaList, Mode=OneWay}"
-                    ItemClick="{x:Bind MediaClickItemList}"
-                    IsItemClickEnabled="True"
-                    ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        x:Name="lv_Latest"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding LatestMediaList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />

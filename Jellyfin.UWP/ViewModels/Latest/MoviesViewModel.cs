@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.Collections;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -18,6 +19,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
         private readonly IMemoryCache memoryCache;
         private readonly IItemsClient itemsClient;
         private readonly IUserLibraryClient userLibraryClient;
+        private readonly IMoviesClient moviesClient;
 
         [ObservableProperty]
         private bool hasEnoughDataForContinueScrolling;
@@ -34,18 +36,23 @@ namespace Jellyfin.UWP.ViewModels.Latest
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> resumeMediaList;
 
+        [ObservableProperty]
+        private ObservableGroupedCollection<Recommendation, UIMediaListItem> recommendationListGrouped;
+
         private Guid id;
 
         public MoviesViewModel(
             SdkClientSettings sdkClientSettings,
             IMemoryCache memoryCache,
             IItemsClient itemsClient,
-            IUserLibraryClient userLibraryClient)
+            IUserLibraryClient userLibraryClient,
+            IMoviesClient moviesClient)
         {
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
             this.itemsClient = itemsClient;
             this.userLibraryClient = userLibraryClient;
+            this.moviesClient = moviesClient;
         }
 
         public async Task LoadInitialAsync(Guid id)
@@ -54,6 +61,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
 
             await LoadResumeItemsAsync();
             await LoadLatestAsync();
+            await LoadRecommendationsAsync();
         }
 
         private async Task LoadResumeItemsAsync()
@@ -101,6 +109,66 @@ namespace Jellyfin.UWP.ViewModels.Latest
                 Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{primaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[primaryName]}",
                 Type = x.Type,
             }));
+        }
+
+        private async Task LoadRecommendationsAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var itemsResult = await moviesClient.GetMovieRecommendationsAsync(
+                userId: user.Id,
+                parentId: id,
+                categoryLimit: 6,
+                itemLimit: 8,
+                fields: new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.MediaSourceCount, ItemFields.BasicSyncInfo, });
+
+            RecommendationListGrouped = new ObservableGroupedCollection<Recommendation, UIMediaListItem>();
+
+            foreach (var item in itemsResult)
+            {
+                var recommendation = new Recommendation();
+
+                switch (item.RecommendationType)
+                {
+                    case RecommendationType.SimilarToRecentlyPlayed:
+                        recommendation.DisplayName = $"Because you watched {item.BaselineItemName}";
+                        break;
+
+                    case RecommendationType.SimilarToLikedItem:
+                        recommendation.DisplayName = item.BaselineItemName;
+                        break;
+
+                    case RecommendationType.HasDirectorFromRecentlyPlayed:
+                        recommendation.DisplayName = $"Directed by {item.BaselineItemName}";
+                        break;
+
+                    case RecommendationType.HasActorFromRecentlyPlayed:
+                        recommendation.DisplayName = $"Starring {item.BaselineItemName}";
+                        break;
+
+                    case RecommendationType.HasLikedDirector:
+                        recommendation.DisplayName = item.BaselineItemName;
+                        break;
+
+                    case RecommendationType.HasLikedActor:
+                        recommendation.DisplayName = item.BaselineItemName;
+                        break;
+
+                    default:
+                        recommendation.DisplayName = $"Uh Oh, issue! {item.BaselineItemName}";
+                        break;
+                }
+
+                var items = item.Items
+                    .Select(x => new UIMediaListItem
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{primaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[primaryName]}",
+                        Type = x.Type,
+                    });
+
+                RecommendationListGrouped.Add(new ObservableGroup<Recommendation, UIMediaListItem>(recommendation, items));
+            }
         }
 
         private static string GetContinueItemImage(SdkClientSettings settings, BaseItemDto item)

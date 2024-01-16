@@ -1,10 +1,19 @@
 ﻿using System.Linq;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Markup;
 
 namespace Jellyfin.UWP.Helpers
 {
     internal static class PageHelpers
     {
+        internal static ItemsPanelTemplate GetItemsPanelTemplate()
+        {
+            string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                            <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
+                    </ItemsPanelTemplate>";
+            return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
+        }
+
         internal static bool IsThereEnoughDataForScrolling(ListView listView)
         {
             listView.UpdateLayout();

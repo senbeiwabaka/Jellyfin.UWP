@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
-using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
@@ -55,14 +55,6 @@ namespace Jellyfin.UWP
         private void ClickItemList(object sender, ItemClickEventArgs e)
         {
             Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
-
-        private ItemsPanelTemplate GetItemsPanelTemplate()
-        {
-            string xaml = @"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-                            <StackPanel Background=""Transparent"" Orientation=""Horizontal"" />
-                    </ItemsPanelTemplate>";
-            return XamlReader.LoadWithInitialTemplateValidation(xaml) as ItemsPanelTemplate;
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
@@ -293,7 +285,7 @@ namespace Jellyfin.UWP
                 var listView = new ListView
                 {
                     ItemsSource = item,
-                    ItemsPanel = GetItemsPanelTemplate(),
+                    ItemsPanel = PageHelpers.GetItemsPanelTemplate(),
                     IsItemClickEnabled = true,
                     Name = $"listview_{item.Key.Name}",
                 };
