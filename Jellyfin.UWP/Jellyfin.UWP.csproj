@@ -136,28 +136,29 @@
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\MediaHelpers.cs" />
+    <Compile Include="Helpers\PageHelpers.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\DetailsItemPlayRecord.cs" />
     <Compile Include="Models\Filters\FiltersModel.cs" />
     <Compile Include="Models\Filters\GenreFiltersModel.cs" />
+    <Compile Include="Models\MediaGroupItem.cs" />
+    <Compile Include="Models\Recommendation.cs" />
     <Compile Include="Models\SeasonSeries.cs" />
     <Compile Include="Models\UIMediaListItem.cs" />
     <Compile Include="Models\UIMediaListItemEpisode.cs" />
     <Compile Include="Models\UIMediaStream.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
+    <Compile Include="Models\UIUserData.cs" />
     <Compile Include="Pages\EpisodePage.xaml.cs">
       <DependentUpon>EpisodePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Latest\LatestAnimePage.xaml.cs">
-      <DependentUpon>LatestAnimePage.xaml</DependentUpon>
+    <Compile Include="Pages\Latest\MoviesPage.cs">
+      <DependentUpon>MoviesPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Latest\LatestMoviesPage.xaml.cs">
-      <DependentUpon>LatestMoviesPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\Latest\LatestTvShowsPage.xaml.cs">
-      <DependentUpon>LatestTvShowsPage.xaml</DependentUpon>
+    <Compile Include="Pages\Latest\ShowsPage.xaml.cs">
+      <DependentUpon>ShowsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -181,6 +182,8 @@
       <DependentUpon>SetupPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\EpisodeViewModel.cs" />
+    <Compile Include="ViewModels\Latest\MoviesViewModel.cs" />
+    <Compile Include="ViewModels\Latest\ShowsViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\DetailsViewModel.cs" />
@@ -266,15 +269,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\Latest\LatestAnimePage.xaml">
+    <Page Include="Pages\Latest\MoviesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\Latest\LatestMoviesPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Pages\Latest\LatestTvShowsPage.xaml">
+    <Page Include="Pages\Latest\ShowsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

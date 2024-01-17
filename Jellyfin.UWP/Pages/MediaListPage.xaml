@@ -13,6 +13,53 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     NavigationCacheMode="Enabled">
 
+    <Page.Resources>
+        <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel Width="210">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="85" Canvas.Top="142" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="UIShowsMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel Width="210">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="175" Canvas.Top="10" Canvas.ZIndex="2">
+                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="25" />
+                            <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="85" Canvas.Top="142" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -83,6 +130,7 @@
         </StackPanel>
 
         <GridView
+            x:Name="GridMediaList"
             ItemsSource="{Binding MediaList, Mode=OneWay}"
             Grid.Row="2"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -90,15 +138,8 @@
             ScrollViewer.VerticalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollMode="Auto"
             ItemClick="{x:Bind ClickItemList}"
-            IsItemClickEnabled="True">
-            <GridView.ItemTemplate>
-                <DataTemplate x:DataType="m:UIMediaListItem">
-                    <StackPanel>
-                        <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                        <Image Source="{x:Bind Url}" Width="210" Height="315" />
-                    </StackPanel>
-                </DataTemplate>
-            </GridView.ItemTemplate>
+            IsItemClickEnabled="True"
+            ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsWrapGrid Orientation="Horizontal" />

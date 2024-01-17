@@ -2,6 +2,7 @@
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Latest;
 using MetroLog;
 using MetroLog.Targets;
 using Microsoft.Extensions.Caching.Memory;
@@ -197,6 +198,13 @@ namespace Jellyfin.UWP
 
                    return new FilterClient(sdkSettings, httpClientFactory.CreateClient());
                })
+               .AddTransient<IMoviesClient>((serviceProvider) =>
+               {
+                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
+
+                   return new MoviesClient(sdkSettings, httpClientFactory.CreateClient());
+               })
                // ViewModels
                .AddTransient<LoginViewModel>()
                .AddTransient<MainViewModel>()
@@ -207,6 +215,8 @@ namespace Jellyfin.UWP
                .AddTransient<SetupViewModel>()
                .AddTransient<SeriesViewModel>()
                .AddTransient<EpisodeViewModel>()
+               .AddTransient<ShowsViewModel>()
+               .AddTransient<MoviesViewModel>()
                .BuildServiceProvider());
 
             var resetJellyfinUrl = false;

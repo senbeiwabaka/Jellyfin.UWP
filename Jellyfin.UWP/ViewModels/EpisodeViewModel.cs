@@ -178,13 +178,20 @@ namespace Jellyfin.UWP.ViewModels
                 fields: new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, });
 
             SeriesEpisodes = new ObservableCollection<UIMediaListItem>(
-                episodes.Items.Select(x => new UIMediaListItem
+                episodes.Items.Select(x =>
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Url = SetImageUrl(x.Id, "505", "349", "Primary", x.ImageTags),
-                    HasBeenWatched = x.UserData.Played,
-                    IndexNumber = x.IndexNumber,
+                    var item = new UIMediaListItem
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = SetImageUrl(x.Id, "505", "349", "Primary", x.ImageTags),
+                        IndexNumber = x.IndexNumber,
+                    };
+
+                    item.UserData.IsFavorite = x.UserData.IsFavorite;
+                    item.UserData.HasBeenWatched = x.UserData.Played;
+
+                    return item;
                 }));
         }
 

@@ -1,4 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
 using Jellyfin.UWP.ViewModels;
@@ -32,7 +34,7 @@ namespace Jellyfin.UWP.Pages
         {
             base.OnNavigatedFrom(e);
 
-            if (e.NavigationMode == NavigationMode.Back)
+            if (e.NavigationMode == NavigationMode.Back || (e.NavigationMode == NavigationMode.New && string.Equals(e.SourcePageType.Name, "MainPage", StringComparison.CurrentCultureIgnoreCase)))
             {
                 NavigationCacheMode = NavigationCacheMode.Disabled;
 
@@ -104,6 +106,32 @@ namespace Jellyfin.UWP.Pages
             await ((MediaListViewModel)DataContext).InitialLoadAsync(id);
 
             ApplicationView.GetForCurrentView().Title = ((MediaListViewModel)DataContext).GetTitle();
+
+            if (((MediaListViewModel)DataContext).GetMediaType() == Sdk.BaseItemKind.Series)
+            {
+                GridMediaList.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
+            }
+        }
+
+        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+
+            if (item.Type == BaseItemKind.AggregateFolder)
+            {
+                var playId = await MediaHelpers.GetPlayIdAsync(item);
+                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            }
+
+            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
+            {
+                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
+
+                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            }
         }
 
         private void ResetPageCache()

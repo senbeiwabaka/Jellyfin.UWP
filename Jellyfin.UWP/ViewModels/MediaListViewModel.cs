@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.Filters;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
+using Jellyfin.UWP.Models.Filters;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -17,9 +17,9 @@ namespace Jellyfin.UWP.ViewModels
     {
         private const int Limit = 100;
 
-        private readonly IMemoryCache memoryCache;
-        private readonly IItemsClient itemsClient;
         private readonly IFilterClient filterClient;
+        private readonly IItemsClient itemsClient;
+        private readonly IMemoryCache memoryCache;
         private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
@@ -42,11 +42,11 @@ namespace Jellyfin.UWP.ViewModels
 
         private Guid? parentId;
 
+        private BaseItemDto parentItem;
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
         private int totalRecords = 0;
-
-        private BaseItemDto parentItem;
 
         public MediaListViewModel(IItemsClient itemsClient, IFilterClient filterClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
@@ -54,6 +54,21 @@ namespace Jellyfin.UWP.ViewModels
             this.filterClient = filterClient;
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
+        }
+
+        public void FilterReset()
+        {
+            CurrentIndex = 0;
+        }
+
+        public BaseItemKind GetMediaType()
+        {
+            return itemType;
+        }
+
+        public string GetTitle()
+        {
+            return parentItem?.Name ?? "No Title";
         }
 
         public async Task InitialLoadAsync(Guid id)
@@ -134,6 +149,7 @@ namespace Jellyfin.UWP.ViewModels
                 genreIds: genreIds,
                 filters: itemFilters,
                 includeItemTypes: new[] { itemType },
+                fields: new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.BasicSyncInfo, },
                 cancellationToken: cancellationToken);
 
             TotalRecords = itemsResult.TotalRecordCount;
@@ -151,12 +167,22 @@ namespace Jellyfin.UWP.ViewModels
                 itemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItem
+                    {
+                        var item = new UIMediaListItem
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = x.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=384&fillWidth=256&quality=96&tag={x.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
-                        }));
+                            Url = x.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=384&fillWidth=210&quality=96&tag={x.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
+                            Type = x.Type,
+                            CollectionType = x.CollectionType,
+                        };
+
+                        item.UserData.IsFavorite = x.UserData.IsFavorite;
+                        item.UserData.HasBeenWatched = x.UserData.Played;
+                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
+
+                        return item;
+                    }));
         }
 
         [RelayCommand(CanExecute = nameof(CanLoadNext))]
@@ -198,16 +224,6 @@ namespace Jellyfin.UWP.ViewModels
                 GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id),
                 FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter),
                 cancellationToken);
-        }
-
-        public string GetTitle()
-        {
-            return parentItem?.Name ?? "No Title";
-        }
-
-        public void FilterReset()
-        {
-            CurrentIndex = 0;
         }
 
         private bool CanLoadNext()

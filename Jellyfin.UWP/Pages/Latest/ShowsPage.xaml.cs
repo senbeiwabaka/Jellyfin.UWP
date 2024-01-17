@@ -1,81 +1,53 @@
-﻿using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
+﻿using System;
+using System.Linq;
 using Microsoft.Toolkit.Uwp.UI;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Pages;
-using Jellyfin.UWP.Pages.Latest;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Latest;
 using Windows.Foundation;
-using Windows.Storage;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP
+namespace Jellyfin.UWP.Pages.Latest
 {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class ShowsPage : Page
     {
-        public MainPage()
+        private Guid id;
+
+        public ShowsPage()
         {
             this.InitializeComponent();
 
-            DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
+            DataContext = Ioc.Default.GetRequiredService<ShowsViewModel>();
 
-            var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
-
-            memoryCache.Remove("Searched-Text");
-
-            this.Loaded += MainPage_Loaded;
+            this.Loaded += LatestShowsPage_Loaded;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
+            id = (Guid)e.Parameter;
+
             if (Frame.CanGoForward)
             {
                 Frame.ForwardStack.Clear();
             }
 
-            if (Frame.CanGoBack)
-            {
-                Frame.BackStack.Clear();
-            }
-
             base.OnNavigatedTo(e);
         }
 
-        private void ClickItemList(object sender, ItemClickEventArgs e)
+        private async void LatestShowsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
+            await ((ShowsViewModel)DataContext).LoadInitialAsync(id);
 
-        private void Logout_Click(object sender, RoutedEventArgs e)
-        {
-            var localSettings = ApplicationData.Current.LocalSettings;
-
-            localSettings.Values.Remove("accessToken");
-            localSettings.Values.Remove("session");
-
-            Frame.Navigate(typeof(LoginPage));
-        }
-
-        private async void MainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            ((MainViewModel)DataContext).LoadInitial();
-            await ((MainViewModel)DataContext).LoadMediaListAsync();
-            await ((MainViewModel)DataContext).LoadResumeItemsAsync();
-            await ((MainViewModel)DataContext).LoadNextUpAsync();
-            await ((MainViewModel)DataContext).LoadLatestAsync();
-
-            SetupLatest();
+            ((ShowsViewModel)DataContext).HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
+            ((ShowsViewModel)DataContext).HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
+            ((ShowsViewModel)DataContext).HasEnoughDataForNextUpScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -169,8 +141,8 @@ namespace Jellyfin.UWP
             var listView = button.FindParent<StackPanel>().FindParent<Grid>().FindParent<StackPanel>().FindChild<ListView>();
             var itemsPanelChildren = listView.ItemsPanelRoot.Children;
             var maxItemWidth = itemsPanelChildren.Max(x => x.ActualSize.X);
+            var scrollViewer = listView.FindVisualChild<ScrollViewer>();
 
-            ScrollViewer scrollViewer = listView.FindVisualChild<ScrollViewer>();
             if (scrollViewer != null)
             {
                 var viewportWidth = scrollViewer.ViewportWidth;
@@ -213,105 +185,12 @@ namespace Jellyfin.UWP
             }
         }
 
-        private void SearchClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(SearchPage));
-        }
-
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)
         {
             var mediaItem = (UIMediaListItemEpisode)((HyperlinkButton)sender).DataContext;
             var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
             Frame.Navigate(typeof(DetailsPage), seriesId);
-        }
-
-        private void SetupLatest()
-        {
-            foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
-            {
-                if (!item.Any())
-                {
-                    continue;
-                }
-
-                var stackPanel = new StackPanel
-                {
-                    Name = item.Key.Name,
-                    Orientation = Orientation.Horizontal,
-                    VerticalAlignment = VerticalAlignment.Center,
-                };
-
-                stackPanel.Children.Add(new TextBlock
-                {
-                    Text = $"Latest {item.Key.Name}",
-                    Foreground = new SolidColorBrush(Colors.White),
-                    FontSize = 40.0d,
-                });
-
-                var greaterThanFontIcon = new FontIcon
-                {
-                    FontFamily = new FontFamily("Segoe MDL2 Assets"),
-                    Glyph = "\xE76C",
-                };
-
-                var viewAllLatestButton = new Button
-                {
-                    Name = $"button_{item.Key.Name}",
-                    Content = greaterThanFontIcon,
-                    Background = new SolidColorBrush(Colors.Black),
-                };
-
-                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    viewAllLatestButton.Click += (obj, e) =>
-                    {
-                        Frame.Navigate(typeof(MoviesPage), item.Key.Id);
-                    };
-                }
-
-                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.TvShows.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    viewAllLatestButton.Click += (obj, e) =>
-                    {
-                        Frame.Navigate(typeof(ShowsPage), item.Key.Id);
-                    };
-                }
-
-                stackPanel.Children.Add(viewAllLatestButton);
-
-                latest.Children.Add(stackPanel);
-
-                var listView = new ListView
-                {
-                    ItemsSource = item,
-                    ItemsPanel = PageHelpers.GetItemsPanelTemplate(),
-                    IsItemClickEnabled = true,
-                    Name = $"listview_{item.Key.Name}",
-                };
-
-                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
-                {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
-                }
-                else
-                {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"];
-                }
-
-                listView.ItemClick += MediaClickItemList;
-
-                latest.Children.Add(listView);
-
-                listView.UpdateLayout();
-
-                var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
-
-                listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
-                listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
-                listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
-                listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-            }
         }
     }
 }
