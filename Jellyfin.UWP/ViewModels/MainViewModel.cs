@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.ObjectModel;
@@ -11,27 +12,27 @@ namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class MainViewModel : ObservableObject
     {
-        private readonly SdkClientSettings sdkClientSettings;
-        private readonly IMemoryCache memoryCache;
         private readonly IItemsClient itemsClient;
+        private readonly IMemoryCache memoryCache;
+        private readonly SdkClientSettings sdkClientSettings;
         private readonly ITvShowsClient tvShowsClient;
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IUserViewsClient userViewsClient;
 
         [ObservableProperty]
+        private bool hasResumeMedia;
+
+        [ObservableProperty]
         private ObservableCollection<UIMediaListItem> mediaList;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> resumeMediaList;
+        private ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> mediaListGrouped;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItemEpisode> nextupMediaList;
 
         [ObservableProperty]
-        private bool hasResumeMedia;
-
-        [ObservableProperty]
-        private ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> mediaListGrouped;
+        private ObservableCollection<UIMediaListItem> resumeMediaList;
 
         [ObservableProperty]
         private string userName;
@@ -57,67 +58,6 @@ namespace Jellyfin.UWP.ViewModels
             var user = memoryCache.Get<UserDto>("user");
 
             UserName = $"User: {user.Name}";
-        }
-
-        public async Task LoadMediaListAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            var viewsItemsResult = await userViewsClient.GetUserViewsAsync(userId: user.Id);
-
-            MediaList = new ObservableCollection<UIMediaListItem>(
-                viewsItemsResult
-                    .Items
-                    .Select(x =>
-                        new UIMediaListItem
-                        {
-                            Id = x.Id,
-                            Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
-                            IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType,
-                            Type = x.Type,
-                        }));
-        }
-
-        public async Task LoadResumeItemsAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            var itemsResult = await itemsClient.GetResumeItemsAsync(
-                userId: user.Id,
-                enableTotalRecordCount: false);
-
-            ResumeMediaList = new ObservableCollection<UIMediaListItem>(
-                itemsResult
-                    .Items
-                    .Select(x =>
-                        new UIMediaListItem
-                        {
-                            Id = x.Id,
-                            Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
-                            Type = x.Type,
-                        }));
-
-            HasResumeMedia = ResumeMediaList.Count > 0;
-        }
-
-        public async Task LoadNextUpAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            var itemsResult = await tvShowsClient.GetNextUpAsync(userId: user.Id, startIndex: 0, limit: 10);
-
-            NextupMediaList = new ObservableCollection<UIMediaListItemEpisode>(
-                itemsResult
-                    .Items
-                    .Select(x =>
-                        new UIMediaListItemEpisode
-                        {
-                            Id = x.Id,
-                            Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
-                            Type = x.Type,
-                            SeriesName = x.SeriesName,
-                        }));
         }
 
         public async Task LoadLatestAsync()
@@ -148,7 +88,7 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             CollectionType = record.CollectionType,
                         };
 
@@ -169,10 +109,93 @@ namespace Jellyfin.UWP.ViewModels
                             {
                                 Id = x.Id,
                                 Name = x.Name,
-                                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags["Primary"]}",
+                                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
+                                CollectionType = x.CollectionType,
+                                Type = x.Type
                             })));
                 }
             }
+        }
+
+        public async Task LoadMediaListAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var viewsItemsResult = await userViewsClient.GetUserViewsAsync(userId: user.Id);
+
+            MediaList = new ObservableCollection<UIMediaListItem>(
+                viewsItemsResult
+                    .Items
+                    .Select(x =>
+                        new UIMediaListItem
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
+                            IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
+                            CollectionType = x.CollectionType,
+                            Type = x.Type,
+                        }));
+        }
+
+        public async Task LoadNextUpAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var itemsResult = await tvShowsClient.GetNextUpAsync(userId: user.Id, startIndex: 0, limit: 10);
+
+            NextupMediaList = new ObservableCollection<UIMediaListItemEpisode>(
+                itemsResult
+                    .Items
+                    .Select(x =>
+                        new UIMediaListItemEpisode
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
+                            Type = x.Type,
+                            SeriesName = x.SeriesName,
+                        }));
+        }
+
+        public async Task LoadResumeItemsAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var itemsResult = await itemsClient.GetResumeItemsAsync(
+                userId: user.Id,
+                enableTotalRecordCount: false);
+
+            ResumeMediaList = new ObservableCollection<UIMediaListItem>(
+                itemsResult
+                    .Items
+                    .Select(x =>
+                        new UIMediaListItem
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            Url = GetResumeImage(sdkClientSettings, x),
+                            Type = x.Type,
+                        }));
+
+            HasResumeMedia = ResumeMediaList.Count > 0;
+        }
+
+        private static string GetResumeImage(SdkClientSettings settings, BaseItemDto item)
+        {
+            if (item.ParentThumbItemId != null)
+            {
+                return $"{settings.BaseUrl}/Items/{item.ParentThumbItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight=266&fillWidth=472&quality=96&tag={item.ParentThumbImageTag}";
+            }
+
+            if (item.ParentBackdropItemId != null)
+            {
+                return $"{settings.BaseUrl}/Items/{item.ParentBackdropItemId}/Images/{JellyfinConstants.BackdropName}?fillHeight=266&fillWidth=472&quality=96&tag={item.ParentBackdropImageTags[0]}";
+            }
+
+            if (item.BackdropImageTags.Count > 0)
+            {
+                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=266&fillWidth=472&quality=96&tag={item.BackdropImageTags[0]}";
+            }
+
+            return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=266&fillWidth=472&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
         }
     }
 }

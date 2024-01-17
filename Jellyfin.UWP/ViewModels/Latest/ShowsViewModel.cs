@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.Latest
 {
@@ -67,30 +68,30 @@ namespace Jellyfin.UWP.ViewModels.Latest
         {
             if (item.ParentThumbItemId != null)
             {
-                return $"{settings.BaseUrl}/Items/{item.ParentThumbItemId}/Images/Thumb?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentThumbImageTag}";
+                return $"{settings.BaseUrl}/Items/{item.ParentThumbItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentThumbImageTag}";
             }
 
             if (item.ParentBackdropItemId != null)
             {
-                return $"{settings.BaseUrl}/Items/{item.ParentBackdropItemId}/Images/Backdrop?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentBackdropImageTags[0]}";
+                return $"{settings.BaseUrl}/Items/{item.ParentBackdropItemId}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentBackdropImageTags[0]}";
             }
 
-            return $"{settings.BaseUrl}/Items/{item.Id}/Images/Primary?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags["Primary"]}";
+            return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
         }
 
         private static string GetItemImage(SdkClientSettings settings, BaseItemDto item)
         {
-            if (item.ImageTags.ContainsKey("Thumb"))
+            if (item.ImageTags.ContainsKey(JellyfinConstants.ThumbName))
             {
-                return $"{settings.BaseUrl}/Items/{item.Id}/Images/Thumb?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags["Thumb"]}";
+                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags["Thumb"]}";
             }
 
             if (item.BackdropImageTags.Count > 0)
             {
-                return $"{settings.BaseUrl}/Items/{item.Id}/Images/Backdrop?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
+                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
             }
 
-            return $"{settings.BaseUrl}/Items/{item.Id}/Images/Primary?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags["Primary"]}";
+            return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
         }
 
         private async Task LoadLatestAsync()
@@ -146,7 +147,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.ParentBackdropItemId}/Images/Thumb?fillHeight=239&fillWidth=425&quality=96&tag={x.ParentBackdropImageTags[0]}",
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.ParentBackdropItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ParentBackdropImageTags[0]}",
                             Type = x.Type,
                             SeriesName = x.SeriesName,
                         }));

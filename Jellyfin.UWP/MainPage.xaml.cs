@@ -88,9 +88,13 @@ namespace Jellyfin.UWP
             {
                 Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
-            else
+            else if (mediaItem.Type == BaseItemKind.Movie)
             {
                 Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
+            else
+            {
+                Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
             }
         }
 
@@ -298,7 +302,7 @@ namespace Jellyfin.UWP
                 }
                 else
                 {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"];
+                    listView.ItemTemplate = (DataTemplate)Resources["UILatestMediaListItemDataTemplate"];
                 }
 
                 listView.ItemClick += MediaClickItemList;

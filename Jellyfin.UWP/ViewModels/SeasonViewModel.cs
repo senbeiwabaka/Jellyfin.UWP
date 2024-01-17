@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
-    public partial class SeriesViewModel : ObservableObject
+    internal sealed partial class SeasonViewModel : ObservableObject
     {
         private readonly IMemoryCache memoryCache;
         private readonly ITvShowsClient tvShowsClient;
@@ -27,7 +27,7 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private ObservableCollection<UIMediaListItemEpisode> seriesMetadata;
 
-        public SeriesViewModel(
+        public SeasonViewModel(
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
             ITvShowsClient tvShowsClient,

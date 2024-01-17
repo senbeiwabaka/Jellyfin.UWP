@@ -213,7 +213,7 @@ namespace Jellyfin.UWP
                .AddTransient<MediaItemPlayerViewModel>()
                .AddTransient<SearchViewModel>()
                .AddTransient<SetupViewModel>()
-               .AddTransient<SeriesViewModel>()
+               .AddTransient<SeasonViewModel>()
                .AddTransient<EpisodeViewModel>()
                .AddTransient<ShowsViewModel>()
                .AddTransient<MoviesViewModel>()

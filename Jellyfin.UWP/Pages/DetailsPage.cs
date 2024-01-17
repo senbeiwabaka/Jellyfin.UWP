@@ -90,7 +90,7 @@ namespace Jellyfin.UWP.Pages
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            Frame.Navigate(typeof(SeriesPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
+            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
         }
 
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)

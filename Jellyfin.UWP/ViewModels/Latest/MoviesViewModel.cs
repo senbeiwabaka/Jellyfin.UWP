@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -12,9 +13,6 @@ namespace Jellyfin.UWP.ViewModels.Latest
 {
     internal sealed partial class MoviesViewModel : ObservableObject
     {
-        private const string backdropName = "Backdrop";
-        private const string primaryName = "Primary";
-
         private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
         private readonly IItemsClient itemsClient;
@@ -106,7 +104,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
             {
                 Id = x.Id,
                 Name = x.Name,
-                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{primaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[primaryName]}",
+                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                 Type = x.Type,
             }));
         }
@@ -163,7 +161,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{primaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[primaryName]}",
+                        Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                         Type = x.Type,
                     });
 
@@ -175,10 +173,10 @@ namespace Jellyfin.UWP.ViewModels.Latest
         {
             if (item.BackdropImageTags.Count > 0)
             {
-                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{backdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
+                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
             }
 
-            return $"{settings.BaseUrl}/Items/{item.Id}/Images/{primaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags[primaryName]}";
+            return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
         }
     }
 }

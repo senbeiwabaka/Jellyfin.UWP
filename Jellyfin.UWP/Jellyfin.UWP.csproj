@@ -135,6 +135,7 @@
       <DependentUpon>BackHomeControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\JellyfinConstants.cs" />
     <Compile Include="Helpers\MediaHelpers.cs" />
     <Compile Include="Helpers\PageHelpers.cs" />
     <Compile Include="MainPage.xaml.cs">
@@ -175,6 +176,9 @@
     <Compile Include="Pages\SearchPage.xaml.cs">
       <DependentUpon>SearchPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SeasonPage.xaml.cs">
+      <DependentUpon>SeasonPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\SeriesPage.xaml.cs">
       <DependentUpon>SeriesPage.xaml</DependentUpon>
     </Compile>
@@ -190,7 +194,7 @@
     <Compile Include="ViewModels\MediaItemPlayerViewModel.cs" />
     <Compile Include="ViewModels\MediaListViewModel.cs" />
     <Compile Include="ViewModels\SearchViewModel.cs" />
-    <Compile Include="ViewModels\SeriesViewModel.cs" />
+    <Compile Include="ViewModels\SeasonViewModel.cs" />
     <Compile Include="ViewModels\SetupViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -294,6 +298,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pages\SearchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\SeasonPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
