@@ -53,7 +53,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 })
                 .Verifiable();
 
-            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, null, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
+            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, userId, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
                 .ReturnsAsync(new BaseItemDtoQueryResult
                 {
                     Items = new[]
@@ -65,6 +65,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                             Genres = Array.Empty<string>(),
                             People = Array.Empty<BaseItemPerson>(),
                             ImageTags = new Dictionary<string, string> { { "Primary", "" } },
+                            UserData = new UserItemDataDto(),
                         }
                     }
                 })
@@ -123,7 +124,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 })
                 .Verifiable();
 
-            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, null, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
+            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, userId, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
                 .ReturnsAsync(new BaseItemDtoQueryResult
                 {
                     Items = new[]
@@ -135,6 +136,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                             Genres = Array.Empty<string>(),
                             People = Array.Empty<BaseItemPerson>(),
                             ImageTags = new Dictionary<string, string> { { "Primary", "" } },
+                            UserData = new UserItemDataDto(),
                         }
                     }
                 })
@@ -197,7 +199,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 })
                 .Verifiable();
 
-            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, null, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
+            libraryClientMock.Setup(x => x.GetSimilarItemsAsync(itemId, null, userId, 12, new[] { ItemFields.PrimaryImageAspectRatio }, default))
                 .ReturnsAsync(new BaseItemDtoQueryResult
                 {
                     Items = new[]
@@ -209,6 +211,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                             Genres = Array.Empty<string>(),
                             People = Array.Empty<BaseItemPerson>(),
                             ImageTags = new Dictionary<string, string> { { "Primary", "" } },
+                            UserData = new UserItemDataDto(),
                         }
                     }
                 })

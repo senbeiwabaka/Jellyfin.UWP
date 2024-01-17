@@ -1,0 +1,151 @@
+﻿<Page
+    x:Class="Jellyfin.UWP.Pages.SeasonPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:viewmodels="using:Jellyfin.UWP.ViewModels"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
+    d:DataContext="{d:DesignInstance Type=viewmodels:SeasonViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
+        <converters:BoolToObjectConverter x:Key="BoolToPlayedColor" TrueValue="#c33" FalseValue="#fff" />
+        <converters:BoolToObjectConverter x:Key="BoolToFavoriteColor" TrueValue="#c33" FalseValue="#fff" />
+    </Page.Resources>
+
+    <Grid Background="#101010">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <uc:BackHomeControl Grid.Row="0" />
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Image Source="{Binding ImageUrl}" Grid.Column="0" />
+
+            <ScrollViewer Grid.Column="1">
+                <StackPanel>
+                    <TextBlock Text="SEASON"/>
+                    
+                    <StackPanel Orientation="Horizontal" Height="115.2" Padding="30,0,0,0">
+                        <StackPanel.Background>
+                            <RevealBackgroundBrush Color="#202020" Opacity=".2" />
+                        </StackPanel.Background>
+
+                        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="300" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding MediaItem.SeriesName}" FontSize="26" />
+                                <TextBlock Text="{Binding MediaItem.Name}" FontSize="17" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button x:Name="WholeSeriesPlay" Click="WholeSeriesPlay_Click" Margin="10" ToolTipService.ToolTip="Play">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity=".87" />
+                                    </Button.Background>
+                                    <SymbolIcon x:Name="play" Symbol="Play" />
+                                </Button>
+
+                                <Button Margin="10" ToolTipService.ToolTip="Shuffle">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity=".87" />
+                                    </Button.Background>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
+                                </Button>
+
+                                <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding HasBeenWatched, Converter={StaticResource BoolToPlayedColor}}" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <TextBlock Padding="30,10,30,10" Text="{Binding MediaItem.Overview}" TextWrapping="WrapWholeWords" />
+
+                    <StackPanel Padding="30,0,0,0">
+                        <StackPanel>
+                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SeriesItems_ItemClick">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:UIMediaListItemEpisode">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Canvas>
+                                                <Canvas Background="Transparent">
+                                                    <Grid Canvas.Left="240" Canvas.Top="5" Canvas.ZIndex="2" Visibility="{Binding HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
+                                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                                                    </Grid>
+                                                </Canvas>
+                                            </Canvas>
+                                            <Image Source="{x:Bind Url}" Canvas.ZIndex="-1" Height="150" VerticalAlignment="Center" />
+                                            <StackPanel Padding="10">
+                                                <TextBlock Text="{x:Bind Name}" FontSize="15" />
+
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{x:Bind Description}" Width="300" TextWrapping="WrapWholeWords" Opacity=".6" />
+
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Button x:Name="EpisodePlay" Click="EpisodePlay_Click" Margin="0,5,0,0">
+                                                            <Button.Background>
+                                                                <SolidColorBrush Color="#000000" Opacity="0" />
+                                                            </Button.Background>
+                                                            <SymbolIcon x:Name="play" Symbol="Play" />
+                                                        </Button>
+                                                        <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                                            <Button.Background>
+                                                                <SolidColorBrush Color="#000000" Opacity="0" />
+                                                            </Button.Background>
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding HasBeenWatched, Converter={StaticResource BoolToPlayedColor}}" />
+                                                        </Button>
+                                                        <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                                            <Button.Background>
+                                                                <SolidColorBrush Color="#000000" Opacity="0" />
+                                                            </Button.Background>
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{Binding IsFavorite, Converter={StaticResource BoolToPlayedColor}}" />
+                                                        </Button>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>

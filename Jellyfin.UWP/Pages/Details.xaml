@@ -43,6 +43,8 @@
 
             <ScrollViewer Grid.Column="1">
                 <StackPanel>
+                    <TextBlock Text="DETAILS" />
+
                     <StackPanel Orientation="Horizontal" Height="115.2"  Padding="30,0,0,0">
                         <StackPanel.Background>
                             <SolidColorBrush Color="#202020" Opacity=".8" />
@@ -58,8 +60,8 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="{Binding MediaItem.Name}" />
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,15,0">
+                                <TextBlock Text="{Binding MediaItem.Name}" FontSize="26" FontWeight="Bold" />
 
                                 <StackPanel Orientation="Horizontal"
 >
@@ -67,7 +69,9 @@
 
                                     <TextBlock Text="{Binding RunTime}" Padding="0,0,20,0" />
 
-                                    <TextBlock Text="{Binding MediaItem.OfficialRating}" Padding="0,0,20,0" />
+                                    <Border BorderBrush="White" BorderThickness="2" Padding="5,0,5,0" Margin="0,0,20,0">
+                                        <TextBlock Text="{Binding MediaItem.OfficialRating}" />
+                                    </Border>
 
                                     <TextBlock Text="{Binding MediaItem.CommunityRating}" Padding="0,0,20,0" />
 
@@ -75,19 +79,42 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1">
-                                <Button Click="{x:Bind PlayClick}">
-                                    <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity=".87" />
-                                    </Button.Background>
-                                    <SymbolIcon x:Name="play" Symbol="Play" />
-                                </Button>
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <SymbolIcon x:Name="play" Symbol="Play" />
+                                    </Button>
 
-                                <Button Content="Trailer">
-                                    <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity=".87" />
-                                    </Button.Background>
-                                </Button>
+                                    <Button Content="Trailer">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                    </Button>
+
+                                    <Button Margin="10" ToolTipService.ToolTip="Shuffle">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
+                                    </Button>
+
+                                    <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource BoolToPlayedColor}}" />
+                                    </Button>
+
+                                    <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource BoolToPlayedColor}}" />
+                                    </Button>
+                                </StackPanel>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -132,30 +159,6 @@
                                 <TextBlock Text="Writor" Width="93" />
                                 <TextBlock Text="{Binding Writer}" />
                             </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Text="Next Up" />
-
-                            <Button x:Name="NextUpButton" Width="277" Height="156" Click="NextUpButton_Click">
-                                <Button.Resources>
-                                    <ResourceDictionary>
-                                        <ResourceDictionary.ThemeDictionaries>
-                                            <ResourceDictionary x:Key="Dark">
-                                                <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{Binding SeriesNextUpUrl}" />
-                                            </ResourceDictionary>
-                                            <ResourceDictionary x:Key="Light">
-                                                <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{Binding SeriesNextUpUrl}" />
-                                            </ResourceDictionary>
-                                        </ResourceDictionary.ThemeDictionaries>
-                                    </ResourceDictionary>
-                                </Button.Resources>
-                                <Button.Background>
-                                    <ImageBrush ImageSource="{Binding SeriesNextUpUrl}" />
-                                </Button.Background>
-                            </Button>
-
-                            <TextBlock Text="{Binding SeriesNextUpName}" />
                         </StackPanel>
 
                         <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">

@@ -72,9 +72,9 @@ namespace Jellyfin.UWP.Pages
 
         private void SeriesName_Click(object sender, RoutedEventArgs e)
         {
-            var context = ((EpisodeViewModel)DataContext);
+            var context = (EpisodeViewModel)DataContext;
 
-            ((Frame)Window.Current.Content).Navigate(typeof(DetailsPage), context.MediaItem.SeriesId);
+            Frame.Navigate(typeof(SeriesPage), context.MediaItem.SeriesId);
         }
     }
 }

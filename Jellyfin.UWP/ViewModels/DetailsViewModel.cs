@@ -156,7 +156,7 @@ namespace Jellyfin.UWP.ViewModels
                                           Title = x.DisplayTitle,
                                       }));
 
-                    SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams.First();
+                    SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams[0];
                 }
             }
 
@@ -244,33 +244,55 @@ namespace Jellyfin.UWP.ViewModels
 
                 if (nextUpItem is not null)
                 {
-                    SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", "Primary", nextUpItem.ImageTags);
+                    SeriesNextUpUrl = SetImageUrl(nextUpItem.Id, "296", "526", JellyfinConstants.PrimaryName, nextUpItem.ImageTags);
                     SeriesNextUpId = nextUpItem.Id;
                     SeriesNextUpName = $"S{nextUpItem.ParentIndexNumber}:E{nextUpItem.IndexNumber} - {nextUpItem.Name}";
                 }
 
                 SeriesMetadata = new ObservableCollection<UIMediaListItem>(
-                    seasons.Items.Select(x => new UIMediaListItem
+                    seasons.Items.Select(x =>
                     {
-                        Id = x.Id,
-                        Name = x.Name,
-                        Url = SetImageUrl(x.Id, "505", "349", "Primary", x.ImageTags),
+                        var item = new UIMediaListItem
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            Url = SetSeasonImageUrl(sdkClientSettings, x),
+                        };
+
+                        item.UserData.IsFavorite = x.UserData.IsFavorite;
+                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
+                        item.UserData.HasBeenWatched = x.UserData.Played;
+
+                        return item;
                     }));
             }
 
-            var similiarItems = await libraryClient.GetSimilarItemsAsync(MediaItem.Id, limit: 12, fields: new[] { ItemFields.PrimaryImageAspectRatio });
+            var similiarItems = await libraryClient.GetSimilarItemsAsync(
+                MediaItem.Id,
+                userId: user.Id,
+                limit: 12,
+                fields: new[] { ItemFields.PrimaryImageAspectRatio, });
 
             SimiliarMediaList = new ObservableCollection<UIMediaListItem>(
                 similiarItems.Items
-                .Select(x => new UIMediaListItem
+                .Select(x =>
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Url = SetImageUrl(x.Id, "446", "298", "Primary", x.ImageTags),
-                    Year = x.ProductionYear?.ToString() ?? "N/A",
+                    var item = new UIMediaListItem
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = SetImageUrl(x.Id, "446", "298", JellyfinConstants.PrimaryName, x.ImageTags),
+                        Year = x.ProductionYear?.ToString() ?? "N/A",
+                    };
+
+                    item.UserData.IsFavorite = x.UserData.IsFavorite;
+                    item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
+                    item.UserData.HasBeenWatched = x.UserData.Played;
+
+                    return item;
                 }));
 
-            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", "Primary", MediaItem.ImageTags);
+            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", JellyfinConstants.PrimaryName, MediaItem.ImageTags);
         }
 
         private void SetAudioStreams()
@@ -300,7 +322,17 @@ namespace Jellyfin.UWP.ViewModels
 
             var imageTagId = imageTages[tagKey];
 
-            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
+            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/{JellyfinConstants.PrimaryName}?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
+        }
+
+        private static string SetSeasonImageUrl(SdkClientSettings settings, BaseItemDto item)
+        {
+            if (item.ImageTags.ContainsKey(JellyfinConstants.PrimaryName))
+            {
+                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
+            }
+
+            return $"{settings.BaseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
         }
 
         private void SetVideoStreams()

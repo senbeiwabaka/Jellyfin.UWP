@@ -14,10 +14,10 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
-            <StackPanel Width="180">
+            <StackPanel Width="380">
                 <Canvas>
                     <Canvas Background="Transparent">
-                        <Grid Canvas.Left="70" Canvas.Top="55" Canvas.ZIndex="2">
+                        <Grid Canvas.Left="175" Canvas.Top="95" Canvas.ZIndex="2">
                             <Button Click="MediaPlayButton_Click">
                                 <Button.Background>
                                     <SolidColorBrush Color="#000000" />
@@ -27,15 +27,15 @@
                         </Grid>
                     </Canvas>
                 </Canvas>
-                <Image Source="{x:Bind Url}" Width="278" Height="156" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="UIShowsMediaListItemDataTemplate" x:DataType="m:UIMediaListItemEpisode">
-            <StackPanel Width="180">
+            <StackPanel Width="220">
                 <Canvas>
                     <Canvas Background="Transparent">
-                        <Grid Canvas.Left="130" Canvas.Top="5" Canvas.ZIndex="2">
+                        <Grid Canvas.Left="195" Canvas.Top="5" Canvas.ZIndex="2">
                             <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
                             <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
                         </Grid>
@@ -43,7 +43,7 @@
                 </Canvas>
                 <Canvas>
                     <Canvas Background="Transparent">
-                        <Grid Canvas.Left="70" Canvas.Top="55" Canvas.ZIndex="2">
+                        <Grid Canvas.Left="95" Canvas.Top="150" Canvas.ZIndex="2">
                             <Button Click="MediaPlayButton_Click">
                                 <Button.Background>
                                     <SolidColorBrush Color="#000000" />
@@ -53,7 +53,25 @@
                         </Grid>
                     </Canvas>
                 </Canvas>
-                <Image Source="{x:Bind Url}" Width="180" Height="156" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="UILatestMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+            <StackPanel Width="220">
+                <Canvas>
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="95" Canvas.Top="150" Canvas.ZIndex="2">
+                            <Button Click="MediaPlayButton_Click">
+                                <Button.Background>
+                                    <SolidColorBrush Color="#000000" />
+                                </Button.Background>
+                                <SymbolIcon Symbol="Play" />
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
@@ -97,7 +115,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel>
-                                    <Image Source="{Binding Url}" Width="278" Height="156" HorizontalAlignment="Center" />
+                                    <Image Source="{Binding Url}" Width="380" Height="214" HorizontalAlignment="Center" />
                                     <TextBlock Text="{Binding Name}" FontSize="20" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" FontWeight="Bold" />
                                 </StackPanel>
                             </DataTemplate>
@@ -110,14 +128,14 @@
                     </ListView>
                 </StackPanel>
 
-                <StackPanel Margin="0,0,0,10">
+                <StackPanel Margin="0,0,0,10" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Continue Watching" Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}" FontSize="40" Grid.Column="0" />
+                        <TextBlock Text="Continue Watching" FontSize="40" Grid.Column="0" />
 
                         <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
@@ -137,7 +155,6 @@
                         ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
                         ItemClick="{x:Bind MediaClickItemList}"
                         IsItemClickEnabled="True"
-                        Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}"
                         ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -176,7 +193,7 @@
                         IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent" Orientation="Horizontal" Height="202" HorizontalAlignment="Left" />
+                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
@@ -184,7 +201,7 @@
                                 <StackPanel>
                                     <Canvas>
                                         <Canvas Background="Transparent">
-                                            <Grid Canvas.Left="100" Canvas.Top="65" Canvas.ZIndex="2">
+                                            <Grid Canvas.Left="175" Canvas.Top="95" Canvas.ZIndex="2">
                                                 <Button Click="MediaPlayButton_Click">
                                                     <Button.Background>
                                                         <SolidColorBrush Color="#000000" />
@@ -194,7 +211,7 @@
                                             </Grid>
                                         </Canvas>
                                     </Canvas>
-                                    <Image Source="{x:Bind Url}" Width="250" Height="150" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <Image Source="{x:Bind Url}" Width="380" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                                     <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>

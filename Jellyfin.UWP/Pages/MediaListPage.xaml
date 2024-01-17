@@ -8,6 +8,7 @@
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:MediaListViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -16,6 +17,14 @@
     <Page.Resources>
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="210">
+                <Canvas Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
+                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                        </Grid>
+                    </Canvas>
+                </Canvas>
                 <Canvas>
                     <Canvas Background="Transparent">
                         <Grid Canvas.Left="85" Canvas.Top="142" Canvas.ZIndex="2">
@@ -34,11 +43,19 @@
         </DataTemplate>
         <DataTemplate x:Key="UIShowsMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="210">
-                <Canvas>
+                <Canvas Visibility="{Binding UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
                     <Canvas Background="Transparent">
-                        <Grid Canvas.Left="175" Canvas.Top="10" Canvas.ZIndex="2">
+                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
                             <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="25" />
                             <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                        </Grid>
+                    </Canvas>
+                </Canvas>
+                <Canvas Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Canvas Background="Transparent">
+                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
+                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
+                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                         </Grid>
                     </Canvas>
                 </Canvas>
@@ -58,6 +75,8 @@
                 <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
+        <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
