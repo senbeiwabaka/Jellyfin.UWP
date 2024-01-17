@@ -1,5 +1,8 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
 using Jellyfin.UWP.Pages;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using Windows.Storage;
 using Windows.System;
 using Windows.UI.Xaml;
@@ -9,9 +12,18 @@ namespace Jellyfin.UWP.Controls
 {
     public sealed partial class BackHomeControl : UserControl
     {
+        private readonly IMemoryCache memoryCache;
+        private readonly string userName;
+
         public BackHomeControl()
         {
             this.InitializeComponent();
+
+            this.memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+
+            var user = memoryCache.Get<UserDto>("user");
+
+            userName = user.Name;
         }
 
         public void BackClick(object sender, RoutedEventArgs e)
@@ -21,6 +33,8 @@ namespace Jellyfin.UWP.Controls
 
         public void HomeClick(object sender, RoutedEventArgs e)
         {
+            memoryCache.Remove("Searched-Text");
+
             ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
         }
 

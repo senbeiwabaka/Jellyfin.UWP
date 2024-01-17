@@ -1,19 +1,19 @@
-﻿using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
+using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
@@ -69,6 +69,8 @@ namespace Jellyfin.UWP
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
+            ApplicationView.GetForCurrentView().Title = string.Empty;
+
             ((MainViewModel)DataContext).LoadInitial();
             await ((MainViewModel)DataContext).LoadMediaListAsync();
             await ((MainViewModel)DataContext).LoadResumeItemsAsync();
