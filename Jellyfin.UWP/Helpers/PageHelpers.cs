@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Markup;
 
@@ -30,6 +31,14 @@ namespace Jellyfin.UWP.Helpers
             }
 
             return false;
+        }
+
+        internal static void ResetPageCache()
+        {
+            int cacheSize = ((Frame)Window.Current.Content).CacheSize;
+
+            ((Frame)Window.Current.Content).CacheSize = 0;
+            ((Frame)Window.Current.Content).CacheSize = cacheSize;
         }
     }
 }

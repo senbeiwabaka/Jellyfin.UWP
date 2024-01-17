@@ -40,7 +40,7 @@ namespace Jellyfin.UWP.Pages
 
                 this.Loaded -= MediaListPage_Loaded;
 
-                ResetPageCache();
+                PageHelpers.ResetPageCache();
             }
         }
 
@@ -132,14 +132,6 @@ namespace Jellyfin.UWP.Pages
 
                 Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
-        }
-
-        private void ResetPageCache()
-        {
-            int cacheSize = Frame.CacheSize;
-
-            Frame.CacheSize = 0;
-            Frame.CacheSize = cacheSize;
         }
     }
 }
