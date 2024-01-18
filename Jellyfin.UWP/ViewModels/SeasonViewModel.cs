@@ -25,7 +25,7 @@ namespace Jellyfin.UWP.ViewModels
         private BaseItemDto mediaItem;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItemEpisode> seriesMetadata;
+        private ObservableCollection<UIMediaListItemSeries> seriesMetadata;
 
         public SeasonViewModel(
             IMemoryCache memoryCache,
@@ -58,10 +58,10 @@ namespace Jellyfin.UWP.ViewModels
                         ItemFields.Overview,
                     });
 
-            SeriesMetadata = new ObservableCollection<UIMediaListItemEpisode>(
+            SeriesMetadata = new ObservableCollection<UIMediaListItemSeries>(
                 episodes.Items.Select(x =>
                 {
-                    var item = new UIMediaListItemEpisode
+                    var item = new UIMediaListItemSeries
                     {
                         Id = x.Id,
                         Name = x.Name,

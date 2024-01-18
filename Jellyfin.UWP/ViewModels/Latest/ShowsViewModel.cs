@@ -36,7 +36,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
         private ObservableCollection<UIMediaListItem> latestMediaList;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItemEpisode> nextupMediaList;
+        private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> resumeMediaList;
@@ -110,7 +110,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
             itemsResult
             .Select(x =>
             {
-                var item = new UIMediaListItemEpisode
+                var item = new UIMediaListItemSeries
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -139,11 +139,11 @@ namespace Jellyfin.UWP.ViewModels.Latest
                 enableImageTypes: new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, },
                 enableTotalRecordCount: false);
 
-            NextupMediaList = new ObservableCollection<UIMediaListItemEpisode>(
+            NextupMediaList = new ObservableCollection<UIMediaListItemSeries>(
                 itemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItemEpisode
+                        new UIMediaListItemSeries
                         {
                             Id = x.Id,
                             Name = x.Name,

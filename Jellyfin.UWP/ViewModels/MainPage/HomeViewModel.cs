@@ -1,16 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Jellyfin.UWP.ViewModels
+namespace Jellyfin.UWP.ViewModels.MainPage
 {
-    internal sealed partial class MainViewModel : ObservableObject
+    internal sealed class HomeViewModel : IHomeViewModel
     {
         private readonly IItemsClient itemsClient;
         private readonly IMemoryCache memoryCache;
@@ -19,25 +19,7 @@ namespace Jellyfin.UWP.ViewModels
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IUserViewsClient userViewsClient;
 
-        [ObservableProperty]
-        private bool hasResumeMedia;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> mediaList;
-
-        [ObservableProperty]
-        private ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> mediaListGrouped;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItemEpisode> nextupMediaList;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> resumeMediaList;
-
-        [ObservableProperty]
-        private string userName;
-
-        public MainViewModel(
+        public HomeViewModel(
             SdkClientSettings sdkClientSettings,
             IMemoryCache memoryCache,
             IItemsClient itemsClient,
@@ -53,20 +35,13 @@ namespace Jellyfin.UWP.ViewModels
             this.userViewsClient = userViewsClient;
         }
 
-        public void LoadInitial()
+        public async Task<ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>> LoadLatestAsync(ObservableCollection<UIMediaListItem> mediaList, CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            UserName = $"User: {user.Name}";
-        }
+            var mediaListGrouped = new ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>();
 
-        public async Task LoadLatestAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-
-            MediaListGrouped = new ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>();
-
-            foreach (var record in MediaList.Where(x => !string.Equals(CollectionTypeOptions.BoxSets.ToString(), x.CollectionType, System.StringComparison.CurrentCultureIgnoreCase)))
+            foreach (var record in mediaList.Where(x => !string.Equals(CollectionTypeOptions.BoxSets.ToString(), x.CollectionType, System.StringComparison.CurrentCultureIgnoreCase)))
             {
                 var itemsResult = await userLibraryClient.GetLatestMediaAsync(
                     userId: user.Id,
@@ -74,17 +49,18 @@ namespace Jellyfin.UWP.ViewModels
                     fields: new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.BasicSyncInfo, ItemFields.Path, },
                     imageTypeLimit: 1,
                     enableImageTypes: new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, },
-                    parentId: record.Id);
+                    parentId: record.Id,
+                    cancellationToken: cancellationToken);
                 var itemType = new MediaGroupItem { Id = record.Id, Name = record.Name, Type = record.Type, CollectionType = record.CollectionType, };
 
                 if (string.Equals(CollectionTypeOptions.TvShows.ToString(), record.CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    MediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
+                    mediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
                     itemType,
                     itemsResult
                     .Select(x =>
                     {
-                        var item = new UIMediaListItemEpisode
+                        var item = new UIMediaListItemSeries
                         {
                             Id = x.Id,
                             Name = x.Name,
@@ -101,52 +77,60 @@ namespace Jellyfin.UWP.ViewModels
                 }
                 else
                 {
-                    MediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
+                    mediaListGrouped.Add(new ObservableGroup<MediaGroupItem, UIMediaListItem>(
                         itemType,
                         itemsResult
                         .Select(x =>
-                            new UIMediaListItem
-                            {
-                                Id = x.Id,
-                                Name = x.Name,
-                                Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
-                                CollectionType = x.CollectionType,
-                                Type = x.Type
-                            })));
-                }
-            }
-        }
-
-        public async Task LoadMediaListAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-            var viewsItemsResult = await userViewsClient.GetUserViewsAsync(userId: user.Id);
-
-            MediaList = new ObservableCollection<UIMediaListItem>(
-                viewsItemsResult
-                    .Items
-                    .Select(x =>
                         new UIMediaListItem
                         {
                             Id = x.Id,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
-                            IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
+                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             CollectionType = x.CollectionType,
-                            Type = x.Type,
-                        }));
+                            Type = x.Type
+                        })));
+                }
+            }
+
+            return mediaListGrouped;
         }
 
-        public async Task LoadNextUpAsync()
+        public async Task<ObservableCollection<UIMediaListItem>> LoadMediaListAsync(CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
-            var itemsResult = await tvShowsClient.GetNextUpAsync(userId: user.Id, startIndex: 0, limit: 10);
+            var viewsItemsResult = await userViewsClient.GetUserViewsAsync(userId: user.Id, cancellationToken: cancellationToken);
 
-            NextupMediaList = new ObservableCollection<UIMediaListItemEpisode>(
+            var mediaList = new ObservableCollection<UIMediaListItem>(
+                viewsItemsResult
+                    .Items
+                    .Select(x =>
+                    new UIMediaListItem
+                    {
+                        Id = x.Id,
+                        Name = x.Name,
+                        Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
+                        IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
+                        CollectionType = x.CollectionType,
+                        Type = x.Type,
+                    }));
+
+            return mediaList;
+        }
+
+        public async Task<ObservableCollection<UIMediaListItemSeries>> LoadNextUpAsync(CancellationToken cancellationToken = default)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var itemsResult = await tvShowsClient.GetNextUpAsync(
+                userId: user.Id,
+                startIndex: 0,
+                limit: 10,
+                cancellationToken: cancellationToken);
+
+            var nextupMediaList = new ObservableCollection<UIMediaListItemSeries>(
                 itemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItemEpisode
+                        new UIMediaListItemSeries
                         {
                             Id = x.Id,
                             Name = x.Name,
@@ -154,16 +138,19 @@ namespace Jellyfin.UWP.ViewModels
                             Type = x.Type,
                             SeriesName = x.SeriesName,
                         }));
+
+            return nextupMediaList;
         }
 
-        public async Task LoadResumeItemsAsync()
+        public async Task<(ObservableCollection<UIMediaListItem>, bool)> LoadResumeItemsAsync(CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
             var itemsResult = await itemsClient.GetResumeItemsAsync(
                 userId: user.Id,
-                enableTotalRecordCount: false);
+                enableTotalRecordCount: false,
+                cancellationToken: cancellationToken);
 
-            ResumeMediaList = new ObservableCollection<UIMediaListItem>(
+            var resumeMediaList = new ObservableCollection<UIMediaListItem>(
                 itemsResult
                     .Items
                     .Select(x =>
@@ -175,7 +162,9 @@ namespace Jellyfin.UWP.ViewModels
                             Type = x.Type,
                         }));
 
-            HasResumeMedia = ResumeMediaList.Count > 0;
+            var hasResumeMedia = resumeMediaList.Count > 0;
+
+            return (resumeMediaList, hasResumeMedia);
         }
 
         private static string GetResumeImage(SdkClientSettings settings, BaseItemDto item)

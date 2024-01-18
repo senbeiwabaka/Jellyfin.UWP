@@ -1,16 +1,15 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Pages;
-using Jellyfin.UWP.ViewModels;
-using Jellyfin.UWP.ViewModels.Latest;
-using MetroLog;
-using MetroLog.Targets;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Pages;
+using MetroLog;
+using MetroLog.Targets;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -96,127 +95,11 @@ namespace Jellyfin.UWP
             };
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
-               // Services
                .AddSingleton<SdkClientSettings>((serviceProvider) => settings)
                .AddHttpClient()
                .AddMemoryCache()
-               .AddTransient<IUserLibraryClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new UserLibraryClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<ILibraryClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new LibraryClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<ITvShowsClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new TvShowsClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IVideosClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new VideosClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<ISessionClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new SessionClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IPlaystateClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new PlaystateClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IMediaInfoClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new MediaInfoClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<ISubtitleClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new SubtitleClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IDynamicHlsClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new DynamicHlsClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IApiKeyClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new ApiKeyClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IUserClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new UserClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IItemsClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new ItemsClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IUserViewsClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new UserViewsClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IFilterClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new FilterClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               .AddTransient<IMoviesClient>((serviceProvider) =>
-               {
-                   var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
-                   var sdkSettings = serviceProvider.GetService<SdkClientSettings>();
-
-                   return new MoviesClient(sdkSettings, httpClientFactory.CreateClient());
-               })
-               // ViewModels
-               .AddTransient<LoginViewModel>()
-               .AddTransient<MainViewModel>()
-               .AddTransient<MediaListViewModel>()
-               .AddTransient<DetailsViewModel>()
-               .AddTransient<MediaItemPlayerViewModel>()
-               .AddTransient<SearchViewModel>()
-               .AddTransient<SetupViewModel>()
-               .AddTransient<SeasonViewModel>()
-               .AddTransient<EpisodeViewModel>()
-               .AddTransient<ShowsViewModel>()
-               .AddTransient<MoviesViewModel>()
+               .AddSdkClients()
+               .AddViewModels()
                .BuildServiceProvider());
 
             var resetJellyfinUrl = false;

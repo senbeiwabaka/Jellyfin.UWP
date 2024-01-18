@@ -187,7 +187,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)
         {
-            var mediaItem = (UIMediaListItemEpisode)((HyperlinkButton)sender).DataContext;
+            var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
             var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
             Frame.Navigate(typeof(DetailsPage), seriesId);
