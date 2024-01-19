@@ -58,7 +58,7 @@
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="UIEpisodeMediaListItemDataTemplate" x:DataType="m:UIMediaListItemEpisode">
+        <DataTemplate x:Key="UIEpisodeMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
             <StackPanel Width="380">
                 <Canvas>
                     <Canvas Background="Transparent">

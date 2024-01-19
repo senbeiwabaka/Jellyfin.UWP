@@ -99,7 +99,7 @@
                         <StackPanel>
                             <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SeriesItems_ItemClick">
                                 <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="m:UIMediaListItemEpisode">
+                                    <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                         <StackPanel Orientation="Horizontal">
                                             <Canvas>
                                                 <Canvas Background="Transparent">

@@ -4,8 +4,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.MainPage"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:MainViewModel}"
     mc:Ignorable="d"
@@ -31,7 +31,7 @@
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="UIShowsMediaListItemDataTemplate" x:DataType="m:UIMediaListItemEpisode">
+        <DataTemplate x:Key="UISeriesMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
             <StackPanel Width="220">
                 <Canvas>
                     <Canvas Background="Transparent">
@@ -57,7 +57,7 @@
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="UILatestMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+        <DataTemplate x:Key="UIMoviesMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
                 <Canvas>
                     <Canvas Background="Transparent">
@@ -79,7 +79,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="125" />
+            <RowDefinition Height="100" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -87,19 +87,29 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Border Background="#202020" Height="125" Grid.Row="0" />
+        <StackPanel Grid.Row="0" Background="#202020" Padding="15,15,15,0">
+            <Grid Margin="0" Padding="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding UserName}" VerticalAlignment="Center"></TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1">
+                    <Button Content="Search" Margin="0,0,15,0" Click="SearchClick" />
+                    <Button x:Name="Logout" Content="Logout" Margin="15,0,0,0" Click="Logout_Click"></Button>
+                </StackPanel>
+            </Grid>
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Search" Margin="15" Click="SearchClick" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBlock Text="{Binding UserName}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
-                <Button x:Name="Logout" Content="Logout" Margin="0,15,15,15" Click="Logout_Click"></Button>
+                <Button x:Name="btn_Home" Content="Home" BorderThickness="0" Background="#202020" Foreground="White" Margin="0,0,10,0" Command="{Binding SwitchToHomeCommand}" Click="btn_Home_Click" />
+                <Button x:Name="btn_Favorites" Content="Favorites" BorderThickness="0" Background="#202020" Foreground="White" Margin="10,0,0,0" Command="{Binding SwitchToFavoriteCommand}" Click="btn_Favorites_Click" />
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsHomeSelected, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <TextBlock Text="My Media" Foreground="White" FontSize="40" />
@@ -137,7 +147,7 @@
 
                         <TextBlock Text="Continue Watching" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollContinueWatching, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
@@ -148,6 +158,7 @@
                     </Grid>
 
                     <ListView
+                        x:Name="lv_Resume"
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.HorizontalScrollMode="Disabled"
@@ -173,7 +184,7 @@
 
                         <TextBlock Text="Next Up" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollNextUp, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
@@ -184,6 +195,7 @@
                     </Grid>
 
                     <ListView
+                        x:Name="lv_NextUp"
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.HorizontalScrollMode="Disabled"
@@ -197,7 +209,7 @@
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItemEpisode">
+                            <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                 <StackPanel>
                                     <Canvas>
                                         <Canvas Background="Transparent">
@@ -220,7 +232,165 @@
                     </ListView>
                 </StackPanel>
 
-                <StackPanel x:Name="latest">
+                <StackPanel x:Name="lv_Latest">
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsFavoriteSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel>
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Movies" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollMoviesFavorites, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_FavoriteMovies"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding FavoriteMoviesList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIMoviesMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Series" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollShowsFavorites, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_FavoriteShows"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding FavoriteSeriesList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UISeriesMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="Episodes" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollEpisodesFavorites, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_FavoriteEpisodes"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding FavoriteEpisodesList, Mode=OneWay}"
+                        ItemClick="{x:Bind MediaClickItemList}"
+                        IsItemClickEnabled="True"
+                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="People" FontSize="40" Grid.Column="0" />
+
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{Binding HasEnoughDataToScrollPeopleFavorites, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
+                            </Button>
+                            <Button Background="Black" Click="ScrollRight_Click">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ListView
+                        x:Name="lv_FavoritePeople"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.HorizontalScrollMode="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled"
+                        ItemsSource="{Binding FavoritePersonList, Mode=OneWay}"
+                        IsItemClickEnabled="False">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="m:UIPersonItem">
+                                <StackPanel Width="180">
+                                    <Image Source="{x:Bind Url}" Height="270" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

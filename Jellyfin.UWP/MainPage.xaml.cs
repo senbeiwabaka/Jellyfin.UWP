@@ -4,7 +4,7 @@ using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Latest;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Toolkit.Uwp.UI;
 using System.Linq;
@@ -52,6 +52,20 @@ namespace Jellyfin.UWP
             base.OnNavigatedTo(e);
         }
 
+        private void btn_Favorites_Click(object sender, RoutedEventArgs e)
+        {
+            ((MainViewModel)DataContext).HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
+            ((MainViewModel)DataContext).HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
+            ((MainViewModel)DataContext).HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
+            ((MainViewModel)DataContext).HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
+        }
+
+        private void btn_Home_Click(object sender, RoutedEventArgs e)
+        {
+            ((MainViewModel)DataContext).HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
+            ((MainViewModel)DataContext).HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+        }
+
         private void ClickItemList(object sender, ItemClickEventArgs e)
         {
             Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
@@ -71,13 +85,12 @@ namespace Jellyfin.UWP
         {
             ApplicationView.GetForCurrentView().Title = string.Empty;
 
-            ((MainViewModel)DataContext).LoadInitial();
-            await ((MainViewModel)DataContext).LoadMediaListAsync();
-            await ((MainViewModel)DataContext).LoadResumeItemsAsync();
-            await ((MainViewModel)DataContext).LoadNextUpAsync();
-            await ((MainViewModel)DataContext).LoadLatestAsync();
+            await ((MainViewModel)DataContext).LoadInitialAsync();
 
             SetupLatest();
+
+            ((MainViewModel)DataContext).HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
+            ((MainViewModel)DataContext).HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -226,7 +239,7 @@ namespace Jellyfin.UWP
 
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)
         {
-            var mediaItem = (UIMediaListItemEpisode)((HyperlinkButton)sender).DataContext;
+            var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
             var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
             Frame.Navigate(typeof(DetailsPage), seriesId);
@@ -286,7 +299,7 @@ namespace Jellyfin.UWP
 
                 stackPanel.Children.Add(viewAllLatestButton);
 
-                latest.Children.Add(stackPanel);
+                lv_Latest.Children.Add(stackPanel);
 
                 var listView = new ListView
                 {
@@ -298,16 +311,16 @@ namespace Jellyfin.UWP
 
                 if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
                 {
-                    listView.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
+                    listView.ItemTemplate = (DataTemplate)Resources["UISeriesMediaListItemDataTemplate"];
                 }
                 else
                 {
-                    listView.ItemTemplate = (DataTemplate)Resources["UILatestMediaListItemDataTemplate"];
+                    listView.ItemTemplate = (DataTemplate)Resources["UIMoviesMediaListItemDataTemplate"];
                 }
 
                 listView.ItemClick += MediaClickItemList;
 
-                latest.Children.Add(listView);
+                lv_Latest.Children.Add(listView);
 
                 listView.UpdateLayout();
 
