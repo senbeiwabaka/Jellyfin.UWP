@@ -134,6 +134,12 @@
     <Compile Include="Controls\BackHomeControl.xaml.cs">
       <DependentUpon>BackHomeControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\PlayButtonControl.xaml.cs">
+      <DependentUpon>PlayButtonControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ViewedFavoriteButtonControl.xaml.cs">
+      <DependentUpon>ViewedFavoriteButtonControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\IOCExtensions.cs" />
     <Compile Include="Helpers\JellyfinConstants.cs" />
@@ -148,6 +154,7 @@
     <Compile Include="Models\MediaGroupItem.cs" />
     <Compile Include="Models\Recommendation.cs" />
     <Compile Include="Models\SeasonSeries.cs" />
+    <Compile Include="Models\UIItem.cs" />
     <Compile Include="Models\UIMediaListItem.cs" />
     <Compile Include="Models\UIMediaListItemSeries.cs" />
     <Compile Include="Models\UIMediaStream.cs" />
@@ -186,6 +193,7 @@
     <Compile Include="Pages\SetupPage.xaml.cs">
       <DependentUpon>SetupPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\Controls\ViewedFavoriteViewModel.cs" />
     <Compile Include="ViewModels\EpisodeViewModel.cs" />
     <Compile Include="ViewModels\Latest\MoviesViewModel.cs" />
     <Compile Include="ViewModels\Latest\ShowsViewModel.cs" />
@@ -267,6 +275,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Controls\BackHomeControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\PlayButtonControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\ViewedFavoriteButtonControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

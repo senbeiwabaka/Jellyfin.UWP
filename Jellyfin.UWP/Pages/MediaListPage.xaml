@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:c="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
@@ -15,6 +15,8 @@
     NavigationCacheMode="Enabled">
 
     <Page.Resources>
+        <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="210">
                 <Canvas Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -25,18 +27,11 @@
                         </Grid>
                     </Canvas>
                 </Canvas>
-                <Canvas>
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="85" Canvas.Top="142" Canvas.ZIndex="2">
-                            <Button Click="MediaPlayButton_Click">
-                                <Button.Background>
-                                    <SolidColorBrush Color="#000000" />
-                                </Button.Background>
-                                <SymbolIcon Symbol="Play" />
-                            </Button>
-                        </Grid>
-                    </Canvas>
-                </Canvas>
+                
+                <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
+
+                <c:ViewedFavoriteButtonControl PositionLeft="100" PositionTop="280" Item="{x:Bind}" />
+                
                 <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                 <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
@@ -59,24 +54,15 @@
                         </Grid>
                     </Canvas>
                 </Canvas>
-                <Canvas>
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="85" Canvas.Top="142" Canvas.ZIndex="2">
-                            <Button Click="MediaPlayButton_Click">
-                                <Button.Background>
-                                    <SolidColorBrush Color="#000000" />
-                                </Button.Background>
-                                <SymbolIcon Symbol="Play" />
-                            </Button>
-                        </Grid>
-                    </Canvas>
-                </Canvas>
+
+                <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
+
+                <c:ViewedFavoriteButtonControl PositionLeft="110" PositionTop="280" Item="{x:Bind}" />
+                
                 <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                 <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
-        <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -90,7 +76,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <uc:BackHomeControl Grid.Row="0" />
+        <c:BackHomeControl Grid.Row="0" />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="{Binding CountInformation}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
