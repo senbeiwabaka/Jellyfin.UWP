@@ -1,12 +1,7 @@
-﻿using System;
-using Jellyfin.Sdk;
-
-namespace Jellyfin.UWP.Models
+﻿namespace Jellyfin.UWP.Models
 {
-    public class UIMediaListItem
+    public class UIMediaListItem : UIItem
     {
-        public Guid Id { get; internal set; }
-
         public string Name { get; internal set; }
 
         public string Url { get; internal set; }
@@ -17,12 +12,6 @@ namespace Jellyfin.UWP.Models
 
         public string Year { get; internal set; }
 
-        public bool IsSelected { get; internal set; }
-
-        public BaseItemKind Type { get; internal set; }
-
         public int? IndexNumber { get; internal set; }
-
-        public UIUserData UserData { get; internal set; } = new UIUserData();
     }
 }

@@ -19,7 +19,7 @@ namespace Jellyfin.UWP.Controls
         {
             this.InitializeComponent();
 
-            this.memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+            this.memoryCache = Ioc.Default.GetService<IMemoryCache>();
 
             var user = memoryCache.Get<UserDto>("user");
 

@@ -1,5 +1,6 @@
 ﻿using Jellyfin.Sdk;
 using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Controls;
 using Jellyfin.UWP.ViewModels.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.DependencyInjection;
@@ -153,7 +154,8 @@ namespace Jellyfin.UWP.Helpers
                 .AddTransient<ShowsViewModel>()
                 .AddTransient<MoviesViewModel>()
                 .AddTransient<IHomeViewModel, HomeViewModel>()
-                .AddTransient<IFavoritesViewModel, FavoritesViewModel>();
+                .AddTransient<IFavoritesViewModel, FavoritesViewModel>()
+                .AddTransient<ViewedFavoriteViewModel>();
 
             return services;
         }

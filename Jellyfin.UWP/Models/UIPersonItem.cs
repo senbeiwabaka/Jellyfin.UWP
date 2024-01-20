@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace Jellyfin.UWP.Models
+﻿namespace Jellyfin.UWP.Models
 {
-    public sealed class UIPersonItem
+    public sealed class UIPersonItem : UIItem
     {
-        public Guid Id { get; internal set; }
-
         public string Name { get; internal set; }
 
         public string Url { get; internal set; }
