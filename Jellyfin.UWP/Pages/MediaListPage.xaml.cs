@@ -27,7 +27,20 @@ namespace Jellyfin.UWP.Pages
 
         public void ClickItemList(object sender, ItemClickEventArgs e)
         {
-            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            var mediaItem = (UIMediaListItem)e.ClickedItem;
+
+            if (mediaItem.Type == BaseItemKind.Episode)
+            {
+                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
+            }
+            else if (mediaItem.Type == BaseItemKind.Movie)
+            {
+                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
+            else
+            {
+                Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -110,27 +123,6 @@ namespace Jellyfin.UWP.Pages
             if (((MediaListViewModel)DataContext).GetMediaType() == Sdk.BaseItemKind.Series)
             {
                 GridMediaList.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
-            }
-        }
-
-        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            if (item.Type == BaseItemKind.AggregateFolder)
-            {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
-
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
-            {
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
         }
     }

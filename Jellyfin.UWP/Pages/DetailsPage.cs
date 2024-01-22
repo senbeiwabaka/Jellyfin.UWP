@@ -71,13 +71,6 @@ namespace Jellyfin.UWP.Pages
             ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
         }
 
-        private void NextUpButton_Click(object sender, RoutedEventArgs e)
-        {
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = ((DetailsViewModel)DataContext).SeriesNextUpId.Value, };
-
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
-
         private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;

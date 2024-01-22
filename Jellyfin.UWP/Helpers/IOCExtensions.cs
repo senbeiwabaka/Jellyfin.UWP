@@ -155,7 +155,8 @@ namespace Jellyfin.UWP.Helpers
                 .AddTransient<MoviesViewModel>()
                 .AddTransient<IHomeViewModel, HomeViewModel>()
                 .AddTransient<IFavoritesViewModel, FavoritesViewModel>()
-                .AddTransient<ViewedFavoriteViewModel>();
+                .AddTransient<ViewedFavoriteViewModel>()
+                .AddTransient<SeriesDetailViewModel>();
 
             return services;
         }

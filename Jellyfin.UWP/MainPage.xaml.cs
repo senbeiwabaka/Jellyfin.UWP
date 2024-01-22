@@ -1,13 +1,13 @@
-﻿using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.UI;
+using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.UI;
@@ -108,27 +108,6 @@ namespace Jellyfin.UWP
             else
             {
                 Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
-            }
-        }
-
-        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            if (item.Type == BaseItemKind.AggregateFolder)
-            {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
-
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
-            {
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
         }
 

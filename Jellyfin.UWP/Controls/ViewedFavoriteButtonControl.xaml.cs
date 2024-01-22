@@ -62,11 +62,6 @@ namespace Jellyfin.UWP.Controls
             set { SetValue(ItemProperty, value); }
         }
 
-        private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
-        {
-            await ((ViewedFavoriteViewModel)DataContext).PlayedStateAsync(CancellationToken.None);
-        }
-
         private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
         {
             await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync(CancellationToken.None);

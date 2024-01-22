@@ -208,6 +208,7 @@
     <Compile Include="ViewModels\MediaListViewModel.cs" />
     <Compile Include="ViewModels\SearchViewModel.cs" />
     <Compile Include="ViewModels\SeasonViewModel.cs" />
+    <Compile Include="ViewModels\SeriesDetailViewModel.cs" />
     <Compile Include="ViewModels\SetupViewModel.cs" />
   </ItemGroup>
   <ItemGroup>

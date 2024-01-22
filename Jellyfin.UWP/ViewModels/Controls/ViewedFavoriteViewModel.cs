@@ -1,27 +1,27 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Controls
 {
     internal sealed partial class ViewedFavoriteViewModel : ObservableObject
     {
-        private readonly IUserLibraryClient userLibraryClient;
-        private readonly IPlaystateClient playstateClient;
         private readonly IMemoryCache memoryCache;
+        private readonly IPlaystateClient playstateClient;
+        private readonly IUserLibraryClient userLibraryClient;
 
-        private UIItem item;
+        [ObservableProperty]
+        private bool hasBeenViewed;
 
         [ObservableProperty]
         private bool isFavorite;
 
-        [ObservableProperty]
-        private bool hasBeenViewed;
+        private UIItem item;
 
         public ViewedFavoriteViewModel(
             IUserLibraryClient userLibraryClient,
@@ -31,6 +31,29 @@ namespace Jellyfin.UWP.ViewModels.Controls
             this.userLibraryClient = userLibraryClient;
             this.playstateClient = playstateClient;
             this.memoryCache = memoryCache;
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        public async Task FavoriteStateAsync(CancellationToken cancellationToken)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (IsFavorite)
+            {
+                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
+                    user.Id,
+                    item.Id,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                _ = await userLibraryClient.MarkFavoriteItemAsync(
+                    user.Id,
+                    item.Id,
+                    cancellationToken: cancellationToken);
+            }
+
+            IsFavorite = !IsFavorite;
         }
 
         public void Initialize(UIItem item)
@@ -63,29 +86,6 @@ namespace Jellyfin.UWP.ViewModels.Controls
             }
 
             HasBeenViewed = !HasBeenViewed;
-        }
-
-        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task FavoriteStateAsync(CancellationToken cancellationToken)
-        {
-            var user = memoryCache.Get<UserDto>("user");
-
-            if (IsFavorite)
-            {
-                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
-                    user.Id,
-                    item.Id,
-                    cancellationToken: cancellationToken);
-            }
-            else
-            {
-                _ = await userLibraryClient.MarkFavoriteItemAsync(
-                    user.Id,
-                    item.Id,
-                    cancellationToken: cancellationToken);
-            }
-
-            IsFavorite = !IsFavorite;
         }
     }
 }
