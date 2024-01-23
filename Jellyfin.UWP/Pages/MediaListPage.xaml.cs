@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
 using Jellyfin.UWP.ViewModels;
+using System;
+using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -71,9 +71,19 @@ namespace Jellyfin.UWP.Pages
             id = (Guid)e.Parameter;
         }
 
-        private void btn_Favorite_Click(object sender, RoutedEventArgs e)
+        private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
         {
-            //await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync(CancellationToken.None);
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+            var context = (MediaListViewModel)DataContext;
+            var items = context.MediaList;
+            var index = items.IndexOf(item);
+
+            await context.IsFavoriteStateAsync(item.UserData.IsFavorite, item.Id);
+
+            var updateItem = await context.GetLatestOnItemAsync(item.Id);
+
+            items[index] = updateItem;
         }
 
         private async void btn_Viewed_Click(object sender, RoutedEventArgs e)

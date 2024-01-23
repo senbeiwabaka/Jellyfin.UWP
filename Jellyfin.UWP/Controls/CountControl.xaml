@@ -14,7 +14,7 @@
     </UserControl.Resources>
 
     <Canvas Background="Transparent" Visibility="{x:Bind Item.UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
-        <Grid Canvas.Left="195" Canvas.Top="5" Canvas.ZIndex="2">
+        <Grid Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}" Canvas.ZIndex="2">
             <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
             <TextBlock Text="{x:Bind Item.UserData.UnplayedItemCount}" Margin="6" />
         </Grid>

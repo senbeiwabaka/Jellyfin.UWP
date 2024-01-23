@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.Filters;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
+using Jellyfin.UWP.Models.Filters;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -135,6 +135,24 @@ namespace Jellyfin.UWP.ViewModels
             }
 
             await LoadMediaAsync();
+        }
+
+        public async Task IsFavoriteStateAsync(bool isFavorite, Guid id)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (isFavorite)
+            {
+                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
+                    user.Id,
+                    id);
+            }
+            else
+            {
+                _ = await userLibraryClient.MarkFavoriteItemAsync(
+                    user.Id,
+                    id);
+            }
         }
 
         public async Task LoadFiltersAsync()

@@ -1,19 +1,19 @@
-﻿using System.Collections.ObjectModel;
+﻿using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage
 {
     internal sealed class FavoritesViewModel : IFavoritesViewModel
     {
         private readonly IItemsClient itemsClient;
-        private readonly IPersonsClient personsClient;
         private readonly IMemoryCache memoryCache;
+        private readonly IPersonsClient personsClient;
         private readonly SdkClientSettings sdkClientSettings;
 
         public FavoritesViewModel(
