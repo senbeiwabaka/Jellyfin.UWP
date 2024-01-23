@@ -1,28 +1,31 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class SeasonViewModel : ObservableObject
     {
         private readonly IMemoryCache memoryCache;
-        private readonly ITvShowsClient tvShowsClient;
+        private readonly IPlaystateClient playstateClient;
         private readonly SdkClientSettings sdkClientSettings;
+        private readonly ITvShowsClient tvShowsClient;
         private readonly IUserLibraryClient userLibraryClient;
-
-        private SeasonSeries seasonSeries;
 
         [ObservableProperty]
         private string imageUrl;
 
         [ObservableProperty]
         private BaseItemDto mediaItem;
+
+        private SeasonSeries seasonSeries;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItemSeries> seriesMetadata;
@@ -31,12 +34,24 @@ namespace Jellyfin.UWP.ViewModels
             IMemoryCache memoryCache,
             IUserLibraryClient userLibraryClient,
             ITvShowsClient tvShowsClient,
-            SdkClientSettings sdkClientSettings)
+            SdkClientSettings sdkClientSettings,
+            IPlaystateClient playstateClient)
         {
             this.memoryCache = memoryCache;
             this.userLibraryClient = userLibraryClient;
             this.tvShowsClient = tvShowsClient;
             this.sdkClientSettings = sdkClientSettings;
+            this.playstateClient = playstateClient;
+        }
+
+        public async Task<Guid> GetPlayIdAsync()
+        {
+            if (!SeriesMetadata.Any(x => x.IsSelected))
+            {
+                return await GetSeriesEpisodeIdAsync();
+            }
+
+            return SeriesMetadata.Single(x => x.IsSelected).Id;
         }
 
         public async Task LoadMediaInformationAsync(SeasonSeries seasonSeries)
@@ -67,10 +82,12 @@ namespace Jellyfin.UWP.ViewModels
                         Name = x.Name,
                         Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
                         Description = x.Overview,
+                        UserData = new UIUserData
+                        {
+                            IsFavorite = x.UserData.IsFavorite,
+                            HasBeenWatched = x.UserData.Played,
+                        },
                     };
-
-                    item.UserData.IsFavorite = x.UserData.IsFavorite;
-                    item.UserData.HasBeenWatched = x.UserData.Played;
 
                     return item;
                 }));
@@ -80,19 +97,28 @@ namespace Jellyfin.UWP.ViewModels
             this.seasonSeries = seasonSeries;
         }
 
-        public async Task<Guid> GetPlayIdAsync()
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        public async Task PlayedStateAsync(CancellationToken cancellationToken)
         {
-            if (!SeriesMetadata.Any(x => x.IsSelected))
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (MediaItem.UserData.Played)
             {
-                return await GetSeriesEpisodeIdAsync();
+                _ = await playstateClient.MarkUnplayedItemAsync(
+                    user.Id,
+                    MediaItem.Id,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                _ = await playstateClient.MarkPlayedItemAsync(
+                    user.Id,
+                    MediaItem.Id,
+                    DateTimeOffset.Now,
+                    cancellationToken: cancellationToken);
             }
 
-            return SeriesMetadata.Single(x => x.IsSelected).Id;
-        }
-
-        private string SetImageUrl(Guid id, string height, string width, string imageTagId)
-        {
-            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
+            await LoadMediaInformationAsync(seasonSeries);
         }
 
         private async Task<Guid> GetSeriesEpisodeIdAsync()
@@ -110,6 +136,11 @@ namespace Jellyfin.UWP.ViewModels
                     });
 
             return episodes.Items.First(x => !x.UserData.Played && (x.UserData.PlayedPercentage ?? 0) < 90).Id;
+        }
+
+        private string SetImageUrl(Guid id, string height, string width, string imageTagId)
+        {
+            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
         }
     }
 }

@@ -4,11 +4,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:viewmodels="using:Jellyfin.UWP.ViewModels"
-    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
-    xmlns:uc="using:Jellyfin.UWP.Controls"
     d:DataContext="{d:DesignInstance Type=viewmodels:SeasonViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -16,8 +15,8 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
-        <converters:BoolToObjectConverter x:Key="BoolToPlayedColor" TrueValue="#c33" FalseValue="#fff" />
-        <converters:BoolToObjectConverter x:Key="BoolToFavoriteColor" TrueValue="#c33" FalseValue="#fff" />
+        <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
+        <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
     </Page.Resources>
 
     <Grid Background="#101010">
@@ -46,11 +45,11 @@
 
             <ScrollViewer Grid.Column="1">
                 <StackPanel>
-                    <TextBlock Text="SEASON"/>
-                    
+                    <TextBlock Text="SEASON" />
+
                     <StackPanel Orientation="Horizontal" Height="115.2" Padding="30,0,0,0">
                         <StackPanel.Background>
-                            <RevealBackgroundBrush Color="#202020" Opacity=".2" />
+                            <SolidColorBrush Color="#202020" Opacity=".8" />
                         </StackPanel.Background>
 
                         <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -69,25 +68,32 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <Button x:Name="WholeSeriesPlay" Click="WholeSeriesPlay_Click" Margin="10" ToolTipService.ToolTip="Play">
+                                <Button Click="WholeSeriesPlay_Click" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
                                     <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity=".87" />
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
                                     <SymbolIcon x:Name="play" Symbol="Play" />
                                 </Button>
 
                                 <Button Margin="10" ToolTipService.ToolTip="Shuffle">
                                     <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity=".87" />
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
                                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
                                 </Button>
 
-                                <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{Binding PlayedStateCommand}">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding HasBeenWatched, Converter={StaticResource BoolToPlayedColor}}" />
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
+                                </Button>
+
+                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" Glyph="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -97,18 +103,27 @@
 
                     <StackPanel Padding="30,0,0,0">
                         <StackPanel>
-                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SeriesItems_ItemClick">
+                            <ListView
+                                x:Name="SeriesItems"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{Binding SeriesMetadata, Mode=OneWay}"
+                                IsItemClickEnabled="True"
+                                ItemClick="SeriesItems_ItemClick">
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                         <StackPanel Orientation="Horizontal">
-                                            <Canvas>
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="240" Canvas.Top="5" Canvas.ZIndex="2" Visibility="{Binding HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                                    </Grid>
-                                                </Canvas>
+                                            <Canvas
+                                                Background="Transparent"
+                                                Visibility="{x:Bind UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                <Grid Canvas.Left="240" Canvas.Top="5" Canvas.ZIndex="2">
+                                                    <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                                                </Grid>
                                             </Canvas>
+
                                             <Image Source="{x:Bind Url}" Canvas.ZIndex="-1" Height="150" VerticalAlignment="Center" />
                                             <StackPanel Padding="10">
                                                 <TextBlock Text="{x:Bind Name}" FontSize="15" />
@@ -127,13 +142,13 @@
                                                             <Button.Background>
                                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                                             </Button.Background>
-                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding HasBeenWatched, Converter={StaticResource BoolToPlayedColor}}" />
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" />
                                                         </Button>
                                                         <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
                                                             <Button.Background>
                                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                                             </Button.Background>
-                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{Binding IsFavorite, Converter={StaticResource BoolToPlayedColor}}" />
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" />
                                                         </Button>
                                                     </StackPanel>
                                                 </StackPanel>

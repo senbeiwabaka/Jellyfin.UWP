@@ -42,7 +42,7 @@ namespace Jellyfin.UWP.Pages
 
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
         {
-            var context = ((SeasonViewModel)DataContext);
+            var context = (SeasonViewModel)DataContext;
 
             await context.LoadMediaInformationAsync(seasonSeries);
         }
