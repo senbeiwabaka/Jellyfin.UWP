@@ -226,6 +226,9 @@ namespace Jellyfin.UWP
 
         private void SetupLatest()
         {
+            lv_Latest.Children.Clear();
+            lv_Latest.UpdateLayout();
+
             foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
             {
                 if (!item.Any())
@@ -309,6 +312,30 @@ namespace Jellyfin.UWP
                 listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
                 listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
                 listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+            }
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            var context = (MainViewModel)DataContext;
+
+            if (context.IsHomeSelected)
+            {
+                await context.HomeLoadAsync();
+
+                context.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
+                context.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+
+                SetupLatest();
+            }
+            else
+            {
+                await context.FavoriteLoadAsync();
+
+                context.HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
+                context.HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
+                context.HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
+                context.HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
             }
         }
     }

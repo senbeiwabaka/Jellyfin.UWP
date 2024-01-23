@@ -18,7 +18,7 @@
             <StackPanel Width="380">
                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
 
-                <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                 <Image x:Name="im_ItemImage" Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -37,9 +37,9 @@
 
                 <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
 
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
@@ -47,7 +47,7 @@
             <StackPanel Width="220">
                 <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
 
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -191,7 +191,7 @@
                                 <StackPanel>
                                     <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
 
-                                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
+                                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                                     <Image Source="{x:Bind Url}" Width="380" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                                     <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />

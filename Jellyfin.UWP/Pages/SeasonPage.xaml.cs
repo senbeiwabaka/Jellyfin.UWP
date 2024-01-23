@@ -35,6 +35,13 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatedTo(e);
         }
 
+        private async void btn_EpisodeMarkPlayState_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (UIItem)((Button)sender).DataContext;
+
+            await ((SeasonViewModel)DataContext).EpisodePlayStateAsync(item);
+        }
+
         private async void EpisodePlay_Click(object sender, RoutedEventArgs e)
         {
             var button = (Button)sender;
@@ -62,13 +69,6 @@ namespace Jellyfin.UWP.Pages
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeasonViewModel)DataContext).GetPlayIdAsync() };
 
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
-
-        private async void btn_EpisodeMarkPlayState_Click(object sender, RoutedEventArgs e)
-        {
-            var item = (UIItem)((Button)sender).DataContext;
-
-            await ((SeasonViewModel)DataContext).EpisodePlayStateAsync(item);
         }
     }
 }

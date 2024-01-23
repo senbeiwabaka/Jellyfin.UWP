@@ -79,20 +79,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
             IsHomeSelected = true;
         }
 
-        public async Task LoadInitialAsync()
-        {
-            var user = memoryCache.Get<UserDto>("user");
-
-            UserName = $"User: {user.Name}";
-
-            MediaList = await homeViewModel.LoadMediaListAsync();
-            (ResumeMediaList, HasResumeMedia) = await homeViewModel.LoadResumeItemsAsync();
-            NextupMediaList = await homeViewModel.LoadNextUpAsync();
-            MediaListGrouped = await homeViewModel.LoadLatestAsync(MediaList);
-        }
-
-        [RelayCommand(IncludeCancelCommand = false, AllowConcurrentExecutions = false)]
-        private async Task SwitchToFavorite(CancellationToken cancellationToken)
+        public async Task FavoriteLoadAsync(CancellationToken cancellationToken = default)
         {
             IsHomeSelected = false;
 
@@ -104,17 +91,39 @@ namespace Jellyfin.UWP.ViewModels.MainPage
             FavoritePersonList = await favoritesViewModel.GetPeopleAsync(cancellationToken);
         }
 
-        [RelayCommand(IncludeCancelCommand = false, AllowConcurrentExecutions = false)]
-        private async Task SwitchToHome(CancellationToken cancellationToken)
+        public async Task HomeLoadAsync(CancellationToken cancellationToken = default)
         {
             IsHomeSelected = true;
 
             IsFavoriteSelected = false;
 
+            MediaListGrouped = null;
+
             MediaList = await homeViewModel.LoadMediaListAsync(cancellationToken);
             (ResumeMediaList, HasResumeMedia) = await homeViewModel.LoadResumeItemsAsync(cancellationToken);
             NextupMediaList = await homeViewModel.LoadNextUpAsync(cancellationToken);
             MediaListGrouped = await homeViewModel.LoadLatestAsync(MediaList, cancellationToken);
+        }
+
+        public async Task LoadInitialAsync()
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            UserName = $"User: {user.Name}";
+
+            await HomeLoadAsync();
+        }
+
+        [RelayCommand(IncludeCancelCommand = false, AllowConcurrentExecutions = false)]
+        private async Task SwitchToFavorite(CancellationToken cancellationToken)
+        {
+            await FavoriteLoadAsync(cancellationToken);
+        }
+
+        [RelayCommand(IncludeCancelCommand = false, AllowConcurrentExecutions = false)]
+        private async Task SwitchToHome(CancellationToken cancellationToken)
+        {
+            await HomeLoadAsync(cancellationToken);
         }
     }
 }
