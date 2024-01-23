@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels;
@@ -79,27 +78,6 @@ namespace Jellyfin.UWP.Pages
             Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
-        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            if (item.Type == BaseItemKind.AggregateFolder)
-            {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
-
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
-            {
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
-        }
-
         private async void SearchPage_Loaded(object sender, RoutedEventArgs e)
         {
             searchText = memoryCache.Get<string>("Searched-Text");
@@ -114,6 +92,11 @@ namespace Jellyfin.UWP.Pages
             }
 
             ApplicationView.GetForCurrentView().Title = "Search";
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await ((SearchViewModel)DataContext).LoadSearchAsync(asbSearch.Text);
         }
     }
 }
