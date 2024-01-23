@@ -1,11 +1,11 @@
-﻿using Jellyfin.Sdk;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage
 {
@@ -55,10 +55,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             Type = x.Type,
                             SeriesName = x.SeriesName,
+                            UserData = new UIUserData
+                            {
+                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = true,
+                            },
                         };
-
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.IsFavorite = true;
 
                         return item;
                     }));
@@ -92,10 +94,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = true,
+                            },
                         };
-
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.IsFavorite = true;
 
                         return item;
                     }));
@@ -154,11 +158,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             Type = x.Type,
                             SeriesName = x.SeriesName,
+                            UserData = new UIUserData
+                            {
+                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = true,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
+                            },
                         };
-
-                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.IsFavorite = true;
 
                         return item;
                     }));

@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Controls
@@ -16,10 +14,10 @@ namespace Jellyfin.UWP.ViewModels.Controls
         private readonly IUserLibraryClient userLibraryClient;
 
         [ObservableProperty]
-        private bool beenViewed;
+        private bool isFavorite;
 
         [ObservableProperty]
-        private bool isFavorite;
+        private bool hasBeenWatched;
 
         private UIItem item;
 
@@ -33,27 +31,22 @@ namespace Jellyfin.UWP.ViewModels.Controls
             this.memoryCache = memoryCache;
         }
 
-        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task FavoriteStateAsync(CancellationToken cancellationToken)
+        public async Task FavoriteStateAsync()
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            if (IsFavorite)
+            if (item.UserData.IsFavorite)
             {
                 _ = await userLibraryClient.UnmarkFavoriteItemAsync(
                     user.Id,
-                    item.Id,
-                    cancellationToken: cancellationToken);
+                    item.Id);
             }
             else
             {
                 _ = await userLibraryClient.MarkFavoriteItemAsync(
                     user.Id,
-                    item.Id,
-                    cancellationToken: cancellationToken);
+                    item.Id);
             }
-
-            IsFavorite = !IsFavorite;
         }
 
         public void Initialize(UIItem item)
@@ -61,14 +54,14 @@ namespace Jellyfin.UWP.ViewModels.Controls
             this.item = item;
 
             IsFavorite = this.item.UserData.IsFavorite;
-            BeenViewed = this.item.UserData.HasBeenWatched;
+            HasBeenWatched = this.item.UserData.HasBeenWatched;
         }
 
-        public async Task PlayedStateAsync(bool hasBeenViewed)
+        public async Task PlayedStateAsync()
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            if (hasBeenViewed)
+            if (item.UserData.HasBeenWatched)
             {
                 _ = await playstateClient.MarkUnplayedItemAsync(
                     user.Id,
