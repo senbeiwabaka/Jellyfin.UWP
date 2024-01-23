@@ -33,33 +33,6 @@ namespace Jellyfin.UWP.ViewModels.Details
             return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray(), NextUpItem?.Id);
         }
 
-        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task NextUpPlayedStateAsync(CancellationToken cancellationToken)
-        {
-            var user = memoryCache.Get<UserDto>("user");
-
-            if (NextUpItem != null)
-            {
-                if (NextUpItem.UserData.HasBeenWatched)
-                {
-                    _ = await playstateClient.MarkUnplayedItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        cancellationToken: cancellationToken);
-                }
-                else
-                {
-                    _ = await playstateClient.MarkPlayedItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        DateTimeOffset.Now,
-                        cancellationToken: cancellationToken);
-                }
-
-                await LoadMediaInformationAsync(MediaItem.Id);
-            }
-        }
-
         protected override async Task ExtraExecuteAsync()
         {
             NextUpItem = null;
@@ -125,6 +98,59 @@ namespace Jellyfin.UWP.ViewModels.Details
             }
 
             return $"{settings.BaseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        private async Task NextUpFavoriteStateAsync(CancellationToken cancellationToken)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (NextUpItem != null)
+            {
+                if (NextUpItem.UserData.IsFavorite)
+                {
+                    _ = await userLibraryClient.UnmarkFavoriteItemAsync(
+                        user.Id,
+                        NextUpItem.Id,
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    _ = await userLibraryClient.MarkFavoriteItemAsync(
+                        user.Id,
+                        NextUpItem.Id,
+                        cancellationToken: cancellationToken);
+                }
+
+                await LoadMediaInformationAsync(MediaItem.Id);
+            }
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        private async Task NextUpPlayedStateAsync(CancellationToken cancellationToken)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (NextUpItem != null)
+            {
+                if (NextUpItem.UserData.HasBeenWatched)
+                {
+                    _ = await playstateClient.MarkUnplayedItemAsync(
+                        user.Id,
+                        NextUpItem.Id,
+                        cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    _ = await playstateClient.MarkPlayedItemAsync(
+                        user.Id,
+                        NextUpItem.Id,
+                        DateTimeOffset.Now,
+                        cancellationToken: cancellationToken);
+                }
+
+                await LoadMediaInformationAsync(MediaItem.Id);
+            }
         }
     }
 }

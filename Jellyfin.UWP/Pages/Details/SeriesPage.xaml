@@ -167,14 +167,14 @@
                                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                                 <Canvas Background="Transparent">
                                     <StackPanel Canvas.Left="285" Canvas.Top="180" Canvas.ZIndex="2" Orientation="Horizontal">
-                                        <Button Margin="0,0,5,0" Command="{Binding NextUpPlayedStateCommand}">
+                                        <Button Margin="0,0,5,0" Command="{Binding NextUpPlayedStateCommand}" ToolTipService.ToolTip="Next Up Mark Played" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>
                                             <FontIcon Foreground="{Binding NextUpItem.UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                                         </Button>
 
-                                        <Button Margin="5,0,0,0">
+                                        <Button Margin="5,0,0,0" Command="{Binding NextUpFavoriteStateCommand}" ToolTipService.ToolTip="Next Up Mark Favorite" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>
