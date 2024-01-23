@@ -1,0 +1,22 @@
+﻿<UserControl
+    x:Class="Jellyfin.UWP.Controls.CountControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <UserControl.Resources>
+        <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
+    </UserControl.Resources>
+
+    <Canvas Background="Transparent" Visibility="{x:Bind Item.UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+        <Grid Canvas.Left="195" Canvas.Top="5" Canvas.ZIndex="2">
+            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
+            <TextBlock Text="{x:Bind Item.UserData.UnplayedItemCount}" Margin="6" />
+        </Grid>
+    </Canvas>
+</UserControl>

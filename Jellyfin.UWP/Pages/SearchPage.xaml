@@ -34,7 +34,6 @@
 
         <ScrollViewer Grid.Row="2">
             <StackPanel>
-                <!-- Movie Results -->
                 <StackPanel Visibility="{Binding HasMoviesResult, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Movies" FontSize="22" FontWeight="Bold" />
 
@@ -54,19 +53,11 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
                                 <StackPanel Width="220">
-                                    <Canvas>
-                                        <Canvas Background="Transparent">
-                                            <Grid Canvas.Left="90" Canvas.Top="142" Canvas.ZIndex="2">
-                                                <Button Click="MediaPlayButton_Click">
-                                                    <Button.Background>
-                                                        <SolidColorBrush Color="#000000" />
-                                                    </Button.Background>
-                                                    <SymbolIcon Symbol="Play" />
-                                                </Button>
-                                            </Grid>
-                                        </Canvas>
-                                    </Canvas>
-                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                    <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
+                                    <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
+                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" Height="330" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>
@@ -74,7 +65,6 @@
                     </ListView>
                 </StackPanel>
 
-                <!-- Series Results -->
                 <StackPanel Visibility="{Binding HasSeriesResult, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
 
@@ -94,27 +84,12 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
                                 <StackPanel Width="220">
-                                    <Canvas>
-                                        <Canvas Background="Transparent">
-                                            <Grid Canvas.Left="180" Canvas.Top="10" Canvas.ZIndex="2">
-                                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="25" />
-                                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
-                                            </Grid>
-                                        </Canvas>
-                                    </Canvas>
-                                    <Canvas>
-                                        <Canvas Background="Transparent">
-                                            <Grid Canvas.Left="90" Canvas.Top="142" Canvas.ZIndex="2">
-                                                <Button Click="MediaPlayButton_Click">
-                                                    <Button.Background>
-                                                        <SolidColorBrush Color="#000000" />
-                                                    </Button.Background>
-                                                    <SymbolIcon Symbol="Play" />
-                                                </Button>
-                                            </Grid>
-                                        </Canvas>
-                                    </Canvas>
-                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <uc:ViewedIconControl PositionLeft="180" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                    <uc:CountControl PositionLeft="180" PositionTop="5" Item="{x:Bind}" />
+                                    <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
+                                    <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
+                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>
@@ -122,7 +97,6 @@
                     </ListView>
                 </StackPanel>
 
-                <!-- Episodes Results -->
                 <StackPanel Visibility="{Binding HasEpisodesResult, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Episodes" FontSize="22" FontWeight="Bold" />
 
@@ -142,19 +116,11 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItem">
                                 <StackPanel Width="380">
-                                    <Canvas>
-                                        <Canvas Background="Transparent">
-                                            <Grid Canvas.Left="175" Canvas.Top="90" Canvas.ZIndex="2">
-                                                <Button Click="MediaPlayButton_Click">
-                                                    <Button.Background>
-                                                        <SolidColorBrush Color="#000000" />
-                                                    </Button.Background>
-                                                    <SymbolIcon Symbol="Play" />
-                                                </Button>
-                                            </Grid>
-                                        </Canvas>
-                                    </Canvas>
-                                    <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                    <uc:ViewedIconControl PositionLeft="350" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                    <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                    <uc:ViewedFavoriteButtonControl PositionLeft="290" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
+                                    <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>

@@ -4,10 +4,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:DetailsViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -15,6 +15,8 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
+        <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
+        <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
     </Page.Resources>
 
     <Grid Background="#101010">
@@ -60,7 +62,11 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <StackPanel
+                                Grid.Column="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="0,0,15,0">
                                 <TextBlock Text="{Binding MediaItem.Name}" FontSize="26" FontWeight="Bold" />
 
                                 <StackPanel Orientation="Horizontal"
@@ -101,18 +107,18 @@
                                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
                                     </Button>
 
-                                    <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                    <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{Binding PlayedStateCommand}">
                                         <Button.Background>
                                             <SolidColorBrush Color="#000000" Opacity="0" />
                                         </Button.Background>
-                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource BoolToPlayedColor}}" />
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
                                     </Button>
 
                                     <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
                                         <Button.Background>
                                             <SolidColorBrush Color="#000000" Opacity="0" />
                                         </Button.Background>
-                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource BoolToPlayedColor}}" />
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" Glyph="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
@@ -161,36 +167,16 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Text="Seasons" />
-
-                            <ListView x:Name="SeriesItems" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesMetadata, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SeriesItems_ItemClick">
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Background="Transparent" Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="m:UIMediaListItem">
-                                        <StackPanel Width="204" Height="360">
-                                            <Image Source="{x:Bind Url}" Width="186" />
-                                            <StackPanel Orientation="Horizontal">
-                                                <Button x:Name="SeasonPlay" Click="SeasonPlay_Click">
-                                                    <SymbolIcon x:Name="play" Symbol="Play" />
-                                                </Button>
-
-                                                <TextBlock Text="{x:Bind Name}" FontSize="15" />
-                                            </StackPanel>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-
                         <StackPanel>
                             <TextBlock Text="Cast &amp; Crew" />
 
-                            <ListView ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding CastAndCrew, Mode=OneWay}" IsItemClickEnabled="False">
+                            <ListView
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{Binding CastAndCrew, Mode=OneWay}"
+                                IsItemClickEnabled="False">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -211,11 +197,15 @@
                         <StackPanel>
                             <TextBlock Text="More Like This" />
 
-                            <ListView x:Name="SimiliarItems" ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ItemsSource="{Binding SimiliarMediaList, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="SimiliarItems_ItemClick">
+                            <ListView
+                                x:Name="SimiliarItems"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{Binding SimiliarMediaList, Mode=OneWay}"
+                                IsItemClickEnabled="True"
+                                ItemClick="SimiliarItems_ItemClick">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -223,11 +213,16 @@
                                 </ListView.ItemsPanel>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
-                                        <StackPanel Width="204" Height="360" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Image Source="{x:Bind Url}" Width="186" />
+                                        <StackPanel Width="220" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                            <uc:CountControl PositionLeft="195" PositionTop="5" Item="{x:Bind}" />
 
-                                            <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" />
-                                            <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" />
+                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+
+                                            <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

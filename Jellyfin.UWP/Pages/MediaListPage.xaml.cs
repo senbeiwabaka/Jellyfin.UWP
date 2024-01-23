@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
 using Jellyfin.UWP.ViewModels;
-using System;
-using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,7 +27,20 @@ namespace Jellyfin.UWP.Pages
 
         public void ClickItemList(object sender, ItemClickEventArgs e)
         {
-            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            var mediaItem = (UIMediaListItem)e.ClickedItem;
+
+            if (mediaItem.Type == BaseItemKind.Episode)
+            {
+                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
+            }
+            else if (mediaItem.Type == BaseItemKind.Movie)
+            {
+                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+            }
+            else
+            {
+                Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
+            }
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -56,6 +69,26 @@ namespace Jellyfin.UWP.Pages
             }
 
             id = (Guid)e.Parameter;
+        }
+
+        private void btn_Favorite_Click(object sender, RoutedEventArgs e)
+        {
+            //await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync(CancellationToken.None);
+        }
+
+        private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var item = (UIMediaListItem)button.DataContext;
+            var context = (MediaListViewModel)DataContext;
+            var items = context.MediaList;
+            var index = items.IndexOf(item);
+
+            await context.PlayedStateAsync(item.UserData.HasBeenWatched, item.Id);
+
+            var updateItem = await context.GetLatestOnItemAsync(item.Id);
+
+            items[index] = updateItem;
         }
 
         private async void FiltersButton_Click(object sender, RoutedEventArgs e)
@@ -106,32 +139,6 @@ namespace Jellyfin.UWP.Pages
             await ((MediaListViewModel)DataContext).InitialLoadAsync(id);
 
             ApplicationView.GetForCurrentView().Title = ((MediaListViewModel)DataContext).GetTitle();
-
-            if (((MediaListViewModel)DataContext).GetMediaType() == Sdk.BaseItemKind.Series)
-            {
-                GridMediaList.ItemTemplate = (DataTemplate)Resources["UIShowsMediaListItemDataTemplate"];
-            }
-        }
-
-        private async void MediaPlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            if (item.Type == BaseItemKind.AggregateFolder)
-            {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
-
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
-            {
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
-
-                Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-            }
         }
     }
 }

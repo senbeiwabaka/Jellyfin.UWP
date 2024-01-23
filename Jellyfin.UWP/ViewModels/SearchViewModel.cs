@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -12,26 +12,26 @@ namespace Jellyfin.UWP.ViewModels
     {
         private const int Limit = 24;
         private readonly IItemsClient itemsClient;
-        private readonly SdkClientSettings sdkClientSettings;
         private readonly IMemoryCache memoryCache;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> movieMediaList;
-
-        [ObservableProperty]
-        private bool hasMoviesResult;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> seriesMediaList;
-
-        [ObservableProperty]
-        private bool hasSeriesResult;
+        private readonly SdkClientSettings sdkClientSettings;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> episodesMediaList;
 
         [ObservableProperty]
         private bool hasEpisodesResult;
+
+        [ObservableProperty]
+        private bool hasMoviesResult;
+
+        [ObservableProperty]
+        private bool hasSeriesResult;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaListItem> movieMediaList;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaListItem> seriesMediaList;
 
         public SearchViewModel(IItemsClient itemsClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
         {
@@ -65,6 +65,12 @@ namespace Jellyfin.UWP.ViewModels
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
                             Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            },
                         }));
 
             HasMoviesResult = MovieMediaList.Count > 0;
@@ -91,11 +97,13 @@ namespace Jellyfin.UWP.ViewModels
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
                             Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            },
                         };
-
-                        item.UserData.IsFavorite = x.UserData.IsFavorite;
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
 
                         return item;
                     }));
@@ -123,6 +131,12 @@ namespace Jellyfin.UWP.ViewModels
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = x.CollectionType,
                             Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            },
                         }));
 
             HasEpisodesResult = EpisodesMediaList.Count > 0;

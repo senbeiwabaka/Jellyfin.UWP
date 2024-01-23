@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels;
-using System;
+using Jellyfin.UWP.ViewModels.Details;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -12,22 +12,22 @@ namespace Jellyfin.UWP.Pages
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class DetailsPage : Page
+    public sealed partial class SeriesPage : Page
     {
         private Guid id;
 
-        public DetailsPage()
+        public SeriesPage()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            DataContext = Ioc.Default.GetRequiredService<DetailsViewModel>();
+            DataContext = Ioc.Default.GetRequiredService<SeriesDetailViewModel>();
 
-            Loaded += DetailsPage_Loaded;
+            Loaded += SeriesPage_Loaded;
         }
 
         public async void PlayClick(object sender, RoutedEventArgs e)
         {
-            var context = ((DetailsViewModel)DataContext);
+            var context = (SeriesDetailViewModel)DataContext;
             var playId = await context.GetPlayIdAsync();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
@@ -62,40 +62,33 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatedTo(e);
         }
 
-        private async void DetailsPage_Loaded(object sender, RoutedEventArgs e)
+        private void NextUpButton_Click(object sender, RoutedEventArgs e)
         {
-            var context = ((DetailsViewModel)DataContext);
+            Frame.Navigate(typeof(EpisodePage), ((SeriesDetailViewModel)DataContext).NextUpItem?.Id);
+        }
+
+        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((SeriesDetailViewModel)DataContext).MediaItem.Id, });
+        }
+
+        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var context = (SeriesDetailViewModel)DataContext;
 
             await context.LoadMediaInformationAsync(id);
 
             ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
         }
 
-        private void NextUpButton_Click(object sender, RoutedEventArgs e)
-        {
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = ((DetailsViewModel)DataContext).SeriesNextUpId.Value, };
-
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
-
-        private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            item.IsSelected = true;
-
-            Frame.Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayIdAsync());
-        }
-
-        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
-        }
-
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+            Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await ((SeriesDetailViewModel)DataContext).LoadMediaInformationAsync(id);
         }
     }
 }

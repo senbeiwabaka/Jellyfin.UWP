@@ -23,7 +23,7 @@
                 <Button.Background>
                     <SolidColorBrush Color="#000000" Opacity="0" />
                 </Button.Background>
-                <FontIcon Foreground="{Binding HasBeenViewed, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                <FontIcon Foreground="{x:Bind Item.UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
             </Button>
 
             <Button x:Name="btn_Favorite" Margin="5,0,0,0" Click="btn_Favorite_Click">

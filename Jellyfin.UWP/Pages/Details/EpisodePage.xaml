@@ -4,10 +4,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:EpisodeViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -15,8 +15,8 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
-        <converters:BoolToObjectConverter x:Key="BoolToPlayedColor" TrueValue="#c33" FalseValue="#fff" />
-        <converters:BoolToObjectConverter x:Key="BoolToFavoriteColor" TrueValue="#c33" FalseValue="#fff" />
+        <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
+        <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
     </Page.Resources>
 
     <Grid Background="#101010">
@@ -33,7 +33,6 @@
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
-                <RowDefinition Height="30" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -42,23 +41,26 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Image Source="{Binding ImageUrl}" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="top" />
+            <Image Source="{Binding ImageUrl}" Grid.Column="0" />
 
-            <StackPanel Grid.Column="1" Grid.Row="0" Padding="30,0,0,0">
-                <StackPanel.Background>
-                    <SolidColorBrush Color="#202020" Opacity=".8" />
-                </StackPanel.Background>
-                <Button x:Name="SeriesName" Click="SeriesName_Click">
-                    <Button.Template>
-                        <ControlTemplate>
-                            <TextBlock Text="{Binding MediaItem.SeriesName}" FontSize="26" />
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </StackPanel>
-
-            <ScrollViewer Grid.Column="1" Grid.Row="1">
+            <ScrollViewer Grid.Column="1">
                 <StackPanel>
+                    <TextBlock Text="EPISODE" />
+
+                    <StackPanel Padding="30,0,0,0">
+                        <StackPanel.Background>
+                            <SolidColorBrush Color="#202020" Opacity=".8" />
+                        </StackPanel.Background>
+
+                        <Button x:Name="SeriesName" Click="SeriesName_Click">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <TextBlock Text="{Binding MediaItem.SeriesName}" FontSize="26" />
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Height="85"  Padding="30,0,0,0">
                         <StackPanel.Background>
                             <SolidColorBrush Color="#202020" Opacity=".8" />
@@ -106,18 +108,18 @@
                                     <SymbolIcon x:Name="play" Symbol="Play" />
                                 </Button>
 
-                                <Button ToolTipService.ToolTip="Mark played" Margin="10">
+                                <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{Binding PlayedStateCommand}">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource BoolToPlayedColor}}" />
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
                                 </Button>
 
                                 <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource BoolToFavoriteColor}}" />
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Foreground="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" Glyph="{Binding MediaItem.UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -159,10 +161,17 @@
                         <StackPanel Margin="0,0,0,20">
                             <TextBlock FontSize="22">
                                 <Run>More from</Run>
-                                <Run Text="{Binding MediaItem.SeasonName}"  />
+                                <Run Text="{Binding MediaItem.SeasonName}" />
                             </TextBlock>
 
-                            <ListView ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding SeriesEpisodes, Mode=OneWay}" IsItemClickEnabled="True" ItemClick="{x:Bind MediaClickItemList}">
+                            <ListView
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{Binding SeriesEpisodes}"
+                                IsItemClickEnabled="True"
+                                ItemClick="{x:Bind MediaClickItemList}">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -170,21 +179,17 @@
                                 </ListView.ItemsPanel>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
-                                        <StackPanel Width="200">
+                                        <StackPanel Width="380">
+                                            <uc:ViewedIconControl PositionLeft="345" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_Click" />
+
+                                            <Image Source="{x:Bind Url}" Height="215" Stretch="Fill" Canvas.ZIndex="-1" />
                                             <TextBlock FontSize="14">
                                                 <Run Text="{x:Bind IndexNumber}" />
                                                 <Run>. </Run>
                                                 <Run Text="{x:Bind Name}" />
                                             </TextBlock>
-                                            <Canvas >
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="171" Canvas.Top="5" Canvas.ZIndex="2" Visibility="{Binding HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Image Source="{x:Bind Url}" Stretch="Fill" Canvas.ZIndex="-1" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
@@ -194,7 +199,13 @@
                         <StackPanel>
                             <TextBlock Text="Cast &amp; Crew" FontSize="22" />
 
-                            <ListView ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Disabled" ItemsSource="{Binding CastAndCrew, Mode=OneWay}" IsItemClickEnabled="False">
+                            <ListView
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{Binding CastAndCrew, Mode=OneWay}"
+                                IsItemClickEnabled="False">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -206,32 +217,6 @@
                                             <Image Source="{x:Bind Url}" Width="186" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" />
                                             <TextBlock Text="{x:Bind Role}" FontSize="12" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ListView.ItemTemplate>
-                            </ListView>
-                        </StackPanel>
-
-                        <StackPanel>
-                            <TextBlock Text="More Like This" />
-
-                            <ListView x:Name="SimiliarItems" ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.HorizontalScrollBarVisibility="Visible"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            ItemsSource="{Binding SimiliarMediaList, Mode=OneWay}" IsItemClickEnabled="True">
-                                <ListView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Background="Transparent" Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </ListView.ItemsPanel>
-                                <ListView.ItemTemplate>
-                                    <DataTemplate x:DataType="m:UIMediaListItem">
-                                        <StackPanel Width="204" Height="360" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Image Source="{x:Bind Url}" Width="186" />
-
-                                            <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" />
-                                            <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

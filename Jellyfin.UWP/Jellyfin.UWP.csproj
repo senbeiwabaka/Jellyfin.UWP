@@ -134,11 +134,17 @@
     <Compile Include="Controls\BackHomeControl.xaml.cs">
       <DependentUpon>BackHomeControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\CountControl.xaml.cs">
+      <DependentUpon>CountControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\PlayButtonControl.xaml.cs">
       <DependentUpon>PlayButtonControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ViewedFavoriteButtonControl.xaml.cs">
       <DependentUpon>ViewedFavoriteButtonControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ViewedIconControl.xaml.cs">
+      <DependentUpon>ViewedIconControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\IOCExtensions.cs" />
@@ -160,7 +166,7 @@
     <Compile Include="Models\UIMediaStream.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
     <Compile Include="Models\UIUserData.cs" />
-    <Compile Include="Pages\EpisodePage.xaml.cs">
+    <Compile Include="Pages\Details\EpisodePage.xaml.cs">
       <DependentUpon>EpisodePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\Latest\MoviesPage.cs">
@@ -172,7 +178,7 @@
     <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\DetailsPage.cs">
+    <Compile Include="Pages\Details\DetailsPage.cs">
       <DependentUpon>Details.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\MediaItemPlayer.xaml.cs">
@@ -187,14 +193,14 @@
     <Compile Include="Pages\SeasonPage.xaml.cs">
       <DependentUpon>SeasonPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SeriesPage.xaml.cs">
+    <Compile Include="Pages\Details\SeriesPage.xaml.cs">
       <DependentUpon>SeriesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\SetupPage.xaml.cs">
       <DependentUpon>SetupPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\Controls\ViewedFavoriteViewModel.cs" />
-    <Compile Include="ViewModels\EpisodeViewModel.cs" />
+    <Compile Include="ViewModels\Details\EpisodeViewModel.cs" />
     <Compile Include="ViewModels\Latest\MoviesViewModel.cs" />
     <Compile Include="ViewModels\Latest\ShowsViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
@@ -203,11 +209,12 @@
     <Compile Include="ViewModels\MainPage\IFavoritesViewModel.cs" />
     <Compile Include="ViewModels\MainPage\IHomeViewModel.cs" />
     <Compile Include="ViewModels\MainPage\MainViewModel.cs" />
-    <Compile Include="ViewModels\DetailsViewModel.cs" />
+    <Compile Include="ViewModels\Details\DetailsViewModel.cs" />
     <Compile Include="ViewModels\MediaItemPlayerViewModel.cs" />
     <Compile Include="ViewModels\MediaListViewModel.cs" />
     <Compile Include="ViewModels\SearchViewModel.cs" />
     <Compile Include="ViewModels\SeasonViewModel.cs" />
+    <Compile Include="ViewModels\Details\SeriesDetailViewModel.cs" />
     <Compile Include="ViewModels\SetupViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +285,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\CountControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\PlayButtonControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -286,11 +297,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\ViewedIconControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Pages\EpisodePage.xaml">
+    <Page Include="Pages\Details\EpisodePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -306,7 +321,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\Details.xaml">
+    <Page Include="Pages\Details\Details.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -326,7 +341,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\SeriesPage.xaml">
+    <Page Include="Pages\Details\SeriesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
