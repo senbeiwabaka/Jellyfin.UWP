@@ -1,5 +1,5 @@
 ﻿using Jellyfin.Sdk;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Details;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -31,12 +31,14 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var viewModel = new DetailsViewModel(
+            var playStateClientMock = new Mock<IPlaystateClient>();
+            var sut = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
                 sdkSettings,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                playStateClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 
@@ -72,10 +74,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 .Verifiable();
 
             // Act
-            await viewModel.LoadMediaInformationAsync(itemId);
+            await sut.LoadMediaInformationAsync(itemId);
 
             // Assert
-            Assert.IsNotNull(viewModel.MediaItem);
+            Assert.IsNotNull(sut.MediaItem);
 
             userLibraryClientMock.Verify();
             libraryClientMock.Verify();
@@ -100,12 +102,14 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var playStateClientMock = new Mock<IPlaystateClient>();
             var sut = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
                 sdkSettings,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                playStateClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 
@@ -175,12 +179,14 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var libraryClientMock = new Mock<ILibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var playStateClientMock = new Mock<IPlaystateClient>();
             var sut = new DetailsViewModel(
                 memoryCache,
                 userLibraryClientMock.Object,
                 libraryClientMock.Object,
                 sdkSettings,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                playStateClientMock.Object);
 
             memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
 

@@ -17,52 +17,8 @@
     <Page.Resources>
         <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
-            <StackPanel Width="210">
-                <Canvas Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
-                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                        </Grid>
-                    </Canvas>
-                </Canvas>
-                
-                <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
-
-                <c:ViewedFavoriteButtonControl PositionLeft="100" PositionTop="280" Item="{x:Bind}" />
-                
-                <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
-                <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-            </StackPanel>
-        </DataTemplate>
-        <DataTemplate x:Key="UIShowsMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
-            <StackPanel Width="210">
-                <Canvas Visibility="{Binding UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
-                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="25" />
-                            <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
-                        </Grid>
-                    </Canvas>
-                </Canvas>
-                <Canvas Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
-                            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                        </Grid>
-                    </Canvas>
-                </Canvas>
-
-                <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
-
-                <c:ViewedFavoriteButtonControl PositionLeft="110" PositionTop="280" Item="{x:Bind}" />
-                
-                <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
-                <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-            </StackPanel>
-        </DataTemplate>
+        <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
+        <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
     </Page.Resources>
 
     <Grid>
@@ -143,13 +99,47 @@
             ScrollViewer.VerticalScrollBarVisibility="Auto"
             ScrollViewer.VerticalScrollMode="Auto"
             ItemClick="{x:Bind ClickItemList}"
-            IsItemClickEnabled="True"
-            ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+            IsItemClickEnabled="True">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsWrapGrid Orientation="Horizontal" />
+                    <ItemsWrapGrid Background="Transparent" Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="m:UIMediaListItem">
+                    <StackPanel Width="210">
+                        <Canvas Background="Transparent" Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
+                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                            </Grid>
+                        </Canvas>
+
+                        <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
+
+                        <Canvas Background="Transparent">
+                            <StackPanel Canvas.Left="110" Canvas.Top="280" Canvas.ZIndex="2" Orientation="Horizontal">
+                                <Button x:Name="btn_Viewed" Margin="0,0,5,0" Click="btn_Viewed_Click">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon Foreground="{x:Bind UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                                </Button>
+
+                                <Button x:Name="btn_Favorite" Margin="5,0,0,0" Click="btn_Favorite_Click">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
+                                </Button>
+                            </StackPanel>
+                        </Canvas>
+
+                        <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                        <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </DataTemplate>
+            </GridView.ItemTemplate>
         </GridView>
     </Grid>
 </Page>

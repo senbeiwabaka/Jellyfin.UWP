@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Controls
 {
@@ -16,7 +16,7 @@ namespace Jellyfin.UWP.ViewModels.Controls
         private readonly IUserLibraryClient userLibraryClient;
 
         [ObservableProperty]
-        private bool hasBeenViewed;
+        private bool beenViewed;
 
         [ObservableProperty]
         private bool isFavorite;
@@ -61,31 +61,26 @@ namespace Jellyfin.UWP.ViewModels.Controls
             this.item = item;
 
             IsFavorite = this.item.UserData.IsFavorite;
-            HasBeenViewed = this.item.UserData.HasBeenWatched;
+            BeenViewed = this.item.UserData.HasBeenWatched;
         }
 
-        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task PlayedStateAsync(CancellationToken cancellationToken)
+        public async Task PlayedStateAsync(bool hasBeenViewed)
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            if (HasBeenViewed)
+            if (hasBeenViewed)
             {
                 _ = await playstateClient.MarkUnplayedItemAsync(
                     user.Id,
-                    item.Id,
-                    cancellationToken: cancellationToken);
+                    item.Id);
             }
             else
             {
                 _ = await playstateClient.MarkPlayedItemAsync(
                     user.Id,
                     item.Id,
-                    DateTimeOffset.Now,
-                    cancellationToken: cancellationToken);
+                    DateTimeOffset.Now);
             }
-
-            HasBeenViewed = !HasBeenViewed;
         }
     }
 }

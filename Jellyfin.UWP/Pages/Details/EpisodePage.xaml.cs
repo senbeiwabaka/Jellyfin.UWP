@@ -1,10 +1,15 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Xml.Linq;
+using Microsoft.Toolkit.Uwp.UI;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.UWP.Controls;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels;
-using System;
+using Jellyfin.UWP.ViewModels.Details;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
@@ -39,7 +44,7 @@ namespace Jellyfin.UWP.Pages
 
         private async void EpisodePage_Loaded(object sender, RoutedEventArgs e)
         {
-            var context = ((EpisodeViewModel)DataContext);
+            var context = (EpisodeViewModel)DataContext;
 
             await context.LoadMediaInformationAsync(id);
 
@@ -50,13 +55,13 @@ namespace Jellyfin.UWP.Pages
         {
             var mediaItem = ((UIMediaListItem)e.ClickedItem);
 
-            ((Frame)Window.Current.Content).Navigate(typeof(EpisodePage), mediaItem.Id);
+            Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
         }
 
-        private void Play_Click(object sender, RoutedEventArgs e)
+        private async void Play_Click(object sender, RoutedEventArgs e)
         {
-            var context = ((EpisodeViewModel)DataContext);
-            var playId = context.GetPlayIdAsync();
+            var context = (EpisodeViewModel)DataContext;
+            var playId = await context.GetPlayIdAsync();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
             if (context.HasMultipleAudioStreams)
@@ -67,7 +72,7 @@ namespace Jellyfin.UWP.Pages
                 detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
             }
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         private void SeriesName_Click(object sender, RoutedEventArgs e)
@@ -75,6 +80,13 @@ namespace Jellyfin.UWP.Pages
             var context = (EpisodeViewModel)DataContext;
 
             Frame.Navigate(typeof(SeriesPage), context.MediaItem.SeriesId);
+        }
+
+        private async void ViewedFavoriteButtonControl_Click(object sender, RoutedEventArgs e)
+        {
+            var context = (EpisodeViewModel)DataContext;
+
+            await context.LoadMediaInformationAsync(id);
         }
     }
 }

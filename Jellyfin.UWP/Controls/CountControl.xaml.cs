@@ -1,45 +1,36 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Controls;
-using System.Threading;
+﻿using Jellyfin.UWP.Models;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Jellyfin.UWP.Controls
 {
-    public sealed partial class ViewedFavoriteButtonControl : UserControl
+    public sealed partial class CountControl : UserControl
     {
         public static readonly DependencyProperty ItemProperty =
             DependencyProperty.Register(
                 nameof(Item),
                 typeof(UIItem),
-                typeof(ViewedFavoriteButtonControl),
+                typeof(CountControl),
                 new PropertyMetadata(null));
 
         public static readonly DependencyProperty PositionLeftProperty =
                    DependencyProperty.Register(
                nameof(PositionLeft),
                typeof(string),
-               typeof(ViewedFavoriteButtonControl),
+               typeof(CountControl),
                new PropertyMetadata(null));
 
         public static readonly DependencyProperty PositionTopProperty =
             DependencyProperty.Register(
                 nameof(PositionTop),
                 typeof(string),
-                typeof(ViewedFavoriteButtonControl),
+                typeof(CountControl),
                 new PropertyMetadata(null));
 
-        public ViewedFavoriteButtonControl()
+        public CountControl()
         {
             this.InitializeComponent();
-
-            DataContext = Ioc.Default.GetRequiredService<ViewedFavoriteViewModel>();
-
-            Loaded += ViewedFavoriteButtonControl_Loaded;
         }
-
-        public event RoutedEventHandler ButtonClick;
 
         public UIItem Item
         {
@@ -57,23 +48,6 @@ namespace Jellyfin.UWP.Controls
         {
             get { return (string)GetValue(PositionTopProperty); }
             set { SetValue(PositionTopProperty, value); }
-        }
-
-        private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
-        {
-            await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync(CancellationToken.None);
-        }
-
-        private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
-        {
-            await ((ViewedFavoriteViewModel)DataContext).PlayedStateAsync(Item.UserData.HasBeenWatched);
-
-            ButtonClick?.Invoke(this, new RoutedEventArgs());
-        }
-
-        private void ViewedFavoriteButtonControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            ((ViewedFavoriteViewModel)DataContext).Initialize(Item);
         }
     }
 }

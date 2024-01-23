@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels;
-using System;
+using Jellyfin.UWP.ViewModels.Details;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -62,15 +62,6 @@ namespace Jellyfin.UWP.Pages
             base.OnNavigatedTo(e);
         }
 
-        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            var context = (SeriesDetailViewModel)DataContext;
-
-            await context.LoadMediaInformationAsync(id);
-
-            ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
-        }
-
         private void NextUpButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(EpisodePage), ((SeriesDetailViewModel)DataContext).NextUpItem?.Id);
@@ -81,9 +72,23 @@ namespace Jellyfin.UWP.Pages
             Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((SeriesDetailViewModel)DataContext).MediaItem.Id, });
         }
 
+        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var context = (SeriesDetailViewModel)DataContext;
+
+            await context.LoadMediaInformationAsync(id);
+
+            ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
+        }
+
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
         {
             Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await ((SeriesDetailViewModel)DataContext).LoadMediaInformationAsync(id);
         }
     }
 }

@@ -7,7 +7,7 @@
     xmlns:sdk="using:Jellyfin.Sdk"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:SeriesDetailViewModel}"
     mc:Ignorable="d"
@@ -41,7 +41,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Image Source="{Binding ImageUrl}" Grid.Column="0" VerticalAlignment="Top" />
+            <Image Source="{Binding ImageUrl}" Grid.Column="0" />
 
             <ScrollViewer Grid.Column="1">
                 <StackPanel>
@@ -75,7 +75,10 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                            <StackPanel
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0">
                                         <Button.Background>
@@ -122,7 +125,9 @@
 
                         <TextBlock Text="{Binding MediaTags}" Margin="0,9,0,9" Visibility="{Binding MediaTags, Converter={StaticResource StringVisibilityConverter}}" />
 
-                        <ItemsControl ItemsSource="{Binding MediaItem.ExternalUrls}" Visibility="{Binding MediaItem.ExternalUrls.Count, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                        <ItemsControl
+                            ItemsSource="{Binding MediaItem.ExternalUrls}"
+                            Visibility="{Binding MediaItem.ExternalUrls.Count, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" />
@@ -152,7 +157,10 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel Visibility="{Binding SeriesNextUpId, Converter={StaticResource ObjectVisibilityConverter}}" Width="380" HorizontalAlignment="Left">
+                        <StackPanel
+                            Visibility="{Binding NextUpItem, Converter={StaticResource ObjectVisibilityConverter}}"
+                            Width="380"
+                            HorizontalAlignment="Left">
                             <TextBlock Text="Next Up" FontSize="22" FontWeight="Bold" />
 
                             <StackPanel>
@@ -196,8 +204,9 @@
                             <TextBlock Text="{Binding NextUpItem.Name}" HorizontalTextAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Text="Seasons 1" FontSize="22" FontWeight="Bold" />
+                        <StackPanel
+                            Visibility="{Binding IsNotMovie, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Seasons" FontSize="22" FontWeight="Bold" />
 
                             <ListView
                                 x:Name="SeriesItems"
@@ -216,35 +225,12 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
                                         <StackPanel Width="220">
-                                            <Canvas Visibility="{Binding UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="195" Canvas.Top="5" Canvas.ZIndex="2">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
-                                                        <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Canvas>
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="195" Canvas.Top="10" Canvas.ZIndex="2" Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Canvas>
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="95" Canvas.Top="150" Canvas.ZIndex="2">
-                                                        <Button>
-                                                            <Button.Background>
-                                                                <SolidColorBrush Color="#000000" />
-                                                            </Button.Background>
-                                                            <SymbolIcon Symbol="Play" />
-                                                        </Button>
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                            <uc:CountControl PositionLeft="195" PositionTop="5" Item="{x:Bind}" />
+
+                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                     </DataTemplate>
@@ -299,23 +285,12 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
                                         <StackPanel Width="220" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Canvas Visibility="{Binding UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="195" Canvas.Top="5" Canvas.ZIndex="2">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
-                                                        <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Canvas>
-                                                <Canvas Background="Transparent">
-                                                    <Grid Canvas.Left="195" Canvas.Top="10" Canvas.ZIndex="2" Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                        <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                                    </Grid>
-                                                </Canvas>
-                                            </Canvas>
-                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                            <uc:CountControl PositionLeft="195" PositionTop="5" Item="{x:Bind}" />
+
+                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>

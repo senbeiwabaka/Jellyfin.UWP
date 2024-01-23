@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.UWP.ViewModels.Details;
 using System;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -71,24 +71,14 @@ namespace Jellyfin.UWP.Pages
             ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
         }
 
-        private async void SeasonPlay_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-
-            item.IsSelected = true;
-
-            Frame.Navigate(typeof(MediaItemPlayer), await ((DetailsViewModel)DataContext).GetPlayIdAsync());
-        }
-
-        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((DetailsViewModel)DataContext).MediaItem.Id, });
-        }
-
         private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
         {
             Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await ((DetailsViewModel)DataContext).LoadMediaInformationAsync(id);
         }
     }
 }

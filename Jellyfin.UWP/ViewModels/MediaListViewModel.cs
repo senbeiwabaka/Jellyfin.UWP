@@ -13,14 +13,16 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
-    public partial class MediaListViewModel : ObservableObject
+    internal partial class MediaListViewModel : ObservableObject
     {
         private const int Limit = 100;
 
         private readonly IFilterClient filterClient;
         private readonly IItemsClient itemsClient;
         private readonly IMemoryCache memoryCache;
+        private readonly IPlaystateClient playstateClient;
         private readonly SdkClientSettings sdkClientSettings;
+        private readonly IUserLibraryClient userLibraryClient;
 
         [ObservableProperty]
         private string countInformation;
@@ -48,17 +50,46 @@ namespace Jellyfin.UWP.ViewModels
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
         private int totalRecords = 0;
 
-        public MediaListViewModel(IItemsClient itemsClient, IFilterClient filterClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public MediaListViewModel(
+            IItemsClient itemsClient,
+            IFilterClient filterClient,
+            SdkClientSettings sdkClientSettings,
+            IMemoryCache memoryCache,
+            IPlaystateClient playstateClient,
+            IUserLibraryClient userLibraryClient)
         {
             this.itemsClient = itemsClient;
             this.filterClient = filterClient;
             this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
+            this.playstateClient = playstateClient;
+            this.userLibraryClient = userLibraryClient;
         }
 
         public void FilterReset()
         {
             CurrentIndex = 0;
+        }
+
+        public async Task<UIMediaListItem> GetLatestOnItemAsync(Guid id)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+
+            return new UIMediaListItem
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Url = item.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{item.Id}/Images/Primary?fillHeight=384&fillWidth=210&quality=96&tag={item.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
+                Type = item.Type,
+                CollectionType = item.CollectionType,
+                UserData = new UIUserData
+                {
+                    IsFavorite = item.UserData.IsFavorite,
+                    UnplayedItemCount = item.UserData.UnplayedItemCount,
+                    HasBeenWatched = item.UserData.Played,
+                },
+            };
         }
 
         public BaseItemKind GetMediaType()
@@ -175,11 +206,13 @@ namespace Jellyfin.UWP.ViewModels
                             Url = x.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=384&fillWidth=210&quality=96&tag={x.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
                             Type = x.Type,
                             CollectionType = x.CollectionType,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount,
+                                HasBeenWatched = x.UserData.Played,
+                            },
                         };
-
-                        item.UserData.IsFavorite = x.UserData.IsFavorite;
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
 
                         return item;
                     }));
@@ -224,6 +257,25 @@ namespace Jellyfin.UWP.ViewModels
                 GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id),
                 FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter),
                 cancellationToken);
+        }
+
+        public async Task PlayedStateAsync(bool hasBeenViewed, Guid id)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (hasBeenViewed)
+            {
+                _ = await playstateClient.MarkUnplayedItemAsync(
+                    user.Id,
+                    id);
+            }
+            else
+            {
+                _ = await playstateClient.MarkPlayedItemAsync(
+                    user.Id,
+                    id,
+                    DateTimeOffset.Now);
+            }
         }
 
         private bool CanLoadNext()

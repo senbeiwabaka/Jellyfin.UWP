@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.Mvvm.Collections;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.Collections;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage
 {
@@ -66,11 +66,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             CollectionType = record.CollectionType,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                            },
                         };
-
-                        item.UserData.IsFavorite = x.UserData.IsFavorite;
-                        item.UserData.HasBeenWatched = x.UserData.Played;
-                        item.UserData.UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0;
 
                         return item;
                     })));
@@ -87,7 +89,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Name = x.Name,
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             CollectionType = x.CollectionType,
-                            Type = x.Type
+                            Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                            },
                         })));
                 }
             }
@@ -112,6 +120,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                         CollectionType = x.CollectionType,
                         Type = x.Type,
+                        UserData = new UIUserData
+                        {
+                            IsFavorite = x.UserData.IsFavorite,
+                            HasBeenWatched = x.UserData.Played,
+                            UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                        },
                     }));
 
             return mediaList;
@@ -137,6 +151,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=250&fillWidth=300&quality=96&tag={x.ImageTags[JellyfinConstants.PrimaryName]}",
                             Type = x.Type,
                             SeriesName = x.SeriesName,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                            },
                         }));
 
             return nextupMediaList;
@@ -160,6 +180,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Name = x.Name,
                             Url = GetResumeImage(sdkClientSettings, x),
                             Type = x.Type,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite,
+                                HasBeenWatched = x.UserData.Played,
+                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                            },
                         }));
 
             var hasResumeMedia = resumeMediaList.Count > 0;

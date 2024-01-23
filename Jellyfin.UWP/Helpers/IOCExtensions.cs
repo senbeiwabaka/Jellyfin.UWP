@@ -1,6 +1,7 @@
 ﻿using Jellyfin.Sdk;
 using Jellyfin.UWP.ViewModels;
 using Jellyfin.UWP.ViewModels.Controls;
+using Jellyfin.UWP.ViewModels.Details;
 using Jellyfin.UWP.ViewModels.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.DependencyInjection;
