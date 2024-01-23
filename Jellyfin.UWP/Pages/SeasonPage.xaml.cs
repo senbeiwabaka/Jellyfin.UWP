@@ -16,41 +16,23 @@ namespace Jellyfin.UWP.Pages
 
         public SeasonPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
-            this.DataContext = Ioc.Default.GetRequiredService<SeasonViewModel>();
+            DataContext = Ioc.Default.GetRequiredService<SeasonViewModel>();
 
-            this.Loaded += SeriesPage_Loaded;
+            Loaded += SeriesPage_Loaded;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             seasonSeries = (SeasonSeries)e.Parameter;
 
-            if (this.Frame.CanGoForward)
+            if (Frame.CanGoForward)
             {
-                this.Frame.ForwardStack.Clear();
+                Frame.ForwardStack.Clear();
             }
 
             base.OnNavigatedTo(e);
-        }
-
-        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
-
-        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            var context = (SeasonViewModel)DataContext;
-
-            await context.LoadMediaInformationAsync(seasonSeries);
-        }
-
-        private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
-        {
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeasonViewModel)DataContext).GetPlayIdAsync() };
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         private async void EpisodePlay_Click(object sender, RoutedEventArgs e)
@@ -62,7 +44,31 @@ namespace Jellyfin.UWP.Pages
 
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeasonViewModel)DataContext).GetPlayIdAsync() };
 
-            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        }
+
+        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            Frame.Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
+        }
+
+        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            await ((SeasonViewModel)DataContext).LoadMediaInformationAsync(seasonSeries);
+        }
+
+        private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
+        {
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeasonViewModel)DataContext).GetPlayIdAsync() };
+
+            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        }
+
+        private async void btn_EpisodeMarkPlayState_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (UIItem)((Button)sender).DataContext;
+
+            await ((SeasonViewModel)DataContext).EpisodePlayStateAsync(item);
         }
     }
 }

@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:c="using:Jellyfin.UWP.Controls"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.MainPage"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
@@ -16,9 +16,9 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
-                <c:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
 
-                <c:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
 
                 <Image x:Name="im_ItemImage" Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -35,9 +35,9 @@
                     </Canvas>
                 </Canvas>
 
-                <c:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
 
-                <c:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
 
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -45,9 +45,9 @@
         </DataTemplate>
         <DataTemplate x:Key="UIMoviesMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
-                <c:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
 
-                <c:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" />
 
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -189,9 +189,9 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                 <StackPanel>
-                                    <c:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                    <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
 
-                                    <c:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
+                                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" />
 
                                     <Image Source="{x:Bind Url}" Width="380" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                                     <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />

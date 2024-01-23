@@ -44,6 +44,13 @@ namespace Jellyfin.UWP.ViewModels
             this.playstateClient = playstateClient;
         }
 
+        public async Task EpisodePlayStateAsync(UIItem item)
+        {
+            await ChangePlayStateAsync(item.Id, item.UserData.HasBeenWatched);
+
+            await LoadMediaInformationAsync(seasonSeries);
+        }
+
         public async Task<Guid> GetPlayIdAsync()
         {
             if (!SeriesMetadata.Any(x => x.IsSelected))
@@ -80,7 +87,7 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Url = SetImageUrl(x.Id, "505", "349", x.ImageTags["Primary"]),
+                        Url = SetImageUrl(x.Id, "500", "500", x.ImageTags["Primary"]),
                         Description = x.Overview,
                         UserData = new UIUserData
                         {
@@ -97,23 +104,22 @@ namespace Jellyfin.UWP.ViewModels
             this.seasonSeries = seasonSeries;
         }
 
-        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task PlayedStateAsync(CancellationToken cancellationToken)
+        private async Task ChangePlayStateAsync(Guid id, bool hasBeenWatched, CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
 
-            if (MediaItem.UserData.Played)
+            if (hasBeenWatched)
             {
                 _ = await playstateClient.MarkUnplayedItemAsync(
                     user.Id,
-                    MediaItem.Id,
+                    id,
                     cancellationToken: cancellationToken);
             }
             else
             {
                 _ = await playstateClient.MarkPlayedItemAsync(
                     user.Id,
-                    MediaItem.Id,
+                    id,
                     DateTimeOffset.Now,
                     cancellationToken: cancellationToken);
             }
@@ -136,6 +142,14 @@ namespace Jellyfin.UWP.ViewModels
                     });
 
             return episodes.Items.First(x => !x.UserData.Played && (x.UserData.PlayedPercentage ?? 0) < 90).Id;
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        private async Task PlayedStateAsync(CancellationToken cancellationToken)
+        {
+            await ChangePlayStateAsync(MediaItem.Id, MediaItem.UserData.Played, cancellationToken);
+
+            await LoadMediaInformationAsync(seasonSeries);
         }
 
         private string SetImageUrl(Guid id, string height, string width, string imageTagId)
