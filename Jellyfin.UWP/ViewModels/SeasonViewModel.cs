@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -44,11 +44,33 @@ namespace Jellyfin.UWP.ViewModels
             this.playstateClient = playstateClient;
         }
 
+        public async Task EpisodeFavoriteStateAsync(UIItem item)
+        {
+            await ChangeFavoriteStateAsync(item.Id, item.UserData.HasBeenWatched);
+        }
+
         public async Task EpisodePlayStateAsync(UIItem item)
         {
             await ChangePlayStateAsync(item.Id, item.UserData.HasBeenWatched);
+        }
 
-            await LoadMediaInformationAsync(seasonSeries);
+        public async Task<UIMediaListItemSeries> GetLatestOnSeriesItemAsync(Guid id)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+
+            return new UIMediaListItemSeries
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Url = SetImageUrl(item.Id, "500", "500", item.ImageTags["Primary"]),
+                Description = item.Overview,
+                UserData = new UIUserData
+                {
+                    IsFavorite = item.UserData.IsFavorite,
+                    HasBeenWatched = item.UserData.Played,
+                },
+            };
         }
 
         public async Task<Guid> GetPlayIdAsync()
@@ -104,6 +126,26 @@ namespace Jellyfin.UWP.ViewModels
             this.seasonSeries = seasonSeries;
         }
 
+        private async Task ChangeFavoriteStateAsync(Guid id, bool isFavorite, CancellationToken cancellationToken = default)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (isFavorite)
+            {
+                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
+                    user.Id,
+                    id,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                _ = await userLibraryClient.MarkFavoriteItemAsync(
+                    user.Id,
+                    id,
+                    cancellationToken: cancellationToken);
+            }
+        }
+
         private async Task ChangePlayStateAsync(Guid id, bool hasBeenWatched, CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>("user");
@@ -123,6 +165,12 @@ namespace Jellyfin.UWP.ViewModels
                     DateTimeOffset.Now,
                     cancellationToken: cancellationToken);
             }
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        private async Task FavoriteStateAsync(CancellationToken cancellationToken)
+        {
+            await ChangeFavoriteStateAsync(MediaItem.Id, MediaItem.UserData.IsFavorite, cancellationToken);
 
             await LoadMediaInformationAsync(seasonSeries);
         }

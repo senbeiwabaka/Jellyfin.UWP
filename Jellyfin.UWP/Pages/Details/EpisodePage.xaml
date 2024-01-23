@@ -115,7 +115,7 @@
                                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
                                 </Button>
 
-                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{Binding FavoriteStateCommand}">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>

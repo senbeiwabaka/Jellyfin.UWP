@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Controls;
-using System.Threading;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -61,12 +60,14 @@ namespace Jellyfin.UWP.Controls
 
         private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
         {
-            await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync(CancellationToken.None);
+            await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync();
+
+            ButtonClick?.Invoke(this, new RoutedEventArgs());
         }
 
         private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
         {
-            await ((ViewedFavoriteViewModel)DataContext).PlayedStateAsync(Item.UserData.HasBeenWatched);
+            await ((ViewedFavoriteViewModel)DataContext).PlayedStateAsync();
 
             ButtonClick?.Invoke(this, new RoutedEventArgs());
         }

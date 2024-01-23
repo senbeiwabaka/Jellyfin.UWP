@@ -54,7 +54,7 @@
 
                         <Grid HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
@@ -80,14 +80,14 @@
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                    <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0">
+                                    <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
                                         <Button.Background>
                                             <SolidColorBrush Color="#000000" Opacity="0" />
                                         </Button.Background>
                                         <SymbolIcon x:Name="play" Symbol="Play" />
                                     </Button>
 
-                                    <Button Content="Trailer">
+                                    <Button Content="Trailer" ToolTipService.ToolTip="Trailer">
                                         <Button.Background>
                                             <SolidColorBrush Color="#000000" Opacity="0" />
                                         </Button.Background>
@@ -107,7 +107,7 @@
                                         <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
                                     </Button>
 
-                                    <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                    <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{Binding FavoriteStateCommand}">
                                         <Button.Background>
                                             <SolidColorBrush Color="#000000" Opacity="0" />
                                         </Button.Background>
@@ -167,14 +167,14 @@
                                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                                 <Canvas Background="Transparent">
                                     <StackPanel Canvas.Left="285" Canvas.Top="180" Canvas.ZIndex="2" Orientation="Horizontal">
-                                        <Button Margin="0,0,5,0" Command="{Binding NextUpPlayedStateCommand}">
+                                        <Button Margin="0,0,5,0" Command="{Binding NextUpPlayedStateCommand}" ToolTipService.ToolTip="Next Up Mark Played" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>
                                             <FontIcon Foreground="{Binding NextUpItem.UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                                         </Button>
 
-                                        <Button Margin="5,0,0,0">
+                                        <Button Margin="5,0,0,0" Command="{Binding NextUpFavoriteStateCommand}" ToolTipService.ToolTip="Next Up Mark Favorite" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>

@@ -37,9 +37,16 @@ namespace Jellyfin.UWP.Pages
 
         private async void btn_EpisodeMarkPlayState_Click(object sender, RoutedEventArgs e)
         {
-            var item = (UIItem)((Button)sender).DataContext;
+            var item = (UIMediaListItemSeries)((Button)sender).DataContext;
+            var context = (SeasonViewModel)DataContext;
+            var items = context.SeriesMetadata;
+            var index = items.IndexOf(item);
 
-            await ((SeasonViewModel)DataContext).EpisodePlayStateAsync(item);
+            await context.EpisodePlayStateAsync(item);
+
+            var updateItem = await context.GetLatestOnSeriesItemAsync(item.Id);
+
+            items[index] = updateItem;
         }
 
         private async void EpisodePlay_Click(object sender, RoutedEventArgs e)
@@ -69,6 +76,20 @@ namespace Jellyfin.UWP.Pages
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ((SeasonViewModel)DataContext).GetPlayIdAsync() };
 
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        }
+
+        private async void btn_EpisodeMarkFavoriteState_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (UIMediaListItemSeries)((Button)sender).DataContext;
+            var context = (SeasonViewModel)DataContext;
+            var items = context.SeriesMetadata;
+            var index = items.IndexOf(item);
+
+            await context.EpisodeFavoriteStateAsync(item);
+
+            var updateItem = await context.GetLatestOnSeriesItemAsync(item.Id);
+
+            items[index] = updateItem;
         }
     }
 }
