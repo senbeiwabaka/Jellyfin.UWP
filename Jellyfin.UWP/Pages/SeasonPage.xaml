@@ -58,8 +58,8 @@
                             </Grid.RowDefinitions>
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="300" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0">
@@ -89,7 +89,7 @@
                                     <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{Binding MediaItem.UserData.Played, Converter={StaticResource TrueRedFalseWhite}}" />
                                 </Button>
 
-                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{Binding FavoriteStateCommand}">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
@@ -144,11 +144,11 @@
                                                             </Button.Background>
                                                             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" />
                                                         </Button>
-                                                        <Button ToolTipService.ToolTip="Add to favorites" Margin="10">
+                                                        <Button x:Name="btn_EpisodeMarkFavoriteState" ToolTipService.ToolTip="Add to favorites" Margin="10" Click="btn_EpisodeMarkFavoriteState_Click">
                                                             <Button.Background>
                                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                                             </Button.Background>
-                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xEB51;" Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" />
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" />
                                                         </Button>
                                                     </StackPanel>
                                                 </StackPanel>

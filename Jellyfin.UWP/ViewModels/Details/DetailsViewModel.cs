@@ -256,7 +256,7 @@ namespace Jellyfin.UWP.ViewModels.Details
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
-        public async Task PlayedStateAsync(CancellationToken cancellationToken)
+        private async Task PlayedStateAsync(CancellationToken cancellationToken)
         {
             var user = memoryCache.Get<UserDto>("user");
 
@@ -273,6 +273,29 @@ namespace Jellyfin.UWP.ViewModels.Details
                     user.Id,
                     MediaItem.Id,
                     DateTimeOffset.Now,
+                    cancellationToken: cancellationToken);
+            }
+
+            await LoadMediaInformationAsync(MediaItem.Id);
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+        private async Task FavoriteStateAsync(CancellationToken cancellationToken)
+        {
+            var user = memoryCache.Get<UserDto>("user");
+
+            if (MediaItem.UserData.IsFavorite)
+            {
+                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
+                    user.Id,
+                    MediaItem.Id,
+                    cancellationToken: cancellationToken);
+            }
+            else
+            {
+                _ = await userLibraryClient.MarkFavoriteItemAsync(
+                    user.Id,
+                    MediaItem.Id,
                     cancellationToken: cancellationToken);
             }
 

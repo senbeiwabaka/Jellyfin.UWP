@@ -108,8 +108,15 @@
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="m:UIMediaListItem">
                     <StackPanel Width="210">
+                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                            <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
+                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
+                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                            </Grid>
+                        </Canvas>
+
                         <Canvas Background="Transparent" Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Grid Canvas.Left="180" Canvas.Top="15" Canvas.ZIndex="2">
+                            <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
                                 <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                             </Grid>
