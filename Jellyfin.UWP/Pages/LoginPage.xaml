@@ -14,18 +14,18 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10" x:Name="MainCenterStack">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="Username: " Padding="10" />
-                <TextBox Text="{Binding Username, Mode=TwoWay}" Width="150" Padding="10" />
+                <TextBox x:Name="tb_UserName" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="150" Padding="10" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,10,0,10">
                 <TextBlock Text="Password: " Padding="10" Margin="0,0,4,0" />
-                <PasswordBox Password="{Binding Password, Mode=TwoWay}" KeyUp="PasswordBox_KeyUp" Width="150" Padding="10" />
+                <PasswordBox x:Name="p_Password" Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyUp="PasswordBox_KeyUp" Width="150" Padding="10" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button Content="Cancel" Command="{Binding LoginCancelCommand}" Margin="0,0,10,0" />
+                <Button x:Name="btn_Cancel" Content="Cancel" Command="{Binding LoginCancelCommand}" Margin="0,0,10,0" />
 
-                <Button x:Name="LoginButton" Content="Login" Command="{Binding LoginCommand}" Background="#00a4dc" Margin="10,0,0,0" />
+                <Button x:Name="btn_Login" Content="Login" Command="{Binding LoginCommand}" Background="#00a4dc" Margin="10,0,0,0" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
@@ -34,7 +34,7 @@
         </StackPanel>
 
         <Popup IsOpen="{Binding OpenPopup}" x:Name="MessagePopup" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <StackPanel Background="Black" >
+            <StackPanel Background="Black">
                 <TextBlock FontSize="36" Foreground="White" Text="{Binding Message}"></TextBlock>
                 <Button x:Name="CloseButton" Content="Close" Click="CloseButton_Click"></Button>
             </StackPanel>

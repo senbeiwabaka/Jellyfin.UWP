@@ -1,22 +1,16 @@
-﻿using System;
-using System.Xml.Linq;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Controls;
-using Jellyfin.UWP.Helpers;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
+    [ExcludeFromCodeCoverage]
     public sealed partial class EpisodePage : Page
     {
         private Guid id;

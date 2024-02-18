@@ -74,17 +74,27 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="btn_Home" Content="Home" BorderThickness="0" Background="#202020" Foreground="White" Margin="0,0,10,0" Command="{Binding SwitchToHomeCommand}" Click="btn_Home_Click" />
+                <Button 
+                    x:Name="btn_Home" 
+                    Content="Home" 
+                    BorderThickness="0" 
+                    Background="#202020" 
+                    Foreground="White" 
+                    Margin="0,0,10,0" 
+                    Command="{Binding SwitchToHomeCommand}" 
+                    Click="btn_Home_Click"
+                    ToolTipService.ToolTip="Home Button"/>
                 <Button x:Name="btn_Favorites" Content="Favorites" BorderThickness="0" Background="#202020" Foreground="White" Margin="10,0,0,0" Command="{Binding SwitchToFavoriteCommand}" Click="btn_Favorites_Click" />
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsHomeSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsHomeSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Home">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <TextBlock Text="My Media" Foreground="White" FontSize="40" />
 
                     <ListView
+                        x:Name="lv_MyMedia"
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.HorizontalScrollMode="Enabled"
@@ -199,7 +209,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsFavoriteSelected, Converter={StaticResource BoolToVisibilityConverter}}">
+        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsFavoriteSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Favorites">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <Grid>
