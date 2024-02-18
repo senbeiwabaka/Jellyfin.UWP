@@ -18,22 +18,6 @@ namespace Jellyfin.UWP.UI.Tests
 
         private WireMockServer server;
 
-        public override async Task UITestBaseOneTimeSetUp()
-        {
-            await base.UITestBaseOneTimeSetUp();
-
-            server = WireMockServer.Start(port);
-        }
-
-        public override void UITestBaseOneTimeTearDown()
-        {
-            base.UITestBaseOneTimeTearDown();
-
-            server?.Stop();
-
-            server?.Dispose();
-        }
-
         [Test]
         public async Task GoToMainScreen()
         {
@@ -52,9 +36,15 @@ namespace Jellyfin.UWP.UI.Tests
                     .WithBody(System.Text.Json.JsonSerializer.Serialize(new AuthenticationResult { AccessToken = "1", })));
 
             // Act
+            var userNameTextBox = window.FindFirstDescendant("tb_UserName").AsTextBox();
+
+            userNameTextBox.Focus();
+
             Keyboard.Type(value);
 
             Wait.UntilInputIsProcessed();
+
+            await Task.Delay(500);
 
             var passwordBox = window.FindFirstDescendant("p_Password").AsTextBox();
 
@@ -80,6 +70,29 @@ namespace Jellyfin.UWP.UI.Tests
             Assert.That(window.FindFirstDescendant("Logout").AsButton(), Is.Not.Null);
         }
 
+        public override async Task UITestBaseOneTimeSetUp()
+        {
+            await base.UITestBaseOneTimeSetUp();
+
+            server = WireMockServer.Start(port);
+        }
+
+        public override void UITestBaseOneTimeTearDown()
+        {
+            base.UITestBaseOneTimeTearDown();
+
+            server?.Stop();
+
+            server?.Dispose();
+        }
+
+        public override Task UITestBaseSetUp()
+        {
+            File.Delete($"c:\\Users\\{Environment.UserName}\\AppData\\Local\\Packages\\37f5d397-a198-4841-bbf2-13fd6f373f27_ab98qgb45jr2w\\Settings\\settings.dat");
+
+            return base.UITestBaseSetUp();
+        }
+
         [Test]
         public async Task UsernameGetsSet()
         {
@@ -91,14 +104,16 @@ namespace Jellyfin.UWP.UI.Tests
             await Setup(window);
 
             // Act
+            var userNameTextBox = window.FindFirstDescendant("tb_UserName").AsTextBox();
+
+            userNameTextBox.Focus();
+
             Keyboard.Type(userName);
 
             Wait.UntilInputIsProcessed();
 
             // Assert
-            var userNameTextBox = window.FindFirstDescendant("tb_UserName").AsTextBox();
-
-            Assert.That(userNameTextBox.Text, Is.EqualTo(userName));
+            Assert.That(window.FindFirstDescendant("tb_UserName").AsTextBox().Text, Is.EqualTo(userName));
         }
 
         [Test]
@@ -112,6 +127,10 @@ namespace Jellyfin.UWP.UI.Tests
             await Setup(window);
 
             // Act
+            var userNameTextBox = window.FindFirstDescendant("tb_UserName").AsTextBox();
+
+            userNameTextBox.Focus();
+
             Keyboard.Type(value);
 
             Wait.UntilInputIsProcessed();
@@ -142,52 +161,24 @@ namespace Jellyfin.UWP.UI.Tests
             return Application.LaunchStoreApp("37f5d397-a198-4841-bbf2-13fd6f373f27_ab98qgb45jr2w!App");
         }
 
-        private static async Task MoveToLoginScreen(Window window)
-        {
-            await Task.Delay(1000);
-
-            Keyboard.Type(url);
-            Wait.UntilInputIsProcessed();
-
-            window.FindFirstDescendant("CompleteButton").AsButton()?.Click();
-        }
-
         private static async Task Setup(Window window)
         {
             Assert.That(window, Is.Not.Null);
 
-            await Task.Delay(3000);
+            await Task.Delay(2500);
 
             var urlBox = window.FindFirstDescendant("JellyfinUrlTextBox").AsTextBox();
-            var loginButton = window.FindFirstDescendant("CompleteButton").AsButton();
-            var logoutButton = window.FindFirstDescendant("Logout").AsButton();
 
             // We are on the url screen so we can specify the specific url
             if (urlBox != null)
             {
-                await MoveToLoginScreen(window);
+                Keyboard.Type(url);
 
-                return;
-            }
+                Wait.UntilInputIsProcessed();
 
-            // We are on the login screen so we need to go to the url screen to use the specific url
-            if (loginButton != null)
-            {
-                window.FindFirstDescendant("btnChangeURL").AsButton()?.Click();
+                await Task.Delay(500);
 
-                await MoveToLoginScreen(window);
-
-                return;
-            }
-
-            // We are logged in so we need to log out and set the specific url
-            if (logoutButton != null)
-            {
-                logoutButton.Click();
-
-                window.FindFirstDescendant("btnChangeURL").AsButton()?.Click();
-
-                await MoveToLoginScreen(window);
+                window.FindFirstDescendant("CompleteButton").AsButton()?.Click();
             }
         }
     }

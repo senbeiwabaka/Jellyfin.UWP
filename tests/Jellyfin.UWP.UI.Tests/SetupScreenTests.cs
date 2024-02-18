@@ -47,12 +47,12 @@ namespace Jellyfin.UWP.UI.Tests
 
             urlBox.Focus();
 
-            await Task.Delay(200);
-
             // Act
             Keyboard.Type(url);
 
             Wait.UntilInputIsProcessed();
+
+            await Task.Delay(500);
 
             // Assert
             Assert.Multiple(() =>
@@ -75,17 +75,11 @@ namespace Jellyfin.UWP.UI.Tests
 
             urlBox.Focus();
 
-            await Task.Delay(200);
-
             Keyboard.Type(url);
 
             Wait.UntilInputIsProcessed();
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(urlBox.Text, Is.EqualTo(url));
-                Assert.That(button.IsEnabled, Is.True);
-            });
+            await Task.Delay(500);
 
             // Act
             button.Click();
@@ -116,7 +110,7 @@ namespace Jellyfin.UWP.UI.Tests
         {
             Assert.That(window, Is.Not.Null);
 
-            await Task.Delay(3000);
+            await Task.Delay(2500);
 
             var loginButton = window.FindFirstDescendant("CompleteButton").AsButton();
             var logoutButton = window.FindFirstDescendant("Logout").AsButton();

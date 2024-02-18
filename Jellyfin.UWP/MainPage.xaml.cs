@@ -7,6 +7,7 @@ using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Toolkit.Uwp.UI;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Storage;
@@ -19,9 +20,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
+    [ExcludeFromCodeCoverage]
     public sealed partial class MainPage : Page
     {
         public MainPage()

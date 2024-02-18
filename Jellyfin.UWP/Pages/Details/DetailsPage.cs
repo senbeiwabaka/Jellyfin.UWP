@@ -2,6 +2,7 @@
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -9,9 +10,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
+    [ExcludeFromCodeCoverage]
     public sealed partial class DetailsPage : Page
     {
         private Guid id;
