@@ -50,7 +50,7 @@ jobs:
 
       - name: Run UI Tests
         # run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.UI.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
-        run: dotnet test .\tests\Jellyfin.UWP.UI.Tests\ -c Release --no-build --no-restore
+        run: dotnet test .\tests\Jellyfin.UWP.UI.Tests\ -c Release
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
