@@ -42,7 +42,7 @@ namespace Jellyfin.UWP.UI.Tests
         }
 
         [Test]
-        public async Task MyMediaShouldBeFilled()
+        public void MyMediaShouldBeFilled()
         {
             // Arrange
             var window = Application.GetMainWindow(Automation);
@@ -55,6 +55,7 @@ namespace Jellyfin.UWP.UI.Tests
                     .WithBody(System.Text.Json.JsonSerializer.Serialize(new AuthenticationResult { AccessToken = "1", })));
 
             var mediaList = window.FindFirstDescendant("lv_MyMedia");
+
 
             // Act
 
@@ -91,6 +92,8 @@ namespace Jellyfin.UWP.UI.Tests
 
                 window.FindFirstDescendant("CompleteButton").AsButton()?.Click();
             }
+
+            await Task.Delay(500);
 
             // We are on the login screen so move to Main Page
             if (loginButton != null)
