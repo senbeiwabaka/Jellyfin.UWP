@@ -41,10 +41,9 @@ namespace Jellyfin.UWP.Pages
 
             if (context.HasMultipleVideoStreams && (context.IsMovie || context.IsEpisode))
             {
-                var selected = context.SelectedAudioStream;
+                var selected = context.SelectedVideoStream;
 
-                detailsItemPlayRecord.SelectedVideoIndex = selected.Index;
-                detailsItemPlayRecord.SelectedVideoMediaStreamIndex = selected.MediaStreamIndex;
+                detailsItemPlayRecord.SelectedVideoId = selected.VideoId;
             }
 
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);

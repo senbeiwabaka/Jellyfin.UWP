@@ -1,6 +1,8 @@
-﻿namespace Jellyfin.UWP.Models
+﻿using System;
+
+namespace Jellyfin.UWP.Models
 {
-    public sealed class UIMediaStream
+    public class UIMediaStream
     {
         public string Title { get; set; }
 

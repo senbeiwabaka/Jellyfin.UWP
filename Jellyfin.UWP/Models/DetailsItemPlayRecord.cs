@@ -16,8 +16,6 @@ namespace Jellyfin.UWP.Models
         /// </summary>
         public int? SelectedAudioMediaStreamIndex { get; set; }
 
-        public int? SelectedVideoIndex { get; set; }
-
-        public int? SelectedVideoMediaStreamIndex { get; set; }
+        public string? SelectedVideoId { get; set; }
     }
 }
