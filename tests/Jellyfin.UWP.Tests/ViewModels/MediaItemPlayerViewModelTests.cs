@@ -200,7 +200,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var expected = !audioCodecsInstalled.Any();
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord(), mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.AreEqual(expected, needsTranscoding);
@@ -235,7 +235,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             };
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord(), mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.IsTrue(needsTranscoding);
@@ -271,7 +271,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             };
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord(), mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.IsTrue(needsTranscoding);
@@ -312,7 +312,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var expected = !audioCodecsInstalled.Any();
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord { SelectedAudioMediaStreamIndex = 1 }, mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.AreEqual(expected, needsTranscoding);
@@ -348,7 +348,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             };
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord { SelectedAudioMediaStreamIndex = 1 }, mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.IsTrue(needsTranscoding);
@@ -385,7 +385,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             };
 
             // Act
-            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(new DetailsItemPlayRecord { SelectedAudioMediaStreamIndex = 1 }, mediaList);
+            var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
             Assert.IsTrue(needsTranscoding);

@@ -77,7 +77,7 @@ namespace Jellyfin.UWP.Helpers
                 return mediaId;
             }
 
-            if (seriesData != null && seriesData.Any(x => x.IsSelected))
+            if (seriesData != null && Array.Exists(seriesData, x => x.IsSelected))
             {
                 return await GetSeriesEpisodeIdAsync(mediaId, seriesData);
             }

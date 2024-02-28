@@ -52,6 +52,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     Genres = Array.Empty<string>(),
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
+                    MediaSources = Array.Empty<MediaSourceInfo>(),
                 })
                 .Verifiable();
 

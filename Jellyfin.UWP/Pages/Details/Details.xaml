@@ -8,6 +8,8 @@
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
     xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
     d:DataContext="{d:DesignInstance Type=uwp:DetailsViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -126,16 +128,35 @@
                     </StackPanel>
 
                     <StackPanel Padding="30,0,0,0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Video" Width="93" />
-                            <TextBlock Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{Binding VideoType}" />
-                            <ComboBox Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource BoolToVisibilityConverter}}" Height="30" Width="650" Margin="0,5,0,4">
+                            <TextBlock Text="Version:" Width="93" />
+                            <ComboBox
+                                ItemsSource="{Binding VideoStreams}"
+                                DisplayMemberPath="Title"
+                                SelectedValuePath="IsSelected"
+                                SelectedItem="{Binding SelectedVideoStream, Mode=TwoWay}">
+                                <Interactivity:Interaction.Behaviors>
+                                    <Core:EventTriggerBehavior EventName="SelectionChanged">
+                                        <Core:InvokeCommandAction Command="{Binding ChangeVideoSelectionCommand}" />
+                                    </Core:EventTriggerBehavior>
+                                </Interactivity:Interaction.Behaviors>
                             </ComboBox>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Height="30" Width="650" Margin="0,0,0,4">
+                            <TextBlock Text="Video" Width="93" />
+                            <TextBlock Text="{Binding VideoType}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Height="30" Width="650">
                             <TextBlock Text="Audio" Width="93" />
-                            <TextBlock Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{Binding AudioType}" />
-                            <ComboBox Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource BoolToVisibilityConverter}}" ItemsSource="{Binding AudioStreams}" DisplayMemberPath="Title" SelectedValuePath="IsSelected" SelectedItem="{Binding SelectedAudioStream, Mode=TwoWay}">
+                            <TextBlock
+                                Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                Text="{Binding AudioType}" />
+                            <ComboBox
+                                Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ItemsSource="{Binding AudioStreams}"
+                                DisplayMemberPath="Title"
+                                SelectedValuePath="IsSelected"
+                                SelectedItem="{Binding SelectedAudioStream, Mode=TwoWay}">
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Visibility="{Binding HasSubtitle, Converter={StaticResource BoolToVisibilityConverter}}">

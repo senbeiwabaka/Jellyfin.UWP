@@ -125,11 +125,11 @@ namespace Jellyfin.UWP.Pages
 
         private async Task<MediaSource> LoadSourceAsync()
         {
-            var mediaSourceInfo = await context.LoadMediaPlaybackInfoAsync();
+            var mediaSourceInfo = await context.LoadMediaPlaybackInfoAsync(detailsItemPlayRecord.SelectedVideoId);
             var mediaStreams = mediaSourceInfo.MediaStreams;
 
             var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
-            var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(detailsItemPlayRecord, mediaStreams);
+            var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(mediaStreams);
 
             Uri mediaUri;
 
@@ -144,7 +144,7 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                mediaUri = context.GetVideoUrl();
+                mediaUri = context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
             }
 
             MediaSource source;
