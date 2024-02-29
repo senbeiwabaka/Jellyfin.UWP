@@ -164,7 +164,7 @@
                             <TextBlock Text="Next Up" FontSize="22" FontWeight="Bold" />
 
                             <StackPanel>
-                                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" DataContext="{Binding NextUpItem}" />
                                 <Canvas Background="Transparent">
                                     <StackPanel Canvas.Left="285" Canvas.Top="180" Canvas.ZIndex="2" Orientation="Horizontal">
                                         <Button Margin="0,0,5,0" Command="{Binding NextUpPlayedStateCommand}" ToolTipService.ToolTip="Next Up Mark Played" ToolTipService.Placement="Bottom">

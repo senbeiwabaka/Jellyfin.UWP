@@ -164,6 +164,7 @@
     <Compile Include="Models\UIMediaListItem.cs" />
     <Compile Include="Models\UIMediaListItemSeries.cs" />
     <Compile Include="Models\UIMediaStream.cs" />
+    <Compile Include="Models\UIMediaStreamVideo.cs" />
     <Compile Include="Models\UIPersonItem.cs" />
     <Compile Include="Models\UIUserData.cs" />
     <Compile Include="Pages\Details\EpisodePage.xaml.cs">

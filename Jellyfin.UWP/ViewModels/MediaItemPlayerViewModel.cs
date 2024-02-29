@@ -1,11 +1,11 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP
@@ -94,13 +94,14 @@ namespace Jellyfin.UWP
             return subtitleClient.GetSubtitleWithTicksUrl(itemId, routeId, index, 0, routeFormat);
         }
 
-        public Uri GetVideoUrl()
+        public Uri GetVideoUrl(string videoId = null)
         {
             var container = item.MediaSources[0].Container;
             var videoUrl = videosClient.GetVideoStreamByContainerUrl(
                 itemId,
                 container,
-                @static: true);
+                @static: true,
+                mediaSourceId: videoId);
 
             return new Uri(videoUrl);
         }
@@ -144,27 +145,16 @@ namespace Jellyfin.UWP
             return true;
         }
 
-        public async Task<bool> IsTranscodingNeededBecauseOfVideo(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)
+        public async Task<bool> IsTranscodingNeededBecauseOfVideo(IReadOnlyList<MediaStream> mediaStreams)
         {
-            var codecQuery = new CodecQuery();
-            var selectedVideoCodec = string.Empty;
-
-            // Get the selected video codec, if one was, or the default(first) codec.
-            if (detailsItemPlayRecord.SelectedVideoMediaStreamIndex.HasValue)
-            {
-                selectedVideoCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedVideoMediaStreamIndex.Value && x.Type == MediaStreamType.Video).Codec;
-            }
-            else
-            {
-                selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStreamType.Video).Codec;
-            }
-
             // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
             if (mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10))
             {
                 return true;
             }
 
+            var codecQuery = new CodecQuery();
+            var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStreamType.Video).Codec;
             var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
                 .Select(x => x).ToArray();
 
@@ -188,7 +178,7 @@ namespace Jellyfin.UWP
             return item;
         }
 
-        public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync()
+        public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync(string videoId = null)
         {
             const string mp4VideoFormats = "h264,vp8,vp9";
             const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
@@ -372,7 +362,12 @@ namespace Jellyfin.UWP
 
             playbackSessionId = playbackInfo.PlaySessionId;
 
-            return playbackInfo.MediaSources.Single();
+            if (string.IsNullOrWhiteSpace(videoId))
+            {
+                return playbackInfo.MediaSources.Single();
+            }
+
+            return playbackInfo.MediaSources.Single(x => string.Equals(x.Id, videoId, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public async Task SessionPlayingAsync(bool isTranscoding)
