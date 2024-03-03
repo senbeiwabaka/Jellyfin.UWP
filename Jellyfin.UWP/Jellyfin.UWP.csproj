@@ -158,6 +158,7 @@
     <Compile Include="Models\Filters\FiltersModel.cs" />
     <Compile Include="Models\Filters\GenreFiltersModel.cs" />
     <Compile Include="Models\MediaGroupItem.cs" />
+    <Compile Include="Models\MediaPlayerPlayBackInfo.cs" />
     <Compile Include="Models\Recommendation.cs" />
     <Compile Include="Models\SeasonSeries.cs" />
     <Compile Include="Models\UIItem.cs" />

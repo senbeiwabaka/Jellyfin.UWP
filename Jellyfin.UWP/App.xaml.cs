@@ -153,7 +153,6 @@ namespace Jellyfin.UWP
                     var authClient = new UserClient(settings, httpClient);
                     var user = await authClient.GetCurrentUserAsync();
                     var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
-
                     var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
 
                     memoryCache.Set("user", user);
