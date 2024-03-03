@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP
@@ -13,11 +13,9 @@ namespace Jellyfin.UWP
     public sealed partial class MediaItemPlayerViewModel : ObservableObject
     {
         private readonly IMediaInfoClient mediaInfoClient;
-
         private readonly IMemoryCache memoryCache;
-
         private readonly IPlaystateClient playstateClient;
-
+        private readonly ISessionClient sessionClient;
         private readonly ISubtitleClient subtitleClient;
 
         private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
@@ -49,8 +47,18 @@ namespace Jellyfin.UWP
         private readonly IUserLibraryClient userLibraryClient;
         private readonly IVideosClient videosClient;
 
+        private DetailsItemPlayRecord detailsItemPlayRecord;
+
+        [ObservableProperty]
+        private bool isTranscoding;
+
         private BaseItemDto item;
-        private Guid itemId;
+
+        [ObservableProperty]
+        private MediaPlayerPlayBackInfo mediaPlayerPlayBackInfo;
+
+        private MediaSourceInfo mediaSourceInfo;
+        private PlaybackInfoResponse playbackInfo;
         private string playbackSessionId = string.Empty;
 
         public MediaItemPlayerViewModel(
@@ -60,7 +68,8 @@ namespace Jellyfin.UWP
             IMediaInfoClient mediaInfoClient,
             ISubtitleClient subtitleClient,
             IUserLibraryClient userLibraryClient,
-            ITvShowsClient tvShowsClient)
+            ITvShowsClient tvShowsClient,
+            ISessionClient sessionClient)
         {
             this.memoryCache = memoryCache;
             this.videosClient = videosClient;
@@ -69,8 +78,92 @@ namespace Jellyfin.UWP
             this.subtitleClient = subtitleClient;
             this.userLibraryClient = userLibraryClient;
             this.tvShowsClient = tvShowsClient;
-
+            this.sessionClient = sessionClient;
             user = memoryCache.Get<UserDto>("user");
+        }
+
+        public async Task<BaseItemDtoQueryResult> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId)
+        {
+            var seasons = await tvShowsClient.GetSeasonsAsync(
+                    seriesId,
+                    user.Id,
+                    fields: new[]
+                    {
+                        ItemFields.ItemCounts,
+                        ItemFields.MediaSourceCount,
+                    });
+            var index = 0;
+            foreach (var season in seasons.Items)
+            {
+                if (season.Id == seasonId)
+                {
+                    if (seasons.TotalRecordCount - 1 <= ++index)
+                    {
+                        return null;
+                    }
+
+                    return await tvShowsClient.GetEpisodesAsync(
+                        seriesId: seriesId,
+                        userId: user.Id,
+                        seasonId: seasons.Items[index].SeasonId,
+                        fields: new[]
+                        {
+                            ItemFields.ItemCounts,
+                            ItemFields.PrimaryImageAspectRatio,
+                            ItemFields.BasicSyncInfo,
+                        });
+                }
+
+                ++index;
+            }
+
+            return null;
+        }
+
+        public async Task GetPlaybackInfo(double playerWidth, double playerHeight)
+        {
+            var session = (await sessionClient.GetSessionsAsync(deviceId: "Jellyfin.UWP")).FirstOrDefault();
+
+            var videoMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.Type == MediaStreamType.Video);
+            MediaStream audioMediaStream;
+
+            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack)
+            {
+                audioMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.IsDefault && x.Type == MediaStreamType.Audio);
+            }
+            else
+            {
+                audioMediaStream = mediaSourceInfo.MediaStreams.First(x => x.Type == MediaStreamType.Audio);
+            }
+
+            MediaPlayerPlayBackInfo = new MediaPlayerPlayBackInfo
+            {
+                PlayMethod = IsTranscoding ? "Transcoding" : "Direct Play",
+                Protocol = "Https",
+                Stream = IsTranscoding ? "HLS" : "Video",
+
+                PlayerDimensions = $"{playerWidth:#}x{playerHeight:#}",
+                VideoResolution = $"{videoMediaStream.Width}x{videoMediaStream.Height}",
+
+                TranscodingVideoCodec = session?.TranscodingInfo.VideoCodec.ToUpper(),
+                TranscodingAudioCodec = session?.TranscodingInfo.AudioCodec.ToUpper(),
+                TranscodingAudioChannels = session?.TranscodingInfo.AudioChannels?.ToString(),
+                TranscodingBitrate = session != null && session.TranscodingInfo.Bitrate.HasValue ? $"{session.TranscodingInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A",
+                TranscodingCompletion = $"{session?.TranscodingInfo.CompletionPercentage?.ToString("#.#")}%",
+                TranscodingFramerate = $"{session?.TranscodingInfo.Framerate} fps",
+                TranscodingReason = string.Join(",", session?.TranscodingInfo.TranscodeReasons),
+
+                Container = mediaSourceInfo.Container,
+                Size = mediaSourceInfo.Size.HasValue ? $"{mediaSourceInfo.Size.Value / 1073741824m:#.#} GiB" : "N/A",
+                Bitrate = mediaSourceInfo.Bitrate.HasValue ? $"{mediaSourceInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A",
+                VideoCodec = $"{videoMediaStream.Codec.ToUpper()} {videoMediaStream.Profile}",
+                VideoBitrate = videoMediaStream.BitRate.HasValue ? $"{videoMediaStream.BitRate.Value / 1000000m:#.#} Mbps" : "N/A",
+                VideoRangeType = videoMediaStream.VideoRangeType,
+                AudioCodec = $"{audioMediaStream.Codec.ToUpper()} {audioMediaStream.Profile}",
+                AudioBitrate = audioMediaStream.BitRate.HasValue ? $"{audioMediaStream.BitRate.Value / 1000:#} kbps" : "N/A",
+                AudioChannels = audioMediaStream.Channels.HasValue ? audioMediaStream.Channels.ToString() : "N/A",
+                AudioSampleRate = audioMediaStream.SampleRate.HasValue ? $"{audioMediaStream.SampleRate} Hz" : "N/A",
+            };
         }
 
         public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
@@ -89,16 +182,16 @@ namespace Jellyfin.UWP
 
         public string GetSubtitleUrl(int index, string routeFormat)
         {
-            var routeId = itemId.ToString().Replace("-", string.Empty);
+            var routeId = item.Id.ToString().Replace("-", string.Empty);
 
-            return subtitleClient.GetSubtitleWithTicksUrl(itemId, routeId, index, 0, routeFormat);
+            return subtitleClient.GetSubtitleWithTicksUrl(item.Id, routeId, index, 0, routeFormat);
         }
 
         public Uri GetVideoUrl(string videoId = null)
         {
             var container = item.MediaSources[0].Container;
             var videoUrl = videosClient.GetVideoStreamByContainerUrl(
-                itemId,
+                item.Id,
                 container,
                 @static: true,
                 mediaSourceId: videoId);
@@ -169,21 +262,17 @@ namespace Jellyfin.UWP
             return true;
         }
 
-        public async Task<BaseItemDto> LoadMediaItemAsync(Guid id)
+        public async Task<BaseItemDto> LoadMediaItemAsync(DetailsItemPlayRecord detailsItemPlayRecord)
         {
-            itemId = id;
+            this.detailsItemPlayRecord = detailsItemPlayRecord;
 
-            item = await userLibraryClient.GetItemAsync(user.Id, id);
+            item = await userLibraryClient.GetItemAsync(user.Id, detailsItemPlayRecord.Id);
 
             return item;
         }
 
         public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync(string videoId = null)
         {
-            const string mp4VideoFormats = "h264,vp8,vp9";
-            const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
-            const string audioFormarts = "aac,mp3,ac3";
-
             long? startTimeTicks = null;
 
             if (item.UserData.PlayedPercentage.HasValue && item.UserData.PlayedPercentage < 90)
@@ -191,23 +280,94 @@ namespace Jellyfin.UWP
                 startTimeTicks = item.UserData.PlaybackPositionTicks;
             }
 
-            var playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
-                itemId,
-                body: new PlaybackInfoDto
-                {
-                    UserId = user.Id,
-                    AutoOpenLiveStream = true,
-                    EnableTranscoding = true,
-                    AllowVideoStreamCopy = true,
-                    AllowAudioStreamCopy = true,
-                    MaxStreamingBitrate = 20_000_000,
-                    MaxAudioChannels = 5,
-                    StartTimeTicks = startTimeTicks,
-                    EnableDirectStream = true,
+            playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
+                item.Id,
+                body: GetPlaybackInfoBody(user.Id, startTimeTicks));
 
-                    DeviceProfile = new DeviceProfile
-                    {
-                        CodecProfiles = new[]
+            playbackSessionId = playbackInfo.PlaySessionId;
+
+            if (string.IsNullOrWhiteSpace(videoId))
+            {
+                mediaSourceInfo = playbackInfo.MediaSources.Single();
+
+                return mediaSourceInfo;
+            }
+
+            mediaSourceInfo = playbackInfo.MediaSources.Single(x => string.Equals(x.Id, videoId, StringComparison.CurrentCultureIgnoreCase));
+
+            return mediaSourceInfo;
+        }
+
+        public async Task SessionPlayingAsync()
+        {
+            var session = memoryCache.Get<SessionInfo>("session");
+            var playbackStartInfo = new PlaybackStartInfo
+            {
+                ItemId = item.Id,
+                SessionId = session.Id,
+                PlayMethod = IsTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                CanSeek = true,
+                IsMuted = false,
+                IsPaused = false,
+                PlaySessionId = playbackSessionId,
+            };
+
+            await playstateClient.ReportPlaybackStartAsync(playbackStartInfo);
+        }
+
+        public async Task SessionProgressAsync(long position, bool isPaused)
+        {
+            var session = memoryCache.Get<SessionInfo>("session");
+            var playbackProgressInfo = new PlaybackProgressInfo
+            {
+                SessionId = session.Id,
+                ItemId = item.Id,
+                PositionTicks = position,
+                PlayMethod = IsTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                CanSeek = true,
+                IsMuted = false,
+                IsPaused = isPaused,
+                PlaySessionId = playbackSessionId,
+            };
+
+            await playstateClient.ReportPlaybackProgressAsync(playbackProgressInfo);
+        }
+
+        public async Task SessionStopAsync(long position)
+        {
+            var session = memoryCache.Get<SessionInfo>("session");
+
+            await playstateClient.ReportPlaybackStoppedAsync(
+                new PlaybackStopInfo
+                {
+                    PositionTicks = position,
+                    ItemId = item.Id,
+                    SessionId = session.Id,
+                    PlaySessionId = playbackSessionId,
+                });
+        }
+
+        private static PlaybackInfoDto GetPlaybackInfoBody(Guid userId, long? startTimeTicks)
+        {
+            const string mp4VideoFormats = "h264,vp8,vp9";
+            const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
+            const string audioFormarts = "aac,mp3,ac3";
+
+            return new PlaybackInfoDto
+            {
+                UserId = userId,
+                AutoOpenLiveStream = true,
+                EnableTranscoding = true,
+                AllowVideoStreamCopy = true,
+                AllowAudioStreamCopy = true,
+                MaxStreamingBitrate = 20_000_000,
+                MaxAudioChannels = 5,
+                StartTimeTicks = startTimeTicks,
+                EnableDirectStream = true,
+
+                DeviceProfile = new DeviceProfile
+                {
+                    CodecProfiles = new[]
                         {
                             new CodecProfile
                             {
@@ -250,7 +410,7 @@ namespace Jellyfin.UWP
                                 Type = CodecType.Video
                             },
                         },
-                        DirectPlayProfiles = new[]
+                    DirectPlayProfiles = new[]
                         {
                             new DirectPlayProfile
                             {
@@ -284,7 +444,7 @@ namespace Jellyfin.UWP
                                 Type = DlnaProfileType.Audio,
                             },
                         },
-                        TranscodingProfiles = new[]
+                    TranscodingProfiles = new[]
                         {
                             new TranscodingProfile
                             {
@@ -348,7 +508,7 @@ namespace Jellyfin.UWP
                                 AudioCodec = "aac,mp3",
                             },
                         },
-                        ResponseProfiles = new[]
+                    ResponseProfiles = new[]
                         {
                             new ResponseProfile
                             {
@@ -357,66 +517,8 @@ namespace Jellyfin.UWP
                                 Type = DlnaProfileType.Video,
                             },
                         },
-                    },
-                });
-
-            playbackSessionId = playbackInfo.PlaySessionId;
-
-            if (string.IsNullOrWhiteSpace(videoId))
-            {
-                return playbackInfo.MediaSources.Single();
-            }
-
-            return playbackInfo.MediaSources.Single(x => string.Equals(x.Id, videoId, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        public async Task SessionPlayingAsync(bool isTranscoding)
-        {
-            var session = memoryCache.Get<SessionInfo>("session");
-            var playbackStartInfo = new PlaybackStartInfo
-            {
-                ItemId = itemId,
-                SessionId = session.Id,
-                PlayMethod = isTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
-                CanSeek = true,
-                IsMuted = false,
-                IsPaused = false,
-                PlaySessionId = playbackSessionId,
+                },
             };
-
-            await playstateClient.ReportPlaybackStartAsync(playbackStartInfo);
-        }
-
-        public async Task SessionProgressAsync(long position, bool isTranscoding, bool isPaused)
-        {
-            var session = memoryCache.Get<SessionInfo>("session");
-            var playbackProgressInfo = new PlaybackProgressInfo
-            {
-                SessionId = session.Id,
-                ItemId = itemId,
-                PositionTicks = position,
-                PlayMethod = isTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
-                CanSeek = true,
-                IsMuted = false,
-                IsPaused = isPaused,
-                PlaySessionId = playbackSessionId,
-            };
-
-            await playstateClient.ReportPlaybackProgressAsync(playbackProgressInfo);
-        }
-
-        public async Task SessionStopAsync(long position)
-        {
-            var session = memoryCache.Get<SessionInfo>("session");
-
-            await playstateClient.ReportPlaybackStoppedAsync(
-                new PlaybackStopInfo
-                {
-                    PositionTicks = position,
-                    ItemId = itemId,
-                    SessionId = session.Id,
-                    PlaySessionId = playbackSessionId,
-                });
         }
     }
 }
