@@ -26,6 +26,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -33,7 +34,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -65,6 +67,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -72,7 +75,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -101,6 +105,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -108,7 +113,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -141,6 +147,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -148,7 +155,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -178,6 +186,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -185,7 +194,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -217,6 +227,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -224,7 +235,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -252,6 +264,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -259,7 +272,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -289,6 +303,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -296,7 +311,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -329,6 +345,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -336,7 +353,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
@@ -365,6 +383,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var subtitleClientMock = new Mock<ISubtitleClient>();
             var userLibraryClientMock = new Mock<IUserLibraryClient>();
             var tvShowsClientMock = new Mock<ITvShowsClient>();
+            var sessionClientMock = new Mock<ISessionClient>();
             var sut = new MediaItemPlayerViewModel(
                 memoryCache,
                 videoClientMock.Object,
@@ -372,7 +391,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 mediaInfoClientMock.Object,
                 subtitleClientMock.Object,
                 userLibraryClientMock.Object,
-                tvShowsClientMock.Object);
+                tvShowsClientMock.Object,
+                sessionClientMock.Object);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
