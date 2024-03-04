@@ -128,7 +128,7 @@
                     </StackPanel>
 
                     <StackPanel Padding="30,0,0,0">
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource BoolToVisibilityConverter}}" Height="30" Width="650" Margin="0,5,0,4">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding HasMultipleVideoStreams, Converter={StaticResource BoolToVisibilityConverter}}" Height="30" Margin="0,5,0,4">
                             <TextBlock Text="Version:" Width="93" />
                             <ComboBox
                                 ItemsSource="{Binding VideoStreams}"
@@ -142,11 +142,11 @@
                                 </Interactivity:Interaction.Behaviors>
                             </ComboBox>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Height="30" Width="650" Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Height="30" Margin="0,0,0,4">
                             <TextBlock Text="Video" Width="93" />
                             <TextBlock Text="{Binding VideoType}" />
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Height="30" Width="650">
+                        <StackPanel Orientation="Horizontal" Height="30">
                             <TextBlock Text="Audio" Width="93" />
                             <TextBlock
                                 Visibility="{Binding HasMultipleAudioStreams, Converter={StaticResource InverseBoolToVisibilityConverter}}"

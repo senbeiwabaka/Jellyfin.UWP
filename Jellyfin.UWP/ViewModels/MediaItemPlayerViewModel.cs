@@ -1,11 +1,11 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP
@@ -124,6 +124,25 @@ namespace Jellyfin.UWP
         {
             var session = (await sessionClient.GetSessionsAsync(deviceId: "Jellyfin.UWP")).FirstOrDefault();
 
+            string transcodingVideoCodec = null;
+            string transcodingAudioCodec = null;
+            string transcodingAudioChannels = null;
+            string transcodingBitrate = null;
+            string transcodingCompletion = null;
+            string transcodingFramerate = null;
+            string transcodingReason = null;
+
+            if (session is not null && session.TranscodingInfo is not null)
+            {
+                transcodingVideoCodec = session.TranscodingInfo.VideoCodec.ToUpper();
+                transcodingAudioCodec = session.TranscodingInfo.AudioCodec.ToUpper();
+                transcodingAudioChannels = session.TranscodingInfo.AudioChannels?.ToString();
+                transcodingBitrate = session.TranscodingInfo.Bitrate.HasValue ? $"{session.TranscodingInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A";
+                transcodingCompletion = $"{session.TranscodingInfo.CompletionPercentage?.ToString("#.#")}%";
+                transcodingFramerate = $"{session.TranscodingInfo.Framerate} fps";
+                transcodingReason = string.Join(",", session.TranscodingInfo?.TranscodeReasons);
+            }
+
             var videoMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.Type == MediaStreamType.Video);
             MediaStream audioMediaStream;
 
@@ -145,13 +164,13 @@ namespace Jellyfin.UWP
                 PlayerDimensions = $"{playerWidth:#}x{playerHeight:#}",
                 VideoResolution = $"{videoMediaStream.Width}x{videoMediaStream.Height}",
 
-                TranscodingVideoCodec = session?.TranscodingInfo.VideoCodec.ToUpper(),
-                TranscodingAudioCodec = session?.TranscodingInfo.AudioCodec.ToUpper(),
-                TranscodingAudioChannels = session?.TranscodingInfo.AudioChannels?.ToString(),
-                TranscodingBitrate = session != null && session.TranscodingInfo.Bitrate.HasValue ? $"{session.TranscodingInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A",
-                TranscodingCompletion = $"{session?.TranscodingInfo.CompletionPercentage?.ToString("#.#")}%",
-                TranscodingFramerate = $"{session?.TranscodingInfo.Framerate} fps",
-                TranscodingReason = string.Join(",", session?.TranscodingInfo.TranscodeReasons),
+                TranscodingVideoCodec = transcodingVideoCodec,
+                TranscodingAudioCodec = transcodingAudioCodec,
+                TranscodingAudioChannels = transcodingAudioChannels,
+                TranscodingBitrate = transcodingBitrate,
+                TranscodingCompletion = transcodingCompletion,
+                TranscodingFramerate = transcodingFramerate,
+                TranscodingReason = transcodingReason,
 
                 Container = mediaSourceInfo.Container,
                 Size = mediaSourceInfo.Size.HasValue ? $"{mediaSourceInfo.Size.Value / 1073741824m:#.#} GiB" : "N/A",
@@ -273,7 +292,7 @@ namespace Jellyfin.UWP
 
         public async Task<MediaSourceInfo> LoadMediaPlaybackInfoAsync(string videoId = null)
         {
-            long? startTimeTicks = null;
+            var startTimeTicks = 0L;
 
             if (item.UserData.PlayedPercentage.HasValue && item.UserData.PlayedPercentage < 90)
             {
@@ -347,7 +366,7 @@ namespace Jellyfin.UWP
                 });
         }
 
-        private static PlaybackInfoDto GetPlaybackInfoBody(Guid userId, long? startTimeTicks)
+        private static PlaybackInfoDto GetPlaybackInfoBody(Guid userId, long startTimeTicks)
         {
             const string mp4VideoFormats = "h264,vp8,vp9";
             const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";

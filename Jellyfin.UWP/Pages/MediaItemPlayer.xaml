@@ -40,15 +40,15 @@
         </Popup>
 
         <Popup
-      x:Name="PlaybackInfoPopup"
-      IsOpen="False"
-      VerticalAlignment="Center"
-      Canvas.ZIndex="2"
-      IsLightDismissEnabled="True"
-      Grid.Row="1"
-      HorizontalAlignment="Left"
-      HorizontalOffset="10"
-      VerticalOffset="-200">
+            x:Name="PlaybackInfoPopup"
+            IsOpen="False"
+            VerticalAlignment="Center"
+            Canvas.ZIndex="2"
+            IsLightDismissEnabled="True"
+            Grid.Row="1"
+            HorizontalAlignment="Left"
+            HorizontalOffset="10"
+            VerticalOffset="-300">
             <Grid Background="Black" Padding="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="300" />
