@@ -2,27 +2,27 @@
 {
     public sealed class MediaPlayerPlayBackInfo
     {
-        public string PlayMethod { get; internal set; }
-        public string Protocol { get; internal set; }
-        public string Stream { get; internal set; }
-        public string Container { get; internal set; }
-        public string Size { get; internal set; }
-        public string Bitrate { get; internal set; }
-        public string VideoCodec { get; internal set; }
-        public string VideoBitrate { get; internal set; }
-        public string VideoRangeType { get; internal set; }
-        public string AudioCodec { get; internal set; }
-        public string AudioBitrate { get; internal set; }
-        public string AudioChannels { get; internal set; }
-        public string AudioSampleRate { get; internal set; }
-        public string VideoResolution { get; internal set; }
-        public string PlayerDimensions { get; internal set; }
-        public string TranscodingVideoCodec { get; internal set; }
-        public string TranscodingAudioCodec { get; internal set; }
-        public string TranscodingAudioChannels { get; internal set; }
-        public string TranscodingBitrate { get; internal set; }
-        public string TranscodingCompletion { get; internal set; }
-        public string TranscodingFramerate { get; internal set; }
-        public string TranscodingReason { get; internal set; }
+        public string PlayMethod { get; set; }
+        public string Protocol { get; set; }
+        public string Stream { get; set; }
+        public string Container { get; set; }
+        public string Size { get; set; }
+        public string Bitrate { get; set; }
+        public string VideoCodec { get; set; }
+        public string VideoBitrate { get; set; }
+        public string VideoRangeType { get; set; }
+        public string AudioCodec { get; set; }
+        public string AudioBitrate { get; set; }
+        public string AudioChannels { get; set; }
+        public string AudioSampleRate { get; set; }
+        public string VideoResolution { get; set; }
+        public string PlayerDimensions { get; set; }
+        public string TranscodingVideoCodec { get; set; }
+        public string TranscodingAudioCodec { get; set; }
+        public string TranscodingAudioChannels { get; set; }
+        public string TranscodingBitrate { get; set; }
+        public string TranscodingCompletion { get; set; }
+        public string TranscodingFramerate { get; set; }
+        public string TranscodingReason { get; set; }
     }
 }
