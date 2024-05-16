@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,14 +18,8 @@ namespace Jellyfin.UWP.ViewModels.Details
         [ObservableProperty]
         private UIMediaListItem nextUpItem;
 
-        public SeriesDetailViewModel(
-            IMemoryCache memoryCache,
-            IUserLibraryClient userLibraryClient,
-            ILibraryClient libraryClient,
-            SdkClientSettings sdkClientSettings,
-            ITvShowsClient tvShowsClient,
-            IPlaystateClient playstateClient)
-            : base(memoryCache, userLibraryClient, libraryClient, sdkClientSettings, tvShowsClient, playstateClient)
+        public SeriesDetailViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+            : base(memoryCache, apiClient)
         {
         }
 
@@ -37,54 +32,58 @@ namespace Jellyfin.UWP.ViewModels.Details
         {
             NextUpItem = null;
 
-            var user = memoryCache.Get<UserDto>("user");
-            var nextUp = await tvShowsClient.GetNextUpAsync(
-                               user.Id,
-                               seriesId: MediaItem.Id,
-                               fields: new[] { ItemFields.MediaSourceCount, });
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var nextUp = await apiClient.Shows.NextUp
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SeriesId = MediaItem.Id;
+                    options.QueryParameters.Fields = new[] { ItemFields.MediaSourceCount, };
+                });
             var item = nextUp.Items.FirstOrDefault();
 
             if (item is not null)
             {
                 NextUpItem = new UIMediaListItem
                 {
-                    Id = item.Id,
+                    Id = item.Id.Value,
                     Name = $"S{item.ParentIndexNumber}:E{item.IndexNumber} - {item.Name}",
-                    Url = SetImageUrl(item.Id, "296", "526", JellyfinConstants.PrimaryName, item.ImageTags),
+                    Url = MediaHelpers.SetImageUrl(item, "296", "526", JellyfinConstants.PrimaryName),
                     UserData = new UIUserData
                     {
-                        IsFavorite = item.UserData.IsFavorite,
-                        HasBeenWatched = item.UserData.Played,
+                        IsFavorite = item.UserData.IsFavorite.Value,
+                        HasBeenWatched = item.UserData.Played.Value,
                     },
-                    Type = item.Type,
-                    CollectionType = item.CollectionType,
+                    Type = item.Type.Value,
+                    CollectionType = item.CollectionType.Value,
                 };
             }
 
-            var seasons = await tvShowsClient.GetSeasonsAsync(
-                    MediaItem.Id,
-                    user.Id,
-                    fields: new[]
+            var seasons = await apiClient.Shows[MediaItem.Id.Value].Seasons
+                .GetAsync(option =>
+                {
+                    option.QueryParameters.UserId = user.Id;
+                    option.QueryParameters.Fields = new[]
                     {
                         ItemFields.ItemCounts,
                         ItemFields.PrimaryImageAspectRatio,
-                        ItemFields.BasicSyncInfo,
                         ItemFields.MediaSourceCount,
-                    });
+                    };
+                });
 
             SeriesMetadata = new ObservableCollection<UIMediaListItem>(
                 seasons.Items.Select(x =>
                 {
                     var item = new UIMediaListItem
                     {
-                        Id = x.Id,
+                        Id = x.Id.Value,
                         Name = x.Name,
-                        Url = SetSeasonImageUrl(sdkClientSettings, x),
+                        Url = SetSeasonImageUrl(x),
                         UserData = new UIUserData
                         {
-                            IsFavorite = x.UserData.IsFavorite,
+                            IsFavorite = x.UserData.IsFavorite.Value,
                             UnplayedItemCount = x.UserData.UnplayedItemCount,
-                            HasBeenWatched = x.UserData.Played,
+                            HasBeenWatched = x.UserData.Played.Value,
                         },
                     };
 
@@ -92,66 +91,72 @@ namespace Jellyfin.UWP.ViewModels.Details
                 }));
         }
 
-        private static string SetSeasonImageUrl(SdkClientSettings settings, BaseItemDto item)
+        private string SetSeasonImageUrl(BaseItemDto item)
         {
-            if (item.ImageTags.ContainsKey(JellyfinConstants.PrimaryName))
+            var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+            var imageTags = item.ImageTags.AdditionalData;
+            if (imageTags.ContainsKey(JellyfinConstants.PrimaryName))
             {
-                return $"{settings.BaseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.ImageTags[JellyfinConstants.PrimaryName]}";
+                return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={imageTags[JellyfinConstants.PrimaryName]}";
             }
 
-            return $"{settings.BaseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
+            return $"{baseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task NextUpFavoriteStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (NextUpItem != null)
             {
                 if (NextUpItem.UserData.IsFavorite)
                 {
-                    _ = await userLibraryClient.UnmarkFavoriteItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        cancellationToken: cancellationToken);
+                    _ = await apiClient.UserFavoriteItems[NextUpItem.Id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
                 }
                 else
                 {
-                    _ = await userLibraryClient.MarkFavoriteItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        cancellationToken: cancellationToken);
+                    _ = await apiClient.UserFavoriteItems[NextUpItem.Id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
                 }
 
-                await LoadMediaInformationAsync(MediaItem.Id);
+                await LoadMediaInformationAsync(MediaItem.Id.Value);
             }
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task NextUpPlayedStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (NextUpItem != null)
             {
                 if (NextUpItem.UserData.HasBeenWatched)
                 {
-                    _ = await playstateClient.MarkUnplayedItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        cancellationToken: cancellationToken);
+                    _ = await apiClient.UserPlayedItems[NextUpItem.Id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
                 }
                 else
                 {
-                    _ = await playstateClient.MarkPlayedItemAsync(
-                        user.Id,
-                        NextUpItem.Id,
-                        DateTimeOffset.Now,
-                        cancellationToken: cancellationToken);
+                    _ = await apiClient.UserPlayedItems[NextUpItem.Id]
+                    .PostAsync(options =>
+                     {
+                         options.QueryParameters.UserId = user.Id;
+                         options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                     });
                 }
 
-                await LoadMediaInformationAsync(MediaItem.Id);
+                await LoadMediaInformationAsync(MediaItem.Id.Value);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Jellyfin.Sdk;
 using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,7 +33,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 memoryCache,
                 sdkSettings);
 
-            memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
+            memoryCache.Set<UserDto>(JellyfinConstants.UserName, new UserDto { Id = userId, });
 
             var successRan = false;
 

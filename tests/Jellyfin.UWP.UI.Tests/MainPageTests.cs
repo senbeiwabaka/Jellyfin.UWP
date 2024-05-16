@@ -3,7 +3,7 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Input;
 using FlaUI.TestUtilities;
 using FlaUI.UIA3;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;

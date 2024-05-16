@@ -1,19 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class SearchViewModel : ObservableObject
     {
         private const int Limit = 24;
-        private readonly IItemsClient itemsClient;
         private readonly IMemoryCache memoryCache;
-        private readonly SdkClientSettings sdkClientSettings;
+        private readonly JellyfinApiClient apiClient;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> episodesMediaList;
@@ -33,25 +34,27 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesMediaList;
 
-        public SearchViewModel(IItemsClient itemsClient, SdkClientSettings sdkClientSettings, IMemoryCache memoryCache)
+        public SearchViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
-            this.itemsClient = itemsClient;
-            this.sdkClientSettings = sdkClientSettings;
             this.memoryCache = memoryCache;
+            this.apiClient = apiClient;
         }
 
         public async Task LoadSearchAsync(string query)
         {
-            var user = memoryCache.Get<UserDto>("user");
-            var movieItemsResult = await itemsClient.GetItemsByUserIdAsync(
-                user.Id,
-                searchTerm: query,
-                limit: Limit,
-                recursive: true,
-                enableTotalRecordCount: false,
-                imageTypeLimit: 1,
-                isMovie: true,
-                includeItemTypes: new[] { BaseItemKind.Movie });
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var movieItemsResult = await apiClient.Items
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SearchTerm = query;
+                    options.QueryParameters.Limit = Limit;
+                    options.QueryParameters.Recursive = true;
+                    options.QueryParameters.EnableTotalRecordCount = false;
+                    options.QueryParameters.ImageTypeLimit = 1;
+                    options.QueryParameters.IsMovie = true;
+                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Movie };
+                });
 
             MovieMediaList = new ObservableCollection<UIMediaListItem>(
                 movieItemsResult
@@ -59,30 +62,34 @@ namespace Jellyfin.UWP.ViewModels
                     .Select(x =>
                         new UIMediaListItem
                         {
-                            Id = x.Id,
+                            Id = x.Id.Value,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=330&fillWidth=220&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType,
-                            Type = x.Type,
+                            CollectionType = x.CollectionType.Value,
+                            Type = x.Type.Value,
                             UserData = new UIUserData
                             {
-                                IsFavorite = x.UserData.IsFavorite,
-                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                HasBeenWatched = x.UserData.Played.Value,
                                 UnplayedItemCount = x.UserData.UnplayedItemCount,
                             },
                         }));
 
             HasMoviesResult = MovieMediaList.Count > 0;
 
-            var seriesItemsResult = await itemsClient.GetItemsByUserIdAsync(
-                user.Id,
-                searchTerm: query,
-                limit: Limit,
-                recursive: true,
-                enableTotalRecordCount: false,
-                imageTypeLimit: 1,
-                includeItemTypes: new[] { BaseItemKind.Series });
+            var seriesItemsResult = await apiClient.Items
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SearchTerm = query;
+                    options.QueryParameters.Limit = Limit;
+                    options.QueryParameters.Recursive = true;
+                    options.QueryParameters.EnableTotalRecordCount = false;
+                    options.QueryParameters.ImageTypeLimit = 1;
+                    options.QueryParameters.IsMovie = true;
+                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Series };
+                });
 
             SeriesMediaList = new ObservableCollection<UIMediaListItem>(
                 seriesItemsResult
@@ -91,16 +98,16 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         var item = new UIMediaListItem
                         {
-                            Id = x.Id,
+                            Id = x.Id.Value,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=330&fillWidth=220&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType,
-                            Type = x.Type,
+                            CollectionType = x.CollectionType.Value,
+                            Type = x.Type.Value,
                             UserData = new UIUserData
                             {
-                                IsFavorite = x.UserData.IsFavorite,
-                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                HasBeenWatched = x.UserData.Played.Value,
                                 UnplayedItemCount = x.UserData.UnplayedItemCount,
                             },
                         };
@@ -110,14 +117,18 @@ namespace Jellyfin.UWP.ViewModels
 
             HasSeriesResult = SeriesMediaList.Count > 0;
 
-            var episodesItemsResult = await itemsClient.GetItemsByUserIdAsync(
-                user.Id,
-                searchTerm: query,
-                limit: Limit,
-                recursive: true,
-                enableTotalRecordCount: false,
-                imageTypeLimit: 1,
-                includeItemTypes: new[] { BaseItemKind.Episode });
+            var episodesItemsResult = await apiClient.Items
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SearchTerm = query;
+                    options.QueryParameters.Limit = Limit;
+                    options.QueryParameters.Recursive = true;
+                    options.QueryParameters.EnableTotalRecordCount = false;
+                    options.QueryParameters.ImageTypeLimit = 1;
+                    options.QueryParameters.IsMovie = true;
+                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Episode };
+                });
 
             EpisodesMediaList = new ObservableCollection<UIMediaListItem>(
                 episodesItemsResult
@@ -125,16 +136,16 @@ namespace Jellyfin.UWP.ViewModels
                     .Select(x =>
                         new UIMediaListItem
                         {
-                            Id = x.Id,
+                            Id = x.Id.Value,
                             Name = x.Name,
-                            Url = $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=215&fillWidth=380&quality=96&tag={x.ImageTags["Primary"]}",
+                            Url = MediaHelpers.SetImageUrl(x, "215", "380", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType,
-                            Type = x.Type,
+                            CollectionType = x.CollectionType.Value,
+                            Type = x.Type.Value,
                             UserData = new UIUserData
                             {
-                                IsFavorite = x.UserData.IsFavorite,
-                                HasBeenWatched = x.UserData.Played,
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                HasBeenWatched = x.UserData.Played.Value,
                                 UnplayedItemCount = x.UserData.UnplayedItemCount,
                             },
                         }));

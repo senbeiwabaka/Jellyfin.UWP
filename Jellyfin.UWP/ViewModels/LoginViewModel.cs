@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -13,9 +15,9 @@ namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class LoginViewModel : ObservableValidator
     {
-        private readonly IUserClient userClient;
         private readonly IMemoryCache memoryCache;
-        private readonly SdkClientSettings settings;
+        private readonly JellyfinApiClient apiClient;
+        private readonly JellyfinSdkSettings settings;
         private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<LoginViewModel>();
 
         [ObservableProperty]
@@ -36,10 +38,10 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private bool openPopup;
 
-        public LoginViewModel(IUserClient userClient, IMemoryCache memoryCache, SdkClientSettings settings)
+        public LoginViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, JellyfinSdkSettings settings)
         {
-            this.userClient = userClient;
             this.memoryCache = memoryCache;
+            this.apiClient = apiClient;
             this.settings = settings;
         }
 
@@ -70,21 +72,28 @@ namespace Jellyfin.UWP.ViewModels
                     return;
                 }
 
-                var authResult = await userClient.AuthenticateUserByNameAsync(new AuthenticateUserByName { Username = Username, Pw = Password }, cancellationToken: token);
+                var localSettings = ApplicationData.Current.LocalSettings;
+                var baseUrl = localSettings.Values[JellyfinConstants.HostUrlName].ToString();
+
+                settings.SetServerUrl(baseUrl);
+
+                var authResult = await apiClient.Users.AuthenticateByName.PostAsync(new AuthenticateUserByName
+                {
+                    Username = Username,
+                    Pw = Password
+                });
 
                 if (authResult is not null && !string.IsNullOrWhiteSpace(authResult.AccessToken))
                 {
-                    var localSettings = ApplicationData.Current.LocalSettings;
-                    localSettings.Values["accessToken"] = authResult.AccessToken;
+                    localSettings.Values[JellyfinConstants.AccessTokenName] = authResult.AccessToken;
+                    settings.SetAccessToken(authResult.AccessToken);
 
-                    settings.AccessToken = authResult.AccessToken;
+                    memoryCache.Set(JellyfinConstants.UserName, authResult.User);
 
-                    var user = authResult.User;
-                    memoryCache.Set("user", user);
+                    memoryCache.Set(JellyfinConstants.SessionName, authResult.SessionInfo);
+                    localSettings.Values[JellyfinConstants.SessionName] = System.Text.Json.JsonSerializer.Serialize(authResult.SessionInfo);
 
-                    var session = authResult.SessionInfo;
-                    memoryCache.Set("session", session);
-                    localSettings.Values["session"] = System.Text.Json.JsonSerializer.Serialize(session);
+                    memoryCache.Set<string>(JellyfinConstants.HostUrlName, baseUrl);
 
                     SuccessfullyLoggedIn?.Invoke();
                 }
@@ -92,14 +101,6 @@ namespace Jellyfin.UWP.ViewModels
                 {
                     Message = "Either username or password were wrong";
                 }
-            }
-            catch (UserException e)
-            {
-                Log.Error("Login error", e);
-
-                Message = "An error occurred. Please try again.";
-
-                OpenPopup = true;
             }
             catch (Exception e)
             {

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
+using Microsoft.Toolkit.Uwp.UI;
+using System;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -54,7 +54,7 @@ namespace Jellyfin.UWP.Pages.Latest
         {
             var mediaItem = (UIMediaListItem)e.ClickedItem;
 
-            if (mediaItem.Type == BaseItemKind.Episode)
+            if (mediaItem.Type == BaseItemDto_Type.Episode)
             {
                 Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
@@ -69,7 +69,7 @@ namespace Jellyfin.UWP.Pages.Latest
             var button = (Button)sender;
             var item = (UIMediaListItem)button.DataContext;
 
-            if (item.Type == BaseItemKind.AggregateFolder)
+            if (item.Type == BaseItemDto_Type.AggregateFolder)
             {
                 var playId = await MediaHelpers.GetPlayIdAsync(item);
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
@@ -77,7 +77,7 @@ namespace Jellyfin.UWP.Pages.Latest
                 Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
 
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
+            if (item.Type == BaseItemDto_Type.Episode || item.Type == BaseItemDto_Type.Movie)
             {
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
 

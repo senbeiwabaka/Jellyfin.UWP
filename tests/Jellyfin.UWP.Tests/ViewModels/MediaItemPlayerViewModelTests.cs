@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using Jellyfin.Sdk;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -422,7 +421,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var user = Newtonsoft.Json.JsonConvert.DeserializeObject<UserDto>(userData);
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
 
-            memoryCache.Set("user", user);
+            memoryCache.Set(JellyfinConstants.UserName, user);
 
             var videoClientMock = new Mock<IVideosClient>();
             var playerStateClientMock = new Mock<IPlaystateClient>();

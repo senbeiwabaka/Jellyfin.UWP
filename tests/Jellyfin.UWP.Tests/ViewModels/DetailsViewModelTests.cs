@@ -1,4 +1,5 @@
-﻿using Jellyfin.Sdk;
+﻿using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.ViewModels.Details;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -40,7 +41,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 tvShowsClientMock.Object,
                 playStateClientMock.Object);
 
-            memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
+            memoryCache.Set<UserDto>(JellyfinConstants.UserName, new UserDto { Id = userId, });
 
             userLibraryClientMock
                 .Setup(x => x.GetItemAsync(userId, itemId, default))
@@ -112,7 +113,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 tvShowsClientMock.Object,
                 playStateClientMock.Object);
 
-            memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
+            memoryCache.Set<UserDto>(JellyfinConstants.UserName, new UserDto { Id = userId, });
 
             userLibraryClientMock
                 .Setup(x => x.GetItemAsync(userId, itemId, default))
@@ -124,7 +125,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     Genres = Array.Empty<string>(),
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
-                    Type = BaseItemKind.Movie,
+                    Type = BaseItemDto_Type.Movie,
                     MediaStreams = Array.Empty<MediaStream>(),
                 })
                 .Verifiable();
@@ -189,7 +190,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 tvShowsClientMock.Object,
                 playStateClientMock.Object);
 
-            memoryCache.Set<UserDto>("user", new UserDto { Id = userId, });
+            memoryCache.Set<UserDto>(JellyfinConstants.UserName, new UserDto { Id = userId, });
 
             userLibraryClientMock
                 .Setup(x => x.GetItemAsync(userId, itemId, default))
@@ -201,7 +202,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                     Genres = Array.Empty<string>(),
                     People = Array.Empty<BaseItemPerson>(),
                     ImageTags = new Dictionary<string, string> { { "Primary", "" } },
-                    Type = BaseItemKind.Series,
+                    Type = BaseItemDto_Type.Series,
                     MediaStreams = Array.Empty<MediaStream>(),
                 })
                 .Verifiable();

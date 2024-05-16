@@ -1,22 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP
 {
     public sealed partial class MediaItemPlayerViewModel : ObservableObject
     {
-        private readonly IMediaInfoClient mediaInfoClient;
+        private readonly JellyfinApiClient apiClient;
         private readonly IMemoryCache memoryCache;
-        private readonly IPlaystateClient playstateClient;
-        private readonly ISessionClient sessionClient;
-        private readonly ISubtitleClient subtitleClient;
 
         private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
         {
@@ -36,16 +35,12 @@ namespace Jellyfin.UWP
             { "h263", CodecSubtypes.VideoFormatH263 },
         };
 
-        private readonly ITvShowsClient tvShowsClient;
-
         private readonly IReadOnlyDictionary<string, string> unSupportedAudioCodecs = new Dictionary<string, string>
         {
             { "dts", CodecSubtypes.AudioFormatDts },
         };
 
         private readonly UserDto user;
-        private readonly IUserLibraryClient userLibraryClient;
-        private readonly IVideosClient videosClient;
 
         private DetailsItemPlayRecord detailsItemPlayRecord;
 
@@ -61,25 +56,11 @@ namespace Jellyfin.UWP
         private PlaybackInfoResponse playbackInfo;
         private string playbackSessionId = string.Empty;
 
-        public MediaItemPlayerViewModel(
-            IMemoryCache memoryCache,
-            IVideosClient videosClient,
-            IPlaystateClient playstateClient,
-            IMediaInfoClient mediaInfoClient,
-            ISubtitleClient subtitleClient,
-            IUserLibraryClient userLibraryClient,
-            ITvShowsClient tvShowsClient,
-            ISessionClient sessionClient)
+        public MediaItemPlayerViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
             this.memoryCache = memoryCache;
-            this.videosClient = videosClient;
-            this.playstateClient = playstateClient;
-            this.mediaInfoClient = mediaInfoClient;
-            this.subtitleClient = subtitleClient;
-            this.userLibraryClient = userLibraryClient;
-            this.tvShowsClient = tvShowsClient;
-            this.sessionClient = sessionClient;
-            user = memoryCache.Get<UserDto>("user");
+            this.apiClient = apiClient;
+            user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         }
 
         public async Task<BaseItemDtoQueryResult> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId)
@@ -319,7 +300,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionPlayingAsync()
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
             var playbackStartInfo = new PlaybackStartInfo
             {
                 ItemId = item.Id,
@@ -336,7 +317,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionProgressAsync(long position, bool isPaused)
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
             var playbackProgressInfo = new PlaybackProgressInfo
             {
                 SessionId = session.Id,
@@ -354,7 +335,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionStopAsync(long position)
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
 
             await playstateClient.ReportPlaybackStoppedAsync(
                 new PlaybackStopInfo

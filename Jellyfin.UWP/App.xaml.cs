@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Net.Http;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages;
 using MetroLog;
@@ -61,10 +60,6 @@ namespace Jellyfin.UWP
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var localSettings = ApplicationData.Current.LocalSettings;
-            var accessToken = localSettings.Values["accessToken"]?.ToString();
-            var jellyfinUrl = localSettings.Values["jellyfinUrl"]?.ToString();
-
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -85,40 +80,38 @@ namespace Jellyfin.UWP
                 Window.Current.Content = rootFrame;
             }
 
-            var settings = new SdkClientSettings
-            {
-                BaseUrl = jellyfinUrl,
-                ClientName = "Jellyfin.UWP",
-                ClientVersion = Assembly.GetEntryAssembly().GetName().Version.ToString(),
-                DeviceName = Environment.MachineName,
-                DeviceId = "Jellyfin.UWP",
-            };
-
             Ioc.Default.ConfigureServices(new ServiceCollection()
-               .AddSingleton<SdkClientSettings>((serviceProvider) => settings)
-               .AddHttpClient()
                .AddMemoryCache()
-               .AddSdkClients()
+               .SetupJellyfin()
                .AddViewModels()
                .BuildServiceProvider());
 
+            var localSettings = ApplicationData.Current.LocalSettings;
+            var accessToken = localSettings.Values[JellyfinConstants.AccessTokenName]?.ToString();
+            var jellyfinUrl = localSettings.Values[JellyfinConstants.HostUrlName]?.ToString();
             var resetJellyfinUrl = false;
 
-            // Testing URL to see if it is still active
-            if (!string.IsNullOrWhiteSpace(jellyfinUrl) || Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute))
+            using (var scope = Ioc.Default.CreateScope())
             {
-                using (var scope = Ioc.Default.CreateScope())
-                {
-                    var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-                    var httpClient = httpClientFactory.CreateClient();
+                var apiClient = scope.ServiceProvider.GetRequiredService<JellyfinApiClient>();
+                var settings = scope.ServiceProvider.GetRequiredService<JellyfinSdkSettings>();
+                var memoryCache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
 
-                    httpClient.BaseAddress = new Uri(jellyfinUrl);
+                // Testing URL to see if it is still active
+                if (!string.IsNullOrWhiteSpace(jellyfinUrl) || Uri.IsWellFormedUriString(jellyfinUrl, UriKind.Absolute))
+                {
+                    settings.SetServerUrl(jellyfinUrl);
 
                     try
                     {
-                        var response = await httpClient.GetAsync(string.Empty);
+                        var systemInfo = await apiClient.System.Info.Public.GetAsync();
 
-                        resetJellyfinUrl = !response.IsSuccessStatusCode;
+                        resetJellyfinUrl = false;
+
+                        memoryCache.Set(JellyfinConstants.HostUrlName, jellyfinUrl);
+
+                        Log.Debug("Server Name: {0}", systemInfo.ServerName);
+                        Log.Debug("Server Version: {0}", systemInfo.Version);
                     }
                     catch (Exception ex)
                     {
@@ -127,42 +120,38 @@ namespace Jellyfin.UWP
                         Log.Error(ex.Message, ex);
                     }
                 }
-            }
-            else
-            {
-                resetJellyfinUrl = true;
-            }
-
-            var localSettingsSession = localSettings.Values["session"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(localSettingsSession))
-            {
-                settings.AccessToken = string.Empty;
-                accessToken = string.Empty;
-            }
-
-            if (!string.IsNullOrWhiteSpace(accessToken) && !resetJellyfinUrl)
-            {
-                var httpClientFactory = Ioc.Default.GetRequiredService<IHttpClientFactory>();
-                var httpClient = httpClientFactory.CreateClient();
-
-                try
+                else
                 {
-                    settings.AccessToken = accessToken;
-
-                    var authClient = new UserClient(settings, httpClient);
-                    var user = await authClient.GetCurrentUserAsync();
-                    var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
-                    var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
-
-                    memoryCache.Set("user", user);
-                    memoryCache.Set("session", session);
+                    resetJellyfinUrl = true;
                 }
-                catch (UserException exception)
+
+                var localSettingsSession = localSettings.Values[JellyfinConstants.SessionName]?.ToString();
+
+                if (string.IsNullOrWhiteSpace(localSettingsSession))
                 {
                     CleanupValues(localSettings, settings);
 
-                    Log.Error("Failed to get user information on startup", exception);
+                    accessToken = string.Empty;
+                }
+
+                if (!string.IsNullOrWhiteSpace(accessToken) && !resetJellyfinUrl)
+                {
+                    try
+                    {
+                        settings.SetAccessToken(accessToken);
+
+                        var user = await apiClient.Users.Me.GetAsync();
+                        var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
+
+                        memoryCache.Set(JellyfinConstants.UserName, user);
+                        memoryCache.Set(JellyfinConstants.SessionName, session);
+                    }
+                    catch (Exception exception)
+                    {
+                        CleanupValues(localSettings, settings);
+
+                        Log.Error("Failed to get user information on startup", exception);
+                    }
                 }
             }
 
@@ -174,7 +163,7 @@ namespace Jellyfin.UWP
                     {
                         rootFrame.Navigate(typeof(SetupPage));
                     }
-                    else if (string.IsNullOrWhiteSpace(settings.AccessToken))
+                    else if (string.IsNullOrWhiteSpace(accessToken))
                     {
                         rootFrame.Navigate(typeof(LoginPage));
                     }
@@ -192,12 +181,12 @@ namespace Jellyfin.UWP
             }
         }
 
-        private static void CleanupValues(ApplicationDataContainer localSettings, SdkClientSettings settings)
+        private static void CleanupValues(ApplicationDataContainer localSettings, JellyfinSdkSettings settings)
         {
-            localSettings.Values.Remove("accessToken");
-            localSettings.Values.Remove("session");
+            localSettings.Values.Remove(JellyfinConstants.AccessTokenName);
+            localSettings.Values.Remove(JellyfinConstants.SessionName);
 
-            settings.AccessToken = default;
+            settings.SetAccessToken(string.Empty);
         }
 
         /// <summary>

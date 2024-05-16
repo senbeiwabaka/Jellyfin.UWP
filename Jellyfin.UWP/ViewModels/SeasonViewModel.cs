@@ -7,6 +7,8 @@ using Microsoft.Extensions.Caching.Memory;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels
@@ -14,10 +16,7 @@ namespace Jellyfin.UWP.ViewModels
     internal sealed partial class SeasonViewModel : ObservableObject
     {
         private readonly IMemoryCache memoryCache;
-        private readonly IPlaystateClient playstateClient;
-        private readonly SdkClientSettings sdkClientSettings;
-        private readonly ITvShowsClient tvShowsClient;
-        private readonly IUserLibraryClient userLibraryClient;
+        private readonly JellyfinApiClient apiClient;
 
         [ObservableProperty]
         private string imageUrl;
@@ -30,18 +29,10 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private ObservableCollection<UIMediaListItemSeries> seriesMetadata;
 
-        public SeasonViewModel(
-            IMemoryCache memoryCache,
-            IUserLibraryClient userLibraryClient,
-            ITvShowsClient tvShowsClient,
-            SdkClientSettings sdkClientSettings,
-            IPlaystateClient playstateClient)
+        public SeasonViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
             this.memoryCache = memoryCache;
-            this.userLibraryClient = userLibraryClient;
-            this.tvShowsClient = tvShowsClient;
-            this.sdkClientSettings = sdkClientSettings;
-            this.playstateClient = playstateClient;
+            this.apiClient = apiClient;
         }
 
         public async Task EpisodeFavoriteStateAsync(UIItem item)
@@ -56,19 +47,23 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task<UIMediaListItemSeries> GetLatestOnSeriesItemAsync(Guid id)
         {
-            var user = memoryCache.Get<UserDto>("user");
-            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var item = await apiClient.Items[id]
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
 
             return new UIMediaListItemSeries
             {
-                Id = item.Id,
+                Id = item.Id.Value,
                 Name = item.Name,
-                Url = SetImageUrl(item.Id, "500", "500", item.ImageTags["Primary"]),
+                Url = MediaHelpers.SetImageUrl(item, "500", "500", JellyfinConstants.PrimaryName),
                 Description = item.Overview,
                 UserData = new UIUserData
                 {
-                    IsFavorite = item.UserData.IsFavorite,
-                    HasBeenWatched = item.UserData.Played,
+                    IsFavorite = item.UserData.IsFavorite.Value,
+                    HasBeenWatched = item.UserData.Played.Value,
                 },
             };
         }
@@ -85,7 +80,13 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task LoadMediaInformationAsync(SeasonSeries seasonSeries)
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var userLibraryItem = await apiClient.Items.
+                GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.
+                })
             var userLibraryItem = await userLibraryClient.GetItemAsync(user.Id, seasonSeries.SeasonId);
 
             MediaItem = userLibraryItem;
@@ -109,7 +110,7 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         Id = x.Id,
                         Name = x.Name,
-                        Url = SetImageUrl(x.Id, "500", "500", x.ImageTags["Primary"]),
+                        Url = MediaHelpers.SetImageUrl(x, "500", "500", JellyfinConstants.PrimaryName),
                         Description = x.Overview,
                         UserData = new UIUserData
                         {
@@ -121,14 +122,14 @@ namespace Jellyfin.UWP.ViewModels
                     return item;
                 }));
 
-            ImageUrl = SetImageUrl(MediaItem.Id, "720", "480", MediaItem.ImageTags["Primary"]);
+            ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
 
             this.seasonSeries = seasonSeries;
         }
 
         private async Task ChangeFavoriteStateAsync(Guid id, bool isFavorite, CancellationToken cancellationToken = default)
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (isFavorite)
             {
@@ -148,7 +149,7 @@ namespace Jellyfin.UWP.ViewModels
 
         private async Task ChangePlayStateAsync(Guid id, bool hasBeenWatched, CancellationToken cancellationToken = default)
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (hasBeenWatched)
             {
@@ -177,7 +178,7 @@ namespace Jellyfin.UWP.ViewModels
 
         private async Task<Guid> GetSeriesEpisodeIdAsync()
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
             var episodes = await tvShowsClient.GetEpisodesAsync(
                     seriesId: seasonSeries.SeriesId,
                     userId: user.Id,
@@ -198,11 +199,6 @@ namespace Jellyfin.UWP.ViewModels
             await ChangePlayStateAsync(MediaItem.Id, MediaItem.UserData.Played, cancellationToken);
 
             await LoadMediaInformationAsync(seasonSeries);
-        }
-
-        private string SetImageUrl(Guid id, string height, string width, string imageTagId)
-        {
-            return $"{sdkClientSettings.BaseUrl}/Items/{id}/Images/Primary?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
         }
     }
 }

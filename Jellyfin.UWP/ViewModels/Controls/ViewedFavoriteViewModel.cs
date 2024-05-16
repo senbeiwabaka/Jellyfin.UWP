@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -9,9 +11,8 @@ namespace Jellyfin.UWP.ViewModels.Controls
 {
     internal sealed partial class ViewedFavoriteViewModel : ObservableObject
     {
+        private readonly JellyfinApiClient apiClient;
         private readonly IMemoryCache memoryCache;
-        private readonly IPlaystateClient playstateClient;
-        private readonly IUserLibraryClient userLibraryClient;
 
         [ObservableProperty]
         private bool isFavorite;
@@ -21,31 +22,31 @@ namespace Jellyfin.UWP.ViewModels.Controls
 
         private UIItem item;
 
-        public ViewedFavoriteViewModel(
-            IUserLibraryClient userLibraryClient,
-            IPlaystateClient playstateClient,
-            IMemoryCache memoryCache)
+        public ViewedFavoriteViewModel(JellyfinApiClient apiClient, IMemoryCache memoryCache)
         {
-            this.userLibraryClient = userLibraryClient;
-            this.playstateClient = playstateClient;
+            this.apiClient = apiClient;
             this.memoryCache = memoryCache;
         }
 
         public async Task FavoriteStateAsync()
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (item.UserData.IsFavorite)
             {
-                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
-                    user.Id,
-                    item.Id);
+                _ = await apiClient.UserFavoriteItems[item.Id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
             else
             {
-                _ = await userLibraryClient.MarkFavoriteItemAsync(
-                    user.Id,
-                    item.Id);
+                _ = await apiClient.UserFavoriteItems[item.Id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
         }
 
@@ -59,20 +60,24 @@ namespace Jellyfin.UWP.ViewModels.Controls
 
         public async Task PlayedStateAsync()
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (item.UserData.HasBeenWatched)
             {
-                _ = await playstateClient.MarkUnplayedItemAsync(
-                    user.Id,
-                    item.Id);
+                _ = await apiClient.UserPlayedItems[item.Id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
             else
             {
-                _ = await playstateClient.MarkPlayedItemAsync(
-                    user.Id,
-                    item.Id,
-                    DateTimeOffset.Now);
+                _ = await apiClient.UserPlayedItems[item.Id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                        options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                    });
             }
         }
     }

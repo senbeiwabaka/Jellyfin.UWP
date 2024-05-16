@@ -147,9 +147,11 @@
       <DependentUpon>ViewedIconControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\IMediaHelpers.cs" />
     <Compile Include="Helpers\IOCExtensions.cs" />
     <Compile Include="Helpers\JellyfinConstants.cs" />
     <Compile Include="Helpers\MediaHelpers.cs" />
+    <Compile Include="Helpers\MediaHelpers2.cs" />
     <Compile Include="Helpers\PageHelpers.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -360,7 +362,7 @@
       <Version>8.2.2</Version>
     </PackageReference>
     <PackageReference Include="Jellyfin.Sdk">
-      <Version>2023.6.10-unstable.202306100047</Version>
+      <Version>2024.5.11</Version>
     </PackageReference>
     <PackageReference Include="MetroLog">
       <Version>1.0.1</Version>

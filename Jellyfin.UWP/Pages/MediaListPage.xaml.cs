@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
@@ -29,11 +29,11 @@ namespace Jellyfin.UWP.Pages
         {
             var mediaItem = (UIMediaListItem)e.ClickedItem;
 
-            if (mediaItem.Type == BaseItemKind.Episode)
+            if (mediaItem.Type == BaseItemDto_Type.Episode)
             {
                 Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
-            else if (mediaItem.Type == BaseItemKind.Movie)
+            else if (mediaItem.Type == BaseItemDto_Type.Movie)
             {
                 Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
             }
