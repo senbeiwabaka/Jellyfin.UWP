@@ -1,6 +1,10 @@
 ﻿using FluentAssertions;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Kiota.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -20,28 +24,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfAudio_NoSelectedStream(string codec, string codecGuid)
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Audio,
+                    Type = MediaStream_Type.Audio,
                     Codec = codec,
                 }
             };
@@ -61,28 +52,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfAudio_True_NoSelectedStream()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Audio,
+                    Type = MediaStream_Type.Audio,
                     Codec = "123",
                 }
             };
@@ -99,28 +77,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfAudio_False_SupportedCodec(string codec, string codecGuid)
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Audio,
+                    Type = MediaStream_Type.Audio,
                     Codec = codec,
                     Index = 1,
                 }
@@ -141,28 +106,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfAudio_True()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Audio,
+                    Type = MediaStream_Type.Audio,
                     Codec = "123",
                     Index = 1,
                 }
@@ -180,28 +132,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_False_NoSelectedStream_SupportedCodec(string codec, string codecGuid)
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = codec,
                 }
             };
@@ -221,28 +160,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_True_NoSelectedStream()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = "123",
                 }
             };
@@ -258,28 +184,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_True_NoSelectedStream_Unsupported10Bit()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = "hevc",
                     BitDepth = 10,
                 }
@@ -297,28 +210,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_False_SupportedCodec(string codec, string codecGuid)
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = codec,
                     Index = 1,
                 }
@@ -339,28 +239,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_True()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = "123",
                     Index = 1,
                 }
@@ -377,28 +264,15 @@ namespace Jellyfin.UWP.Tests.ViewModels
         public async Task IsTranscodingNeededBecauseOfVideo_True_Unsupported10Bit()
         {
             // Arrange
+            var requestAdapterMock = new Mock<IRequestAdapter>();
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
             var mediaList = new List<MediaStream>
             {
                 new MediaStream
                 {
-                    Type = MediaStreamType.Video,
+                    Type = MediaStream_Type.Video,
                     Codec = "hevc",
                     Index = 1,
                     BitDepth = 10,
@@ -423,42 +297,29 @@ namespace Jellyfin.UWP.Tests.ViewModels
 
             memoryCache.Set(JellyfinConstants.UserName, user);
 
-            var videoClientMock = new Mock<IVideosClient>();
-            var playerStateClientMock = new Mock<IPlaystateClient>();
-            var mediaInfoClientMock = new Mock<IMediaInfoClient>();
-            var subtitleClientMock = new Mock<ISubtitleClient>();
-            var userLibraryClientMock = new Mock<IUserLibraryClient>();
-            var tvShowsClientMock = new Mock<ITvShowsClient>();
-            var sessionClientMock = new Mock<ISessionClient>();
-            var sut = new MediaItemPlayerViewModel(
-                memoryCache,
-                videoClientMock.Object,
-                playerStateClientMock.Object,
-                mediaInfoClientMock.Object,
-                subtitleClientMock.Object,
-                userLibraryClientMock.Object,
-                tvShowsClientMock.Object,
-                sessionClientMock.Object);
+            var requestAdapterMock = new Mock<IRequestAdapter>();
+            var apiClient = new JellyfinApiClient(requestAdapterMock.Object);
+            var sut = new MediaItemPlayerViewModel(memoryCache, apiClient);
 
-            userLibraryClientMock.Setup(x => x.GetItemAsync(user.Id, itemId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<BaseItemDto>(itemResponseInfo))
-                .Verifiable();
-            mediaInfoClientMock.Setup(x => x.GetPostedPlaybackInfoAsync(itemId, null, null, null, null, null, null, null, null, null, null, null, null, null, null, It.IsAny<PlaybackInfoDto>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<PlaybackInfoResponse>(playbackResponseInfo))
-                .Verifiable();
+            //userLibraryClientMock.Setup(x => x.GetItemAsync(user.Id, itemId, It.IsAny<CancellationToken>()))
+            //    .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<BaseItemDto>(itemResponseInfo))
+            //    .Verifiable();
+            //mediaInfoClientMock.Setup(x => x.GetPostedPlaybackInfoAsync(itemId, null, null, null, null, null, null, null, null, null, null, null, null, null, null, It.IsAny<PlaybackInfoDto>(), It.IsAny<CancellationToken>()))
+            //    .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<PlaybackInfoResponse>(playbackResponseInfo))
+            //    .Verifiable();
 
-            if (isTranscoding)
-            {
-                sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<IReadOnlyList<SessionInfo>>(session))
-                    .Verifiable();
-            }
-            else
-            {
-                sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(Array.Empty<SessionInfo>())
-                    .Verifiable();
-            }
+            //if (isTranscoding)
+            //{
+            //    sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
+            //        .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<IReadOnlyList<SessionInfo>>(session))
+            //        .Verifiable();
+            //}
+            //else
+            //{
+            //    sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
+            //        .ReturnsAsync(Array.Empty<SessionInfo>())
+            //        .Verifiable();
+            //}
 
             await sut.LoadMediaItemAsync(new DetailsItemPlayRecord { Id = itemId, });
             await sut.LoadMediaPlaybackInfoAsync(videoId);
@@ -475,7 +336,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
 
             sut.MediaPlayerPlayBackInfo.Should().BeEquivalentTo(expected);
 
-            sessionClientMock.VerifyAll();
+            requestAdapterMock.VerifyAll();
         }
 
         public static IEnumerable<object[]> GetAudioData()
