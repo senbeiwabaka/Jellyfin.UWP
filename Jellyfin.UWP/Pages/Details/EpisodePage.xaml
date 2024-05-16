@@ -214,7 +214,7 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIPersonItem">
                                         <StackPanel Width="204" Height="360">
-                                            <Image Source="{x:Bind Url}" Width="186" />
+                                            <Image Source="{x:Bind ImageUrl}" Width="186" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" />
                                             <TextBlock Text="{x:Bind Role}" FontSize="12" />
                                         </StackPanel>

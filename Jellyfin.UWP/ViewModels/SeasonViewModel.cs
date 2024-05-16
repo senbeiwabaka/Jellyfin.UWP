@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -89,33 +89,32 @@ namespace Jellyfin.UWP.ViewModels
 
             MediaItem = userLibraryItem;
 
-            var episodes = await apiClient.Items
-                .GetAsync();
-            var episodes = await tvShowsClient.GetEpisodesAsync(
-                    seriesId: seasonSeries.SeriesId,
-                    userId: user.Id,
-                    seasonId: seasonSeries.SeasonId,
-                    fields: new[]
+            var episodes = await apiClient.Shows[seasonSeries.SeriesId].Episodes
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SeasonId = seasonSeries.SeasonId;
+                    options.QueryParameters.Fields = new[]
                     {
                         ItemFields.ItemCounts,
                         ItemFields.PrimaryImageAspectRatio,
-                        ItemFields.BasicSyncInfo,
                         ItemFields.Overview,
-                    });
+                    };
+                });
 
             SeriesMetadata = new ObservableCollection<UIMediaListItemSeries>(
                 episodes.Items.Select(x =>
                 {
                     var item = new UIMediaListItemSeries
                     {
-                        Id = x.Id,
+                        Id = x.Id.Value,
                         Name = x.Name,
                         Url = MediaHelpers.SetImageUrl(x, "500", "500", JellyfinConstants.PrimaryName),
                         Description = x.Overview,
                         UserData = new UIUserData
                         {
-                            IsFavorite = x.UserData.IsFavorite,
-                            HasBeenWatched = x.UserData.Played,
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            HasBeenWatched = x.UserData.Played.Value,
                         },
                     };
 
@@ -133,17 +132,19 @@ namespace Jellyfin.UWP.ViewModels
 
             if (isFavorite)
             {
-                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
-                    user.Id,
-                    id,
-                    cancellationToken: cancellationToken);
+                _ = await apiClient.UserFavoriteItems[id]
+                    .DeleteAsync(options =>
+                     {
+                         options.QueryParameters.UserId = user.Id;
+                     }, cancellationToken: cancellationToken);
             }
             else
             {
-                _ = await userLibraryClient.MarkFavoriteItemAsync(
-                    user.Id,
-                    id,
-                    cancellationToken: cancellationToken);
+                _ = await apiClient.UserFavoriteItems[id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    }, cancellationToken: cancellationToken);
             }
         }
 
@@ -153,25 +154,27 @@ namespace Jellyfin.UWP.ViewModels
 
             if (hasBeenWatched)
             {
-                _ = await playstateClient.MarkUnplayedItemAsync(
-                    user.Id,
-                    id,
-                    cancellationToken: cancellationToken);
+                _ = await apiClient.UserPlayedItems[id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    }, cancellationToken: cancellationToken);
             }
             else
             {
-                _ = await playstateClient.MarkPlayedItemAsync(
-                    user.Id,
-                    id,
-                    DateTimeOffset.Now,
-                    cancellationToken: cancellationToken);
+                _ = await apiClient.UserPlayedItems[id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                        options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                    }, cancellationToken: cancellationToken);
             }
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task FavoriteStateAsync(CancellationToken cancellationToken)
         {
-            await ChangeFavoriteStateAsync(MediaItem.Id, MediaItem.UserData.IsFavorite, cancellationToken);
+            await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
 
             await LoadMediaInformationAsync(seasonSeries);
         }
@@ -179,24 +182,24 @@ namespace Jellyfin.UWP.ViewModels
         private async Task<Guid> GetSeriesEpisodeIdAsync()
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var episodes = await tvShowsClient.GetEpisodesAsync(
-                    seriesId: seasonSeries.SeriesId,
-                    userId: user.Id,
-                    seasonId: seasonSeries.SeasonId,
-                    fields: new[]
+            var episodes = await apiClient.Shows[seasonSeries.SeriesId].Episodes
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.SeasonId = seasonSeries.SeasonId;
+                    options.QueryParameters.Fields = new[]
                     {
                         ItemFields.ItemCounts,
-                        ItemFields.PrimaryImageAspectRatio,
-                        ItemFields.BasicSyncInfo,
-                    });
+                    };
+                });
 
-            return episodes.Items.First(x => !x.UserData.Played && (x.UserData.PlayedPercentage ?? 0) < 90).Id;
+            return episodes.Items.First(x => !x.UserData.Played.Value && (x.UserData.PlayedPercentage ?? 0) < 90).Id.Value;
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task PlayedStateAsync(CancellationToken cancellationToken)
         {
-            await ChangePlayStateAsync(MediaItem.Id, MediaItem.UserData.Played, cancellationToken);
+            await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
 
             await LoadMediaInformationAsync(seasonSeries);
         }

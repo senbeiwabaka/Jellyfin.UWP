@@ -357,7 +357,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIPersonItem">
                                 <StackPanel Width="180">
-                                    <Image Source="{x:Bind Url}" Height="270" HorizontalAlignment="Center" />
+                                    <Image Source="{x:Bind ImageUrl}" Height="270" HorizontalAlignment="Center" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>

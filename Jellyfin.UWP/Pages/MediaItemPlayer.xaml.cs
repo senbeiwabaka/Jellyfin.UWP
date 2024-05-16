@@ -1,15 +1,16 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using MetroLog;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -132,44 +133,37 @@ namespace Jellyfin.UWP.Pages
             var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
             var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(mediaStreams);
 
-            Uri mediaUri;
-
             // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
             if (needsToTranscodeAudio || needsToTranscodeVideo)
             {
-                mediaUri = new Uri($"{memoryCache.Get<string>(JellyfinConstants.HostUrlName)}{mediaSourceInfo.TranscodingUrl}");
-
                 context.IsTranscoding = true;
 
                 Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
-            }
-            else
-            {
-                mediaUri = context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
             }
 
             MediaSource source;
 
             if (context.IsTranscoding)
             {
+                var mediaUri = new Uri($"{memoryCache.Get<string>(JellyfinConstants.HostUrlName)}{mediaSourceInfo.TranscodingUrl}");
                 var result = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
 
                 source = MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
             }
             else
             {
-                source = MediaSource.CreateFromUri(mediaUri);
+                var mediaStream = await context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
+                source = MediaSource.CreateFromStream(mediaStream.AsRandomAccessStream(), "video/mp4");
             }
 
-            if (mediaStreams.Any(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
+            if (mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
             {
                 var firstSubtitle = mediaStreams.First(x => x.Type == MediaStream_Type.Subtitle);
                 var subtitleUrl = context.GetSubtitleUrl(
                     firstSubtitle.Index.Value,
                     string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
 
-                var subtitleUri = new Uri(subtitleUrl);
-                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUri);
+                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUrl);
 
                 timedTextSource.Resolved += Tts_Resolved;
 

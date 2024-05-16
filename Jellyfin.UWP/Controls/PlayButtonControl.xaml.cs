@@ -1,4 +1,5 @@
-﻿using Jellyfin.UWP.Helpers;
+﻿using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Windows.UI.Xaml;

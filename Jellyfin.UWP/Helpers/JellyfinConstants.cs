@@ -12,5 +12,7 @@
         internal const string UserName = "user";
         internal const string HostUrlName = "host";
         internal const string AccessTokenName = "accessToken";
+
+        internal const string DeviceId = "Jellyfin.UWP";
     }
 }
