@@ -124,7 +124,7 @@ namespace Jellyfin.UWP
             var videoMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
             MediaStream audioMediaStream;
 
-            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack.Value)
+            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
             {
                 audioMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
             }
@@ -185,12 +185,12 @@ namespace Jellyfin.UWP
             //return subtitleClient.GetSubtitleWithTicksUrl(item.Id, routeId, index, 0, routeFormat);
         }
 
-        public async Task<Stream> GetVideoUrl(string videoId = null)
+        public Uri GetVideoUrl(string videoId = null)
         {
             var container = item.MediaSources[0].Container;
-            return await apiClient.Videos[item.Id.Value]
+            var video= apiClient.Videos[item.Id.Value]
                 .StreamWithContainer(container)
-                .GetAsync(options =>
+                .ToGetRequestInformation(options =>
                 {
                     options.QueryParameters.Static = true;
                     options.QueryParameters.MediaSourceId = videoId;
@@ -202,6 +202,8 @@ namespace Jellyfin.UWP
             //    mediaSourceId: videoId);
 
             //return new Uri(videoUrl);
+
+            return apiClient.BuildUri(video);
         }
 
         public async Task<bool> IsTranscodingNeededBecauseOfAudio(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)

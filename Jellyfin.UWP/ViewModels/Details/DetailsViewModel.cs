@@ -120,7 +120,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                }).ConfigureAwait(false);
+                });
 
             MediaItem = userLibraryItem;
 
@@ -220,8 +220,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                     options.QueryParameters.UserId = user.Id;
                     options.QueryParameters.Limit = 12;
                     options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
-                })
-                .ConfigureAwait(false);
+                });
 
             SimiliarMediaList = new ObservableCollection<UIMediaListItem>(
                 similiarItems.Items

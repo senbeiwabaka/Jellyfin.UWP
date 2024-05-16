@@ -220,7 +220,7 @@ namespace Jellyfin.UWP
             var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
             var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
-            Frame.Navigate(typeof(DetailsPage), seriesId);
+            Frame.Navigate(typeof(SeriesPage), seriesId);
         }
 
         private void SetupLatest()

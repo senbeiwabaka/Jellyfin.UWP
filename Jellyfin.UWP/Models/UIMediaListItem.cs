@@ -10,7 +10,7 @@ namespace Jellyfin.UWP.Models
 
         public bool IsFolder { get; internal set; }
 
-        public BaseItemDto_CollectionType CollectionType { get; internal set; }
+        public BaseItemDto_CollectionType? CollectionType { get; internal set; }
 
         public string Year { get; internal set; }
 

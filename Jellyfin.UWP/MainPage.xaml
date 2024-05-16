@@ -84,7 +84,15 @@
                     Command="{Binding SwitchToHomeCommand}" 
                     Click="btn_Home_Click"
                     ToolTipService.ToolTip="Home Button"/>
-                <Button x:Name="btn_Favorites" Content="Favorites" BorderThickness="0" Background="#202020" Foreground="White" Margin="10,0,0,0" Command="{Binding SwitchToFavoriteCommand}" Click="btn_Favorites_Click" />
+                <Button 
+                    x:Name="btn_Favorites" 
+                    Content="Favorites" 
+                    BorderThickness="0" 
+                    Background="#202020" 
+                    Foreground="White" 
+                    Margin="10,0,0,0" 
+                    Command="{Binding SwitchToFavoriteCommand}" 
+                    Click="btn_Favorites_Click" />
             </StackPanel>
         </StackPanel>
 

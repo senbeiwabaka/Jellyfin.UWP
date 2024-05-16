@@ -152,8 +152,8 @@ namespace Jellyfin.UWP.Pages
             }
             else
             {
-                var mediaStream = await context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
-                source = MediaSource.CreateFromStream(mediaStream.AsRandomAccessStream(), "video/mp4");
+                var mediaUri = context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
+                source = MediaSource.CreateFromUri(mediaUri);
             }
 
             if (mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))

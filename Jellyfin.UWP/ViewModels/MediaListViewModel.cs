@@ -182,6 +182,7 @@ namespace Jellyfin.UWP.ViewModels
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.ParentId = parentId;
                     options.QueryParameters.StartIndex = CurrentIndex;
                     options.QueryParameters.Limit = Limit;
                     options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
@@ -215,7 +216,7 @@ namespace Jellyfin.UWP.ViewModels
                             Name = x.Name,
                             Url = MediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
-                            CollectionType = x.CollectionType.Value,
+                            CollectionType = x.CollectionType,
                             UserData = new UIUserData
                             {
                                 IsFavorite = x.UserData.IsFavorite.Value,

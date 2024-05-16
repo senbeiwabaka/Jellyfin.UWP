@@ -76,7 +76,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             Id = x.Id.Value,
                             Name = x.Name,
                             Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
-                            CollectionType = x.CollectionType.Value,
+                            CollectionType = x.CollectionType,
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {

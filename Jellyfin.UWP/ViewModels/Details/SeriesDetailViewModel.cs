@@ -55,7 +55,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                         HasBeenWatched = item.UserData.Played.Value,
                     },
                     Type = item.Type.Value,
-                    CollectionType = item.CollectionType.Value,
+                    CollectionType = item.CollectionType,
                 };
             }
 
