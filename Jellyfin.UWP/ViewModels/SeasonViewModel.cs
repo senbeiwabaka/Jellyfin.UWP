@@ -81,16 +81,16 @@ namespace Jellyfin.UWP.ViewModels
         public async Task LoadMediaInformationAsync(SeasonSeries seasonSeries)
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var userLibraryItem = await apiClient.Items.
+            var userLibraryItem = await apiClient.Items[seasonSeries.SeasonId].
                 GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.
-                })
-            var userLibraryItem = await userLibraryClient.GetItemAsync(user.Id, seasonSeries.SeasonId);
+                });
 
             MediaItem = userLibraryItem;
 
+            var episodes = await apiClient.Items
+                .GetAsync();
             var episodes = await tvShowsClient.GetEpisodesAsync(
                     seriesId: seasonSeries.SeriesId,
                     userId: user.Id,
