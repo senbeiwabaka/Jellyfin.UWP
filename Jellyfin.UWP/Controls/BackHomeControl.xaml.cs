@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -21,7 +22,7 @@ namespace Jellyfin.UWP.Controls
 
             this.memoryCache = Ioc.Default.GetService<IMemoryCache>();
 
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             userName = user.Name;
         }
@@ -49,8 +50,8 @@ namespace Jellyfin.UWP.Controls
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
-            localSettings.Values.Remove("accessToken");
-            localSettings.Values.Remove("session");
+            localSettings.Values.Remove(JellyfinConstants.AccessTokenName);
+            localSettings.Values.Remove(JellyfinConstants.SessionName);
 
             ((Frame)Window.Current.Content).Navigate(typeof(LoginPage));
         }

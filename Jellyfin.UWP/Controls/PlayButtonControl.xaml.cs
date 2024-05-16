@@ -1,4 +1,4 @@
-﻿using Jellyfin.Sdk;
+﻿using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
@@ -45,7 +45,7 @@ namespace Jellyfin.UWP.Controls
             var button = (Button)sender;
             var item = (UIMediaListItem)button.DataContext;
 
-            if (item.Type == BaseItemKind.AggregateFolder)
+            if (item.Type == BaseItemDto_Type.AggregateFolder)
             {
                 var playId = await MediaHelpers.GetPlayIdAsync(item);
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
@@ -53,7 +53,7 @@ namespace Jellyfin.UWP.Controls
                 ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
 
-            if (item.Type == BaseItemKind.Episode || item.Type == BaseItemKind.Movie)
+            if (item.Type == BaseItemDto_Type.Episode || item.Type == BaseItemDto_Type.Movie)
             {
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
 

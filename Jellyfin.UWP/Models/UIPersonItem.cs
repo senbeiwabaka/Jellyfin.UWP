@@ -4,7 +4,7 @@
     {
         public string Name { get; internal set; }
 
-        public string Url { get; internal set; }
+        public string ImageUrl { get; internal set; }
 
         public string Role { get; internal set; }
     }

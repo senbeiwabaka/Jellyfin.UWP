@@ -1,4 +1,6 @@
-﻿namespace Jellyfin.UWP.Models
+﻿using Jellyfin.Sdk.Generated.Models;
+
+namespace Jellyfin.UWP.Models
 {
     public class UIMediaListItem : UIItem
     {
@@ -8,7 +10,7 @@
 
         public bool IsFolder { get; internal set; }
 
-        public string CollectionType { get; internal set; }
+        public BaseItemDto_CollectionType? CollectionType { get; internal set; }
 
         public string Year { get; internal set; }
 

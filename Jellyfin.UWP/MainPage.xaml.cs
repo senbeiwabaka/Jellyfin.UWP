@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
@@ -74,8 +74,8 @@ namespace Jellyfin.UWP
         {
             var localSettings = ApplicationData.Current.LocalSettings;
 
-            localSettings.Values.Remove("accessToken");
-            localSettings.Values.Remove("session");
+            localSettings.Values.Remove(JellyfinConstants.AccessTokenName);
+            localSettings.Values.Remove(JellyfinConstants.SessionName);
 
             Frame.Navigate(typeof(LoginPage));
         }
@@ -96,11 +96,11 @@ namespace Jellyfin.UWP
         {
             var mediaItem = (UIMediaListItem)e.ClickedItem;
 
-            if (mediaItem.Type == BaseItemKind.Episode)
+            if (mediaItem.Type == BaseItemDto_Type.Episode)
             {
                 Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
-            else if (mediaItem.Type == BaseItemKind.Movie)
+            else if (mediaItem.Type == BaseItemDto_Type.Movie)
             {
                 Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
             }
@@ -220,7 +220,7 @@ namespace Jellyfin.UWP
             var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
             var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
-            Frame.Navigate(typeof(DetailsPage), seriesId);
+            Frame.Navigate(typeof(SeriesPage), seriesId);
         }
 
         private void SetupLatest()
@@ -262,7 +262,7 @@ namespace Jellyfin.UWP
                     Background = new SolidColorBrush(Colors.Black),
                 };
 
-                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(item.Key.CollectionType, CollectionType.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     viewAllLatestButton.Click += (obj, e) =>
                     {
@@ -270,7 +270,7 @@ namespace Jellyfin.UWP
                     };
                 }
 
-                if (string.Equals(item.Key.CollectionType, CollectionTypeOptions.TvShows.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
+                if (string.Equals(item.Key.CollectionType, CollectionType.Tvshows.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
                 {
                     viewAllLatestButton.Click += (obj, e) =>
                     {
@@ -290,7 +290,7 @@ namespace Jellyfin.UWP
                     Name = $"listview_{item.Key.Name}",
                 };
 
-                if (string.Equals(CollectionTypeOptions.TvShows.ToString(), item[0].CollectionType, System.StringComparison.CurrentCultureIgnoreCase))
+                if (item[0].CollectionType == BaseItemDto_CollectionType.Tvshows)
                 {
                     listView.ItemTemplate = (DataTemplate)Resources["UISeriesMediaListItemDataTemplate"];
                 }

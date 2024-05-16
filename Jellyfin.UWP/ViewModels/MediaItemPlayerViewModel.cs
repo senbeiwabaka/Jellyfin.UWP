@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Media.Core;
@@ -12,11 +15,8 @@ namespace Jellyfin.UWP
 {
     public sealed partial class MediaItemPlayerViewModel : ObservableObject
     {
-        private readonly IMediaInfoClient mediaInfoClient;
+        private readonly JellyfinApiClient apiClient;
         private readonly IMemoryCache memoryCache;
-        private readonly IPlaystateClient playstateClient;
-        private readonly ISessionClient sessionClient;
-        private readonly ISubtitleClient subtitleClient;
 
         private readonly IReadOnlyDictionary<string, string> supportedAudioCodecs = new Dictionary<string, string>
         {
@@ -36,16 +36,12 @@ namespace Jellyfin.UWP
             { "h263", CodecSubtypes.VideoFormatH263 },
         };
 
-        private readonly ITvShowsClient tvShowsClient;
-
         private readonly IReadOnlyDictionary<string, string> unSupportedAudioCodecs = new Dictionary<string, string>
         {
             { "dts", CodecSubtypes.AudioFormatDts },
         };
 
         private readonly UserDto user;
-        private readonly IUserLibraryClient userLibraryClient;
-        private readonly IVideosClient videosClient;
 
         private DetailsItemPlayRecord detailsItemPlayRecord;
 
@@ -61,37 +57,21 @@ namespace Jellyfin.UWP
         private PlaybackInfoResponse playbackInfo;
         private string playbackSessionId = string.Empty;
 
-        public MediaItemPlayerViewModel(
-            IMemoryCache memoryCache,
-            IVideosClient videosClient,
-            IPlaystateClient playstateClient,
-            IMediaInfoClient mediaInfoClient,
-            ISubtitleClient subtitleClient,
-            IUserLibraryClient userLibraryClient,
-            ITvShowsClient tvShowsClient,
-            ISessionClient sessionClient)
+        public MediaItemPlayerViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
             this.memoryCache = memoryCache;
-            this.videosClient = videosClient;
-            this.playstateClient = playstateClient;
-            this.mediaInfoClient = mediaInfoClient;
-            this.subtitleClient = subtitleClient;
-            this.userLibraryClient = userLibraryClient;
-            this.tvShowsClient = tvShowsClient;
-            this.sessionClient = sessionClient;
-            user = memoryCache.Get<UserDto>("user");
+            this.apiClient = apiClient;
+            user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         }
 
         public async Task<BaseItemDtoQueryResult> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId)
         {
-            var seasons = await tvShowsClient.GetSeasonsAsync(
-                    seriesId,
-                    user.Id,
-                    fields: new[]
-                    {
-                        ItemFields.ItemCounts,
-                        ItemFields.MediaSourceCount,
-                    });
+            var seasons = await apiClient.Shows[seriesId].Seasons
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.Fields = new[] { ItemFields.ItemCounts, ItemFields.MediaSourceCount, };
+                });
             var index = 0;
             foreach (var season in seasons.Items)
             {
@@ -102,15 +82,12 @@ namespace Jellyfin.UWP
                         return null;
                     }
 
-                    return await tvShowsClient.GetEpisodesAsync(
-                        seriesId: seriesId,
-                        userId: user.Id,
-                        seasonId: seasons.Items[index].SeasonId,
-                        fields: new[]
+                    return await apiClient.Shows[seriesId].Episodes
+                        .GetAsync(options =>
                         {
-                            ItemFields.ItemCounts,
-                            ItemFields.PrimaryImageAspectRatio,
-                            ItemFields.BasicSyncInfo,
+                            options.QueryParameters.UserId = user.Id;
+                            options.QueryParameters.SeasonId = seasons.Items[index].SeasonId;
+                            options.QueryParameters.Fields = new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, };
                         });
                 }
 
@@ -122,7 +99,8 @@ namespace Jellyfin.UWP
 
         public async Task GetPlaybackInfo(double playerWidth, double playerHeight)
         {
-            var session = (await sessionClient.GetSessionsAsync(deviceId: "Jellyfin.UWP")).FirstOrDefault();
+            var session = (await apiClient.Sessions.GetAsync(options => options.QueryParameters.DeviceId = JellyfinConstants.DeviceId))
+                .FirstOrDefault();
 
             string transcodingVideoCodec = null;
             string transcodingAudioCodec = null;
@@ -143,16 +121,16 @@ namespace Jellyfin.UWP
                 transcodingReason = string.Join(",", session.TranscodingInfo?.TranscodeReasons);
             }
 
-            var videoMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.Type == MediaStreamType.Video);
+            var videoMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
             MediaStream audioMediaStream;
 
-            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack)
+            if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
             {
-                audioMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.IsDefault && x.Type == MediaStreamType.Audio);
+                audioMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
             }
             else
             {
-                audioMediaStream = mediaSourceInfo.MediaStreams.First(x => x.Type == MediaStreamType.Audio);
+                audioMediaStream = mediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio);
             }
 
             MediaPlayerPlayBackInfo = new MediaPlayerPlayBackInfo
@@ -177,7 +155,7 @@ namespace Jellyfin.UWP
                 Bitrate = mediaSourceInfo.Bitrate.HasValue ? $"{mediaSourceInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A",
                 VideoCodec = $"{videoMediaStream.Codec.ToUpper()} {videoMediaStream.Profile}",
                 VideoBitrate = videoMediaStream.BitRate.HasValue ? $"{videoMediaStream.BitRate.Value / 1000000m:#.#} Mbps" : "N/A",
-                VideoRangeType = videoMediaStream.VideoRangeType,
+                VideoRangeType = videoMediaStream.VideoRangeType?.ToString(),
                 AudioCodec = $"{audioMediaStream.Codec.ToUpper()} {audioMediaStream.Profile}",
                 AudioBitrate = audioMediaStream.BitRate.HasValue ? $"{audioMediaStream.BitRate.Value / 1000:#} kbps" : "N/A",
                 AudioChannels = audioMediaStream.Channels.HasValue ? audioMediaStream.Channels.ToString() : "N/A",
@@ -187,35 +165,45 @@ namespace Jellyfin.UWP
 
         public async Task<BaseItemDtoQueryResult> GetSeriesAsync(Guid seriesId, Guid seasonId)
         {
-            return await tvShowsClient.GetEpisodesAsync(
-                   seriesId: seriesId,
-                   userId: user.Id,
-                   seasonId: seasonId,
-                   fields: new[]
-                   {
-                       ItemFields.ItemCounts,
-                       ItemFields.PrimaryImageAspectRatio,
-                       ItemFields.BasicSyncInfo,
-                   });
+            return await apiClient.Shows[seriesId].Episodes
+                         .GetAsync(options =>
+                         {
+                             options.QueryParameters.UserId = user.Id;
+                             options.QueryParameters.SeasonId = seasonId;
+                             options.QueryParameters.Fields = new[] { ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio, };
+                         });
         }
 
-        public string GetSubtitleUrl(int index, string routeFormat)
+        public Uri GetSubtitleUrl(int index, string routeFormat)
         {
             var routeId = item.Id.ToString().Replace("-", string.Empty);
+            var subtitleRequest = apiClient.Videos[item.Id.Value][routeId].Subtitles[index][0]
+                .StreamWithRouteFormat(routeFormat)
+                .ToGetRequestInformation();
 
-            return subtitleClient.GetSubtitleWithTicksUrl(item.Id, routeId, index, 0, routeFormat);
+            return apiClient.BuildUri(subtitleRequest);
+            //return subtitleClient.GetSubtitleWithTicksUrl(item.Id, routeId, index, 0, routeFormat);
         }
 
         public Uri GetVideoUrl(string videoId = null)
         {
             var container = item.MediaSources[0].Container;
-            var videoUrl = videosClient.GetVideoStreamByContainerUrl(
-                item.Id,
-                container,
-                @static: true,
-                mediaSourceId: videoId);
+            var video= apiClient.Videos[item.Id.Value]
+                .StreamWithContainer(container)
+                .ToGetRequestInformation(options =>
+                {
+                    options.QueryParameters.Static = true;
+                    options.QueryParameters.MediaSourceId = videoId;
+                });
+            //var videoUrl = videosClient.GetVideoStreamByContainerUrl(
+            //    item.Id,
+            //    container,
+            //    @static: true,
+            //    mediaSourceId: videoId);
 
-            return new Uri(videoUrl);
+            //return new Uri(videoUrl);
+
+            return apiClient.BuildUri(video);
         }
 
         public async Task<bool> IsTranscodingNeededBecauseOfAudio(DetailsItemPlayRecord detailsItemPlayRecord, IReadOnlyList<MediaStream> mediaStreams)
@@ -226,11 +214,11 @@ namespace Jellyfin.UWP
             // Get the selected audio codec, if one was, or the default (first) codec.
             if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex.HasValue)
             {
-                selectedAudioCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioMediaStreamIndex.Value && x.Type == MediaStreamType.Audio).Codec;
+                selectedAudioCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioMediaStreamIndex.Value && x.Type == MediaStream_Type.Audio).Codec;
             }
             else
             {
-                selectedAudioCodec = mediaStreams.First(x => x.Type == MediaStreamType.Audio).Codec;
+                selectedAudioCodec = mediaStreams.First(x => x.Type == MediaStream_Type.Audio).Codec;
             }
 
             var audioCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Audio, CodecCategory.Decoder, ""))
@@ -260,13 +248,13 @@ namespace Jellyfin.UWP
         public async Task<bool> IsTranscodingNeededBecauseOfVideo(IReadOnlyList<MediaStream> mediaStreams)
         {
             // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
-            if (mediaStreams.Any(x => x.Type == MediaStreamType.Video && x.BitDepth == 10))
+            if (mediaStreams.Any(x => x.Type == MediaStream_Type.Video && x.BitDepth == 10))
             {
                 return true;
             }
 
             var codecQuery = new CodecQuery();
-            var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStreamType.Video).Codec;
+            var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStream_Type.Video).Codec;
             var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
                 .Select(x => x).ToArray();
 
@@ -285,7 +273,11 @@ namespace Jellyfin.UWP
         {
             this.detailsItemPlayRecord = detailsItemPlayRecord;
 
-            item = await userLibraryClient.GetItemAsync(user.Id, detailsItemPlayRecord.Id);
+            item = await apiClient.Items[detailsItemPlayRecord.Id]
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
 
             return item;
         }
@@ -294,14 +286,13 @@ namespace Jellyfin.UWP
         {
             var startTimeTicks = 0L;
 
-            if (item.UserData.PlayedPercentage.HasValue && item.UserData.PlayedPercentage < 90)
+            if (item.UserData.PlayedPercentage.HasValue && item.UserData.PlayedPercentage < 90 && item.UserData.PlaybackPositionTicks.HasValue)
             {
-                startTimeTicks = item.UserData.PlaybackPositionTicks;
+                startTimeTicks = item.UserData.PlaybackPositionTicks.Value;
             }
 
-            playbackInfo = await mediaInfoClient.GetPostedPlaybackInfoAsync(
-                item.Id,
-                body: GetPlaybackInfoBody(user.Id, startTimeTicks));
+            playbackInfo = await apiClient.Items[item.Id.Value].PlaybackInfo
+                .PostAsync(GetPlaybackInfoBody(user.Id.Value, startTimeTicks));
 
             playbackSessionId = playbackInfo.PlaySessionId;
 
@@ -319,45 +310,45 @@ namespace Jellyfin.UWP
 
         public async Task SessionPlayingAsync()
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
             var playbackStartInfo = new PlaybackStartInfo
             {
                 ItemId = item.Id,
                 SessionId = session.Id,
-                PlayMethod = IsTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                PlayMethod = IsTranscoding ? PlaybackStartInfo_PlayMethod.Transcode : PlaybackStartInfo_PlayMethod.DirectPlay,
                 CanSeek = true,
                 IsMuted = false,
                 IsPaused = false,
                 PlaySessionId = playbackSessionId,
             };
 
-            await playstateClient.ReportPlaybackStartAsync(playbackStartInfo);
+            await apiClient.Sessions.Playing.PostAsync(playbackStartInfo);
         }
 
         public async Task SessionProgressAsync(long position, bool isPaused)
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
             var playbackProgressInfo = new PlaybackProgressInfo
             {
                 SessionId = session.Id,
                 ItemId = item.Id,
                 PositionTicks = position,
-                PlayMethod = IsTranscoding ? PlayMethod.Transcode : PlayMethod.DirectPlay,
+                PlayMethod = IsTranscoding ? PlaybackProgressInfo_PlayMethod.Transcode : PlaybackProgressInfo_PlayMethod.DirectPlay,
                 CanSeek = true,
                 IsMuted = false,
                 IsPaused = isPaused,
                 PlaySessionId = playbackSessionId,
             };
 
-            await playstateClient.ReportPlaybackProgressAsync(playbackProgressInfo);
+            await apiClient.Sessions.Playing.Progress.PostAsync(playbackProgressInfo);
         }
 
         public async Task SessionStopAsync(long position)
         {
-            var session = memoryCache.Get<SessionInfo>("session");
+            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
 
-            await playstateClient.ReportPlaybackStoppedAsync(
-                new PlaybackStopInfo
+            await apiClient.Sessions.Playing.Stopped
+                .PostAsync(new PlaybackStopInfo
                 {
                     PositionTicks = position,
                     ItemId = item.Id,
@@ -386,62 +377,62 @@ namespace Jellyfin.UWP
 
                 DeviceProfile = new DeviceProfile
                 {
-                    CodecProfiles = new[]
+                    CodecProfiles = new List<CodecProfile>
                         {
                             new CodecProfile
                             {
                                 Codec = "aac",
-                                Conditions = new []
+                                Conditions = new List<ProfileCondition>
                                 {
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileConditionType.Equals,
-                                        Property = ProfileConditionValue.IsSecondaryAudio,
+                                        Condition = ProfileCondition_Condition.Equals,
+                                        Property = ProfileCondition_Property.IsSecondaryAudio,
                                         Value = "false",
                                     },
                                 },
-                                Type = CodecType.VideoAudio
+                                Type = CodecProfile_Type.VideoAudio
                             },
                             new CodecProfile
                             {
                                 Codec = "h264",
-                                Conditions = new []
+                                Conditions = new List<ProfileCondition>
                                 {
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileConditionType.EqualsAny,
-                                        Property = ProfileConditionValue.IsAnamorphic,
+                                        Condition = ProfileCondition_Condition.EqualsAny,
+                                        Property = ProfileCondition_Property.IsAnamorphic,
                                         Value = "true",
                                     },
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileConditionType.EqualsAny,
-                                        Property = ProfileConditionValue.VideoProfile,
+                                        Condition = ProfileCondition_Condition.EqualsAny,
+                                        Property = ProfileCondition_Property.VideoProfile,
                                         Value = "high|main|baseline|constrained baseline",
                                     },
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileConditionType.LessThanEqual,
-                                        Property = ProfileConditionValue.VideoLevel,
+                                        Condition = ProfileCondition_Condition.LessThanEqual,
+                                        Property = ProfileCondition_Property.VideoLevel,
                                         Value = "42",
                                     },
                                 },
-                                Type = CodecType.Video
+                                Type = CodecProfile_Type.Video
                             },
                         },
-                    DirectPlayProfiles = new[]
+                    DirectPlayProfiles = new List<DirectPlayProfile>
                         {
                             new DirectPlayProfile
                             {
                                 Container = "mp4,m4v",
-                                Type = DlnaProfileType.Video,
+                                Type = DirectPlayProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
                                 AudioCodec = audioFormarts,
                             },
                             new DirectPlayProfile
                             {
                                 Container = "mkv",
-                                Type = DlnaProfileType.Video,
+                                Type = DirectPlayProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
                                 AudioCodec = audioFormarts,
                             },
@@ -449,29 +440,29 @@ namespace Jellyfin.UWP
                             {
                                 Container = "m4a",
                                 AudioCodec = "aac",
-                                Type = DlnaProfileType.Audio,
+                                Type = DirectPlayProfile_Type.Audio,
                             },
                             new DirectPlayProfile
                             {
                                 Container = "m4b",
                                 AudioCodec = "aac",
-                                Type = DlnaProfileType.Audio,
+                                Type = DirectPlayProfile_Type.Audio,
                             },
                             new DirectPlayProfile
                             {
                                 Container = "mp3",
-                                Type = DlnaProfileType.Audio,
+                                Type = DirectPlayProfile_Type.Audio,
                             },
                         },
-                    TranscodingProfiles = new[]
+                    TranscodingProfiles = new List<TranscodingProfile>
                         {
                             new TranscodingProfile
                             {
                                 Container = "ts",
-                                Type = DlnaProfileType.Audio,
+                                Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "aac",
-                                Context = EncodingContext.Streaming,
-                                Protocol = "hls",
+                                Context = TranscodingProfile_Context.Streaming,
+                                Protocol = TranscodingProfile_Protocol.Hls,
                                 MaxAudioChannels = "2",
                                 BreakOnNonKeyFrames = true,
                                 MinSegments = 1,
@@ -479,39 +470,39 @@ namespace Jellyfin.UWP
                             new TranscodingProfile
                             {
                                 Container = "aac",
-                                Type = DlnaProfileType.Audio,
+                                Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "aac",
-                                Context = EncodingContext.Streaming,
-                                Protocol = "http",
+                                Context = TranscodingProfile_Context.Streaming,
+                                Protocol = TranscodingProfile_Protocol.Http,
                                 MaxAudioChannels = "2",
                             },
                             new TranscodingProfile
                             {
                                 Container = "mp3",
-                                Type = DlnaProfileType.Audio,
+                                Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "mp3",
-                                Context = EncodingContext.Streaming,
-                                Protocol = "http",
+                                Context = TranscodingProfile_Context.Streaming,
+                                Protocol = TranscodingProfile_Protocol.Http,
                                 MaxAudioChannels = "2",
                             },
                             new TranscodingProfile
                             {
                                 Container = "ts",
-                                Type = DlnaProfileType.Video,
+                                Type = TranscodingProfile_Type.Video,
                                 VideoCodec = "h264",
-                                Context = EncodingContext.Streaming,
+                                Context = TranscodingProfile_Context.Streaming,
                                 MaxAudioChannels = "2",
                                 AudioCodec = "aac,mp3",
                                 BreakOnNonKeyFrames = true,
                                 MinSegments = 1,
-                                Protocol = "hls",
+                                Protocol = TranscodingProfile_Protocol.Hls,
                             },
                             new TranscodingProfile
                             {
                                 Container = "mp4",
-                                Type = DlnaProfileType.Video,
+                                Type = TranscodingProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
-                                Context = EncodingContext.Streaming,
+                                Context = TranscodingProfile_Context.Streaming,
                                 MaxAudioChannels = "2",
                                 CopyTimestamps = true,
                                 AudioCodec = "aac,mp3",
@@ -519,21 +510,12 @@ namespace Jellyfin.UWP
                             new TranscodingProfile
                             {
                                 Container = "mkv",
-                                Type = DlnaProfileType.Video,
+                                Type = TranscodingProfile_Type.Video,
                                 VideoCodec = mkvVideoFormats,
-                                Context = EncodingContext.Streaming,
+                                Context = TranscodingProfile_Context.Streaming,
                                 MaxAudioChannels = "2",
                                 CopyTimestamps = true,
                                 AudioCodec = "aac,mp3",
-                            },
-                        },
-                    ResponseProfiles = new[]
-                        {
-                            new ResponseProfile
-                            {
-                                Container = "m4v",
-                                MimeType = "video/mp4",
-                                Type = DlnaProfileType.Video,
                             },
                         },
                 },
