@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
+using Jellyfin.UWP.Models.Filters;
+using Microsoft.Extensions.Caching.Memory;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.Filters;
 
 namespace Jellyfin.UWP.ViewModels
 {
@@ -17,12 +18,8 @@ namespace Jellyfin.UWP.ViewModels
     {
         private const int Limit = 100;
 
-        private readonly IFilterClient filterClient;
-        private readonly IItemsClient itemsClient;
-        private readonly IMemoryCache memoryCache;
-        private readonly IPlaystateClient playstateClient;
-        private readonly SdkClientSettings sdkClientSettings;
-        private readonly IUserLibraryClient userLibraryClient;
+        private readonly JellyfinApiClient apiClient;
+        private readonly UserDto user;
 
         [ObservableProperty]
         private string countInformation;
@@ -50,20 +47,10 @@ namespace Jellyfin.UWP.ViewModels
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
         private int totalRecords = 0;
 
-        public MediaListViewModel(
-            IItemsClient itemsClient,
-            IFilterClient filterClient,
-            SdkClientSettings sdkClientSettings,
-            IMemoryCache memoryCache,
-            IPlaystateClient playstateClient,
-            IUserLibraryClient userLibraryClient)
+        public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
-            this.itemsClient = itemsClient;
-            this.filterClient = filterClient;
-            this.sdkClientSettings = sdkClientSettings;
-            this.memoryCache = memoryCache;
-            this.playstateClient = playstateClient;
-            this.userLibraryClient = userLibraryClient;
+            this.apiClient = apiClient;
+            this.user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         }
 
         public void FilterReset()
@@ -73,28 +60,26 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task<UIMediaListItem> GetLatestOnItemAsync(Guid id)
         {
-            var user = memoryCache.Get<UserDto>("user");
-            var item = await userLibraryClient.GetItemAsync(user.Id, id);
+            var item = await apiClient.Items[id]
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
 
             return new UIMediaListItem
             {
-                Id = item.Id,
+                Id = item.Id.Value,
                 Name = item.Name,
-                Url = item.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{item.Id}/Images/Primary?fillHeight=384&fillWidth=210&quality=96&tag={item.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
-                Type = item.Type,
-                CollectionType = item.CollectionType,
+                Url = MediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
+                Type = item.Type.Value,
+                CollectionType = item.CollectionType.Value,
                 UserData = new UIUserData
                 {
-                    IsFavorite = item.UserData.IsFavorite,
+                    IsFavorite = item.UserData.IsFavorite.Value,
                     UnplayedItemCount = item.UserData.UnplayedItemCount,
-                    HasBeenWatched = item.UserData.Played,
+                    HasBeenWatched = item.UserData.Played.Value,
                 },
             };
-        }
-
-        public BaseItemKind GetMediaType()
-        {
-            return itemType;
         }
 
         public string GetTitle()
@@ -111,25 +96,27 @@ namespace Jellyfin.UWP.ViewModels
 
             parentId = id;
 
-            var user = memoryCache.Get<UserDto>("user");
-            var items = await itemsClient.GetItemsAsync(
-                userId: user.Id,
-                startIndex: 0,
-                limit: 1,
-                sortBy: new[] { "SortName", },
-                sortOrder: new[] { SortOrder.Ascending, },
-                ids: new[] { parentId.Value, });
+            var items = await apiClient.Items
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.StartIndex = 0;
+                    options.QueryParameters.Limit = 1;
+                    options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
+                    options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
+                    options.QueryParameters.Ids = new[] { parentId, };
+                });
 
             itemType = BaseItemKind.BoxSet;
 
             parentItem = items.Items[0];
 
-            if (parentItem.CollectionType == "movies")
+            if (parentItem.CollectionType == BaseItemDto_CollectionType.Movies)
             {
                 itemType = BaseItemKind.Movie;
             }
 
-            if (parentItem.CollectionType == "tvshows")
+            if (parentItem.CollectionType == BaseItemDto_CollectionType.Tvshows)
             {
                 itemType = BaseItemKind.Series;
             }
@@ -139,19 +126,21 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task IsFavoriteStateAsync(bool isFavorite, Guid id)
         {
-            var user = memoryCache.Get<UserDto>("user");
-
             if (isFavorite)
             {
-                _ = await userLibraryClient.UnmarkFavoriteItemAsync(
-                    user.Id,
-                    id);
+                _ = await apiClient.UserFavoriteItems[id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
             else
             {
-                _ = await userLibraryClient.MarkFavoriteItemAsync(
-                    user.Id,
-                    id);
+                _ = await apiClient.UserFavoriteItems[id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
         }
 
@@ -162,14 +151,16 @@ namespace Jellyfin.UWP.ViewModels
                 return;
             }
 
-            var user = memoryCache.Get<UserDto>("user");
-            var filtersResult = await filterClient.GetQueryFiltersAsync(
-                userId: user.Id,
-                parentId: parentId,
-                includeItemTypes: new[] { itemType });
+            var filtersResult = await apiClient.Items.Filters2
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.ParentId = parentId;
+                    options.QueryParameters.IncludeItemTypes = new[] { itemType };
+                });
 
             GenresFilterList = new ObservableCollection<GenreFiltersModel>(
-                filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id, Name = x.Name }));
+                filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id.Value, Name = x.Name }));
 
             FilteringFilters = new ObservableCollection<FiltersModel>
             {
@@ -183,25 +174,27 @@ namespace Jellyfin.UWP.ViewModels
         }
 
         public async Task LoadMediaAsync(
-            IEnumerable<Guid> genreIds = null,
-            IEnumerable<ItemFilter> itemFilters = null,
+            Guid?[] genreIds = null,
+            ItemFilter[] itemFilters = null,
             CancellationToken cancellationToken = default)
         {
-            var user = memoryCache.Get<UserDto>("user");
-            var itemsResult = await itemsClient.GetItemsAsync(
-                userId: user.Id,
-                parentId: parentId,
-                startIndex: CurrentIndex,
-                limit: Limit,
-                sortBy: new[] { "SortName", },
-                sortOrder: new[] { SortOrder.Ascending, },
-                genreIds: genreIds,
-                filters: itemFilters,
-                includeItemTypes: new[] { itemType },
-                fields: new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.BasicSyncInfo, },
+            var itemsResult = await apiClient.Items
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.ParentId = parentId;
+                    options.QueryParameters.StartIndex = CurrentIndex;
+                    options.QueryParameters.Limit = Limit;
+                    options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
+                    options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
+                    options.QueryParameters.GenreIds = genreIds;
+                    options.QueryParameters.Filters = itemFilters;
+                    options.QueryParameters.IncludeItemTypes = new[] { itemType };
+                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
+                },
                 cancellationToken: cancellationToken);
 
-            TotalRecords = itemsResult.TotalRecordCount;
+            TotalRecords = itemsResult.TotalRecordCount.Value;
 
             if (CurrentIndex == 0)
             {
@@ -219,16 +212,16 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         var item = new UIMediaListItem
                         {
-                            Id = x.Id,
+                            Id = x.Id.Value,
                             Name = x.Name,
-                            Url = x.ImageTags.Any(x => x.Key == "Primary") ? $"{sdkClientSettings.BaseUrl}/Items/{x.Id}/Images/Primary?fillHeight=384&fillWidth=210&quality=96&tag={x.ImageTags["Primary"]}" : "https://cdn.onlinewebfonts.com/svg/img_331373.png",
-                            Type = x.Type,
+                            Url = MediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
+                            Type = x.Type.Value,
                             CollectionType = x.CollectionType,
                             UserData = new UIUserData
                             {
-                                IsFavorite = x.UserData.IsFavorite,
+                                IsFavorite = x.UserData.IsFavorite.Value,
                                 UnplayedItemCount = x.UserData.UnplayedItemCount,
-                                HasBeenWatched = x.UserData.Played,
+                                HasBeenWatched = x.UserData.Played.Value,
                             },
                         };
 
@@ -249,8 +242,8 @@ namespace Jellyfin.UWP.ViewModels
             }
 
             await LoadMediaAsync(
-                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id),
-                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter),
+                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
+                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
                 cancellationToken);
         }
 
@@ -272,27 +265,29 @@ namespace Jellyfin.UWP.ViewModels
             }
 
             await LoadMediaAsync(
-                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id),
-                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter),
+                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
+                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
                 cancellationToken);
         }
 
         public async Task PlayedStateAsync(bool hasBeenViewed, Guid id)
         {
-            var user = memoryCache.Get<UserDto>("user");
-
             if (hasBeenViewed)
             {
-                _ = await playstateClient.MarkUnplayedItemAsync(
-                    user.Id,
-                    id);
+                _ = await apiClient.UserPlayedItems[id]
+                    .DeleteAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                    });
             }
             else
             {
-                _ = await playstateClient.MarkPlayedItemAsync(
-                    user.Id,
-                    id,
-                    DateTimeOffset.Now);
+                _ = await apiClient.UserPlayedItems[id]
+                    .PostAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                        options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                    });
             }
         }
 

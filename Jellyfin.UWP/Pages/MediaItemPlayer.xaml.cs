@@ -1,13 +1,16 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
-using Jellyfin.UWP.Models;
-using MetroLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
+using MetroLog;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -27,13 +30,13 @@ namespace Jellyfin.UWP.Pages
         private readonly DispatcherTimer dispatcherTimer;
         private readonly DisplayRequest displayRequest;
         private readonly ILogger Log;
-        private readonly SdkClientSettings sdkClientSettings;
         private readonly Stopwatch stopwatch = new();
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
+        private readonly IMemoryCache memoryCache;
 
         private MediaItemPlayerViewModel context;
         private DetailsItemPlayRecord detailsItemPlayRecord;
-        private bool isTranscoding;
+
         private BaseItemDto item;
 
         public MediaItemPlayer()
@@ -41,7 +44,7 @@ namespace Jellyfin.UWP.Pages
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<MediaItemPlayerViewModel>();
-            sdkClientSettings = Ioc.Default.GetRequiredService<SdkClientSettings>();
+            memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
             this.Loaded += MediaItemPlayer_Loaded;
             this.Unloaded += MediaItemPlayer_Unloaded;
@@ -107,11 +110,10 @@ namespace Jellyfin.UWP.Pages
         {
             await context.SessionProgressAsync(
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
-                isTranscoding,
                 _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
 
             if (_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.TotalSeconds + 30 >= _mediaPlayerElement.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds
-                && item.Type == BaseItemKind.Episode
+                && item.Type == BaseItemDto_Type.Episode
                 && !NextEpisodePopup.IsOpen)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
@@ -131,44 +133,37 @@ namespace Jellyfin.UWP.Pages
             var needsToTranscodeAudio = await context.IsTranscodingNeededBecauseOfAudio(detailsItemPlayRecord, mediaStreams);
             var needsToTranscodeVideo = await context.IsTranscodingNeededBecauseOfVideo(mediaStreams);
 
-            Uri mediaUri;
-
             // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
             if (needsToTranscodeAudio || needsToTranscodeVideo)
             {
-                mediaUri = new Uri($"{sdkClientSettings.BaseUrl}{mediaSourceInfo.TranscodingUrl}");
-
-                isTranscoding = true;
+                context.IsTranscoding = true;
 
                 Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
-            }
-            else
-            {
-                mediaUri = context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
             }
 
             MediaSource source;
 
-            if (isTranscoding)
+            if (context.IsTranscoding)
             {
+                var mediaUri = new Uri($"{memoryCache.Get<string>(JellyfinConstants.HostUrlName)}{mediaSourceInfo.TranscodingUrl}");
                 var result = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
 
                 source = MediaSource.CreateFromAdaptiveMediaSource(result.MediaSource);
             }
             else
             {
+                var mediaUri = context.GetVideoUrl(detailsItemPlayRecord.SelectedVideoId);
                 source = MediaSource.CreateFromUri(mediaUri);
             }
 
-            if (mediaStreams.Any(x => x.Type == MediaStreamType.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
+            if (mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
             {
-                var firstSubtitle = mediaStreams.First(x => x.Type == MediaStreamType.Subtitle);
+                var firstSubtitle = mediaStreams.First(x => x.Type == MediaStream_Type.Subtitle);
                 var subtitleUrl = context.GetSubtitleUrl(
-                    firstSubtitle.Index,
+                    firstSubtitle.Index.Value,
                     string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
 
-                var subtitleUri = new Uri(subtitleUrl);
-                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUri);
+                var timedTextSource = TimedTextSource.CreateFromUri(subtitleUrl);
 
                 timedTextSource.Resolved += Tts_Resolved;
 
@@ -194,8 +189,19 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            context = ((MediaItemPlayerViewModel)DataContext);
-            item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+            var mediaControlsCommandBar = this.mediaControls.FindVisualChild<CommandBar>();
+
+            var settingsAppBarButton = new AppBarButton
+            {
+                Icon = new SymbolIcon(Symbol.Setting),
+                Label = "Settings"
+            };
+            settingsAppBarButton.Click += (_, _) => this.SettingsPopup.IsOpen = true;
+
+            mediaControlsCommandBar.PrimaryCommands.Add(settingsAppBarButton);
+
+            context = (MediaItemPlayerViewModel)DataContext;
+            item = await context.LoadMediaItemAsync(detailsItemPlayRecord);
 
             var source = await LoadSourceAsync();
             var mediaPlaybackItem = new MediaPlaybackItem(source);
@@ -223,12 +229,12 @@ namespace Jellyfin.UWP.Pages
 
             _mediaPlayerElement.SetMediaPlayer(mediaPlayer);
 
-            if (item.UserData.PlayedPercentage > 0)
+            if (item.UserData.PlayedPercentage > 0 && item.UserData.PlaybackPositionTicks.HasValue)
             {
-                mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks);
+                mediaPlayer.PlaybackSession.Position = new TimeSpan(item.UserData.PlaybackPositionTicks.Value);
             }
 
-            if (!isTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
+            if (!context.IsTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
             {
                 mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
             }
@@ -241,7 +247,7 @@ namespace Jellyfin.UWP.Pages
 
             mediaPlayer.Play();
 
-            await context.SessionPlayingAsync(isTranscoding);
+            await context.SessionPlayingAsync();
 
             dispatcherTimer.Start();
 
@@ -306,7 +312,7 @@ namespace Jellyfin.UWP.Pages
 
             await context.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
-            if (item.Type == BaseItemKind.Episode && !NextEpisodePopup.IsOpen)
+            if (item.Type == BaseItemDto_Type.Episode && !NextEpisodePopup.IsOpen)
             {
                 await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                           CoreDispatcherPriority.Normal,
@@ -376,14 +382,21 @@ namespace Jellyfin.UWP.Pages
 
                 if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
                 {
-                    detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber == nextIndex).Id;
-
-                    item = await context.LoadMediaItemAsync(detailsItemPlayRecord.Id);
+                    detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber.Value == nextIndex).Id.Value;
                 }
                 else
                 {
-                    // TODO: GET THE NEXT SEASON
+                    var nextSeasonEpisodes = await context.GetNextSeasonEpisodes(item.SeriesId.Value, item.SeasonId.Value);
+
+                    if (nextSeasonEpisodes is null || nextSeasonEpisodes.TotalRecordCount == 0)
+                    {
+                        return;
+                    }
+
+                    detailsItemPlayRecord.Id = nextSeasonEpisodes.Items[0].Id.Value;
                 }
+
+                item = await context.LoadMediaItemAsync(detailsItemPlayRecord);
 
                 var source = await LoadSourceAsync();
 
@@ -391,7 +404,7 @@ namespace Jellyfin.UWP.Pages
 
                 _mediaPlayerElement.Source = mediaPlaybackItem;
 
-                await context.SessionPlayingAsync(isTranscoding);
+                await context.SessionPlayingAsync();
 
                 dispatcherTimer.Start();
 
@@ -399,6 +412,20 @@ namespace Jellyfin.UWP.Pages
 
                 NextEpisodePopup.IsOpen = false;
             }
+        }
+
+        private async void btn_PlaybackInfo_Click(object sender, RoutedEventArgs e)
+        {
+            PlaybackInfoPopup.IsOpen = true;
+
+            SettingsPopup.IsOpen = false;
+
+            await context.GetPlaybackInfo(_mediaPlayerElement.ActualWidth, _mediaPlayerElement.ActualHeight);
+        }
+
+        private void btn_PlaybackInfoPopupClose_Click(object sender, RoutedEventArgs e)
+        {
+            PlaybackInfoPopup.IsOpen = false;
         }
     }
 }

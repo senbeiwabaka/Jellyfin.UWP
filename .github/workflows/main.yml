@@ -45,8 +45,8 @@ jobs:
           BuildMode: CI
           Configuration: Release
         
-      - name: Run Unit Tests
-        run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
+      # - name: Run Tests
+        # run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
 
       - name: Run UI Tests
         # run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.UI.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe

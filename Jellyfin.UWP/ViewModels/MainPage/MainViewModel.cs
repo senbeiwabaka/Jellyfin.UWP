@@ -1,12 +1,13 @@
-﻿using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.Collections;
+﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.MainPage
 {
@@ -107,7 +108,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
 
         public async Task LoadInitialAsync()
         {
-            var user = memoryCache.Get<UserDto>("user");
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             UserName = $"User: {user.Name}";
 

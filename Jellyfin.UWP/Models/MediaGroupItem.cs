@@ -1,4 +1,4 @@
-﻿using Jellyfin.Sdk;
+﻿using Jellyfin.Sdk.Generated.Models;
 using System;
 
 namespace Jellyfin.UWP.Models
@@ -7,7 +7,7 @@ namespace Jellyfin.UWP.Models
     {
         public string Name { get; set; }
 
-        public BaseItemKind Type { get; set; }
+        public BaseItemDto_Type Type { get; set; }
 
         public Guid Id { get; set; }
 

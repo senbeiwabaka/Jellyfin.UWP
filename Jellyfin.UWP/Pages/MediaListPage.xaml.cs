@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
@@ -29,11 +29,11 @@ namespace Jellyfin.UWP.Pages
         {
             var mediaItem = (UIMediaListItem)e.ClickedItem;
 
-            if (mediaItem.Type == BaseItemKind.Episode)
+            if (mediaItem.Type == BaseItemDto_Type.Episode)
             {
                 Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
             }
-            else if (mediaItem.Type == BaseItemKind.Movie)
+            else if (mediaItem.Type == BaseItemDto_Type.Movie)
             {
                 Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
             }
@@ -122,8 +122,8 @@ namespace Jellyfin.UWP.Pages
             var genresSelectedItems = GenreFiltering.SelectedItems.Cast<GenreFiltersModel>();
 
             await ((MediaListViewModel)DataContext).LoadMediaAsync(
-                genresSelectedItems.Any() ? genresSelectedItems.Select(x => x.Id) : null,
-                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Filter) : null);
+                genresSelectedItems.Any() ? genresSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
+                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Filter).ToArray() : null);
         }
 
         private void GenreFiltering_ItemClick(object sender, ItemClickEventArgs e)
@@ -140,8 +140,8 @@ namespace Jellyfin.UWP.Pages
             var itemFiltersSelectedItems = FiltersFiltering.SelectedItems.Cast<FiltersModel>();
 
             await ((MediaListViewModel)DataContext).LoadMediaAsync(
-                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Id) : null,
-                itemFiltersSelectedItems.Any() ? itemFiltersSelectedItems.Select(x => x.Filter) : null);
+                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
+                itemFiltersSelectedItems.Any() ? itemFiltersSelectedItems.Select(x => x.Filter).ToArray() : null);
         }
 
         private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)

@@ -84,7 +84,15 @@
                     Command="{Binding SwitchToHomeCommand}" 
                     Click="btn_Home_Click"
                     ToolTipService.ToolTip="Home Button"/>
-                <Button x:Name="btn_Favorites" Content="Favorites" BorderThickness="0" Background="#202020" Foreground="White" Margin="10,0,0,0" Command="{Binding SwitchToFavoriteCommand}" Click="btn_Favorites_Click" />
+                <Button 
+                    x:Name="btn_Favorites" 
+                    Content="Favorites" 
+                    BorderThickness="0" 
+                    Background="#202020" 
+                    Foreground="White" 
+                    Margin="10,0,0,0" 
+                    Command="{Binding SwitchToFavoriteCommand}" 
+                    Click="btn_Favorites_Click" />
             </StackPanel>
         </StackPanel>
 
@@ -357,7 +365,7 @@
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIPersonItem">
                                 <StackPanel Width="180">
-                                    <Image Source="{x:Bind Url}" Height="270" HorizontalAlignment="Center" />
+                                    <Image Source="{x:Bind ImageUrl}" Height="270" HorizontalAlignment="Center" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </DataTemplate>

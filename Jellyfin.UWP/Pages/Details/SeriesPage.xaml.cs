@@ -68,7 +68,7 @@ namespace Jellyfin.UWP.Pages
 
         private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
         {
-            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((SeriesDetailViewModel)DataContext).MediaItem.Id, });
+            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((SeriesDetailViewModel)DataContext).MediaItem.Id.Value, });
         }
 
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)

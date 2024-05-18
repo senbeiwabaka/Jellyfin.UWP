@@ -1,26 +1,19 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.UWP.Helpers;
 using Windows.Storage;
 
 namespace Jellyfin.UWP.ViewModels
 {
     internal sealed partial class SetupViewModel : ObservableValidator
     {
-        private readonly SdkClientSettings sdkClientSettings;
-
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(CompleteCommand))]
         [Required(AllowEmptyStrings = false)]
         [Url]
         private string jellyfinUrl;
-
-        public SetupViewModel(SdkClientSettings sdkClientSettings)
-        {
-            this.sdkClientSettings = sdkClientSettings;
-        }
 
         public delegate void EventHandler();
 
@@ -39,9 +32,7 @@ namespace Jellyfin.UWP.ViewModels
             if (CanGoToLoginPage())
             {
                 var localSettings = ApplicationData.Current.LocalSettings;
-                localSettings.Values["jellyfinUrl"] = JellyfinUrl;
-
-                sdkClientSettings.BaseUrl = JellyfinUrl;
+                localSettings.Values[JellyfinConstants.HostUrlName] = JellyfinUrl;
 
                 SuccessfullySetUrl?.Invoke();
             }

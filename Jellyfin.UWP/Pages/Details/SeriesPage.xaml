@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:sdk="using:Jellyfin.Sdk"
+    xmlns:sdk="using:Jellyfin.Sdk.Generated.Models"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
@@ -256,7 +256,7 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIPersonItem">
                                         <StackPanel Width="220">
-                                            <Image Source="{x:Bind Url}" Height="330" />
+                                            <Image Source="{x:Bind ImageUrl}" Height="330" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{x:Bind Role}" FontSize="12" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>

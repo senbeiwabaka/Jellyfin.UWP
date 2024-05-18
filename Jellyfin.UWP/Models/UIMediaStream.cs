@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Jellyfin.UWP.Models
+﻿namespace Jellyfin.UWP.Models
 {
     public class UIMediaStream
     {
