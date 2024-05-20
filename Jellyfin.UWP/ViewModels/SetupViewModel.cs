@@ -31,8 +31,7 @@ namespace Jellyfin.UWP.ViewModels
 
             if (CanGoToLoginPage())
             {
-                var localSettings = ApplicationData.Current.LocalSettings;
-                localSettings.Values[JellyfinConstants.HostUrlName] = JellyfinUrl;
+                ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName] = JellyfinUrl;
 
                 SuccessfullySetUrl?.Invoke();
             }
