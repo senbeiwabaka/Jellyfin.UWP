@@ -12,10 +12,10 @@ using MetroLog.Targets;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using Windows.UI.Core;
 
 [assembly: InternalsVisibleTo("Jellyfin.UWP.Tests")]
 
@@ -104,7 +104,8 @@ namespace Jellyfin.UWP
 
                     try
                     {
-                        var systemInfo = await apiClient.System.Info.Public.GetAsync();
+                        var systemInfo = await apiClient.System.Info.Public
+                            .GetAsync();
 
                         resetJellyfinUrl = false;
 
@@ -224,6 +225,5 @@ namespace Jellyfin.UWP
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
-
     }
 }

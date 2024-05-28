@@ -1,15 +1,19 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Collections.Generic;
+using System.ServiceModel.Channels;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Serialization;
+using Microsoft.Kiota.Serialization.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.ViewModels;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Kiota.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Windows.Storage;
 
 namespace Jellyfin.UWP.Tests.ViewModels
 {
@@ -27,6 +31,8 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var jellyfinSettings = new JellyfinSdkSettings();
             var sut = new LoginViewModel(memoryCache, apiClient, jellyfinSettings);
 
+            RequestInformation postRequest = null;
+
             memoryCache.Set<UserDto>(JellyfinConstants.UserName, new UserDto { Id = userId, });
 
             var successRan = false;
@@ -35,6 +41,23 @@ namespace Jellyfin.UWP.Tests.ViewModels
 
             sut.Username = "test";
             sut.Password = "test";
+
+            requestAdapterMock.Setup(x => x.SerializationWriterFactory.GetSerializationWriter("application/json"))
+                .Returns(new JsonSerializationWriter());
+
+            requestAdapterMock.Setup(x => x.SendAsync(
+                It.IsAny<RequestInformation>(),
+                It.IsAny<ParsableFactory<AuthenticationResult>>(),
+                It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
+                It.IsAny<CancellationToken>()))
+                .Callback(new InvocationAction(invocation =>
+                {
+                    postRequest = (RequestInformation)invocation.Arguments[0];
+                }))
+                .ReturnsAsync(new AuthenticationResult { AccessToken = "1", SessionInfo = new SessionInfo(), })
+                .Verifiable();
+
+            ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName] = "https://test.com";
 
             //userClientMock.Setup(x => x.AuthenticateUserByNameAsync(It.IsAny<AuthenticateUserByName>(), It.IsAny<CancellationToken>()))
             //    .Callback<AuthenticateUserByName, CancellationToken>((x, y) =>
@@ -50,6 +73,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             // Assert
             Assert.IsTrue(successRan);
             Assert.IsNull(sut.Message);
+            Assert.IsNotNull(postRequest);
 
             requestAdapterMock.VerifyAll();
         }

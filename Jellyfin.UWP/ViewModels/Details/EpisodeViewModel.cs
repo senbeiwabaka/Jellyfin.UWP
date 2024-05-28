@@ -15,8 +15,8 @@ namespace Jellyfin.UWP.ViewModels.Details
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesEpisodes;
 
-        public EpisodeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
-            : base(memoryCache, apiClient)
+        public EpisodeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+            : base(memoryCache, apiClient, mediaHelpers)
         {
         }
 
