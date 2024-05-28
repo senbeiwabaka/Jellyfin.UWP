@@ -72,8 +72,7 @@ namespace Jellyfin.UWP.ViewModels
                     return;
                 }
 
-                var localSettings = ApplicationData.Current.LocalSettings;
-                var baseUrl = localSettings.Values[JellyfinConstants.HostUrlName].ToString();
+                var baseUrl = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName].ToString();
 
                 settings.SetServerUrl(baseUrl);
 
@@ -85,13 +84,13 @@ namespace Jellyfin.UWP.ViewModels
 
                 if (authResult is not null && !string.IsNullOrWhiteSpace(authResult.AccessToken))
                 {
-                    localSettings.Values[JellyfinConstants.AccessTokenName] = authResult.AccessToken;
+                    ApplicationData.Current.LocalSettings.Values[JellyfinConstants.AccessTokenName] = authResult.AccessToken;
                     settings.SetAccessToken(authResult.AccessToken);
 
                     memoryCache.Set(JellyfinConstants.UserName, authResult.User);
 
                     memoryCache.Set(JellyfinConstants.SessionName, authResult.SessionInfo);
-                    localSettings.Values[JellyfinConstants.SessionName] = System.Text.Json.JsonSerializer.Serialize(authResult.SessionInfo);
+                    ApplicationData.Current.LocalSettings.Values[JellyfinConstants.SessionName] = System.Text.Json.JsonSerializer.Serialize(authResult.SessionInfo);
 
                     memoryCache.Set<string>(JellyfinConstants.HostUrlName, baseUrl);
 

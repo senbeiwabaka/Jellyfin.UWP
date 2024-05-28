@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details
 {
@@ -17,6 +17,7 @@ namespace Jellyfin.UWP.ViewModels.Details
     {
         protected readonly IMemoryCache memoryCache;
         protected readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaStream> audioStreams;
@@ -102,10 +103,11 @@ namespace Jellyfin.UWP.ViewModels.Details
         [ObservableProperty]
         private string writer;
 
-        public DetailsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public DetailsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public virtual Task<Guid> GetPlayIdAsync()
@@ -189,7 +191,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                 {
                     Id = x.Id.Value,
                     Name = x.Name,
-                    ImageUrl = MediaHelpers.SetImageUrl(x, "446", "298"),
+                    ImageUrl = mediaHelpers.SetImageUrl(x, "446", "298"), // MediaHelpers.SetImageUrl(x, "446", "298"),
                     Role = x.Role,
                 }));
 
@@ -230,7 +232,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
-                        Url = MediaHelpers.SetImageUrl(x, "446", "298", JellyfinConstants.PrimaryName),
+                        Url = mediaHelpers.SetImageUrl(x, "446", "298", JellyfinConstants.PrimaryName),// MediaHelpers.SetImageUrl(x, "446", "298", JellyfinConstants.PrimaryName),
                         Year = x.ProductionYear?.ToString() ?? "N/A",
                         UserData = new UIUserData
                         {
@@ -243,7 +245,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                     return item;
                 }));
 
-            ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
+            ImageUrl = mediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName); //MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
 
             await ExtraExecuteAsync();
         }

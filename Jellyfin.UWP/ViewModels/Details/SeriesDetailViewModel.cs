@@ -18,8 +18,8 @@ namespace Jellyfin.UWP.ViewModels.Details
         [ObservableProperty]
         private UIMediaListItem nextUpItem;
 
-        public SeriesDetailViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
-            : base(memoryCache, apiClient)
+        public SeriesDetailViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+            : base(memoryCache, apiClient, mediaHelpers)
         {
         }
 

@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using MetroLog;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.Helpers;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -189,6 +189,11 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
+            if (SystemInformation.Instance.DeviceFamily == "Windows.Xbox")
+            {
+                _mediaPlayerElement.IsFullWindow = true;
+            }
+
             var mediaControlsCommandBar = this.mediaControls.FindVisualChild<CommandBar>();
 
             var settingsAppBarButton = new AppBarButton
@@ -257,7 +262,10 @@ namespace Jellyfin.UWP.Pages
             Window.Current.CoreWindow.PointerCursor = null;
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
-            ApplicationView.GetForCurrentView().Title = item.Name;
+            if (SystemInformation.Instance.DeviceFamily != "Windows.Xbox")
+            {
+                ApplicationView.GetForCurrentView().Title = item.Name;
+            }
         }
 
         private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
@@ -279,6 +287,11 @@ namespace Jellyfin.UWP.Pages
             {
                 var newTime = TimeSpan.FromSeconds(10);
                 mediaPlayerSession.Position += newTime;
+            }
+
+            if (args.VirtualKey == Windows.System.VirtualKey.GamepadY)
+            {
+                _mediaPlayerElement.IsFullWindow = !_mediaPlayerElement.IsFullWindow;
             }
         }
 

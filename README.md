@@ -27,21 +27,24 @@ I would pick up maintaining that but to me that would be more of a nightmare ver
 * Load your libraries
 * Basic search/filtering
 * Library page with basic filtering and paging
-* Specific media item page (mostly there, see `Not finished` below)
+* Specific media item page
 * Media playback
 * Can choose audio stream
+* Can choose video stream
 * Can transcode (from jellyfin itself, does not transcode itself)
 
 [Supported Codecs](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/supported-codecs)
 
 ### Not finished
 
-* Subtitle options
-* Bitrate selection on playing video (may not be possible)
-* Some weird issues with video in full-screen on some videos
+* Some subtitle things to work out
 * No trailers, if present
+* User settings (this is for the defaults you have choosen. One of them is being used but not the rest)
 
-Needs general UI cleanup
+### Not going to work
+
+* Bitrate selection
+* While external links could work, not going to implement that as this is a tide over until a new platform tech is specified for C# on xbox where a better use of resources will happen
 
 ## Notes
 Some forms of DTS just don't work but none of them play in UWP media player as the supported codecs says.
@@ -49,6 +52,4 @@ Those will automatically generate a transcode URL.
 
 ## Local Setup
 Local/side loading is not yet working.
-
-Jellyfin cert password `JellyfinPassword`
 

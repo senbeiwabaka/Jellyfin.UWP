@@ -12,5 +12,9 @@ namespace Jellyfin.UWP.Helpers
         Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId);
 
         Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId);
+
+        string SetImageUrl(BaseItemDto item, string height, string width, string tagKey);
+
+        string SetImageUrl(BaseItemPerson person, string height, string width);
     }
 }
