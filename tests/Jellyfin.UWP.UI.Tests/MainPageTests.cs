@@ -36,13 +36,17 @@ namespace Jellyfin.UWP.UI.Tests
 
         public override Task UITestBaseSetUp()
         {
-            File.Delete($"c:\\Users\\{Environment.UserName}\\AppData\\Local\\Packages\\37f5d397-a198-4841-bbf2-13fd6f373f27_ab98qgb45jr2w\\Settings\\settings.dat");
+            var directory = $"c:\\Users\\{Environment.UserName}\\AppData\\Local\\Packages\\37f5d397-a198-4841-bbf2-13fd6f373f27_ab98qgb45jr2w\\";
+            if (Directory.Exists(directory))
+            {
+                File.Delete(Path.Combine(directory, "Settings\\settings.dat"));
+            }
 
             return base.UITestBaseSetUp();
         }
 
         [Test]
-        public async Task MyMediaShouldBeFilled()
+        public void MyMediaShouldBeFilled()
         {
             // Arrange
             var window = Application.GetMainWindow(Automation);
@@ -91,6 +95,8 @@ namespace Jellyfin.UWP.UI.Tests
 
                 window.FindFirstDescendant("CompleteButton").AsButton()?.Click();
             }
+
+            await Task.Delay(500);
 
             // We are on the login screen so move to Main Page
             if (loginButton != null)
