@@ -12,7 +12,13 @@
     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
         <StackPanel Orientation="Horizontal" Margin="10,10,10,0">
             <TextBlock Text="Jellyfin URL:" Padding="10" />
-            <TextBox x:Name="JellyfinUrlTextBox" Text="{Binding JellyfinUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="300" Padding="10" KeyUp="JellyfinUrlTextBox_KeyUp" />
+            <TextBox 
+                x:Name="JellyfinUrlTextBox" 
+                Text="{Binding JellyfinUrl, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                Width="300" 
+                Padding="10" 
+                KeyUp="JellyfinUrlTextBox_KeyUp"
+                InputScope="Url" />
         </StackPanel>
 
         <StackPanel HorizontalAlignment="Center" Margin="10">

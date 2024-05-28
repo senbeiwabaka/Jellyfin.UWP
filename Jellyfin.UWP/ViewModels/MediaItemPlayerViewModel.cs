@@ -4,9 +4,9 @@ using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Toolkit.Uwp.Helpers;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.Media.Core;
@@ -188,7 +188,7 @@ namespace Jellyfin.UWP
         public Uri GetVideoUrl(string videoId = null)
         {
             var container = item.MediaSources[0].Container;
-            var video= apiClient.Videos[item.Id.Value]
+            var video = apiClient.Videos[item.Id.Value]
                 .StreamWithContainer(container)
                 .ToGetRequestInformation(options =>
                 {
@@ -255,15 +255,35 @@ namespace Jellyfin.UWP
 
             var codecQuery = new CodecQuery();
             var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStream_Type.Video).Codec;
-            var videoCodecsInstalled = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, ""))
-                .Select(x => x).ToArray();
+            var videoCodecsInstalled = new List<CodecInfo>();
+
+            if (SystemInformation.Instance.DeviceFamily == "Windows.Xbox")
+            {
+                var h265 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H265"))
+                    .Select(x => x).ToArray();
+                var h264 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H264"))
+                    .Select(x => x).ToArray();
+                var hevc = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "HEVC"))
+                    .Select(x => x).ToArray();
+
+                videoCodecsInstalled.AddRange(h265);
+                videoCodecsInstalled.AddRange(h264);
+                videoCodecsInstalled.AddRange(hevc);
+            }
+            else
+            {
+                var codecs = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, string.Empty))
+                    .Select(x => x).ToArray();
+
+                videoCodecsInstalled.AddRange(codecs);
+            }
 
             if (supportedVideoCodecs.ContainsKey(selectedVideoCodec))
             {
                 var videoCodecId = supportedVideoCodecs[selectedVideoCodec];
 
                 // Check to make sure the codec actually is there to use
-                return !Array.Exists(videoCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
+                return !videoCodecsInstalled.Exists(x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
             }
 
             return true;

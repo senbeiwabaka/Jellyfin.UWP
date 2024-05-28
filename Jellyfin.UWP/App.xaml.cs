@@ -12,6 +12,7 @@ using MetroLog.Targets;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -86,9 +87,8 @@ namespace Jellyfin.UWP
                .AddViewModels()
                .BuildServiceProvider());
 
-            var localSettings = ApplicationData.Current.LocalSettings;
-            var accessToken = localSettings.Values[JellyfinConstants.AccessTokenName]?.ToString();
-            var jellyfinUrl = localSettings.Values[JellyfinConstants.HostUrlName]?.ToString();
+            var accessToken = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.AccessTokenName]?.ToString();
+            var jellyfinUrl = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName]?.ToString();
             var resetJellyfinUrl = false;
 
             using (var scope = Ioc.Default.CreateScope())
@@ -104,7 +104,8 @@ namespace Jellyfin.UWP
 
                     try
                     {
-                        var systemInfo = await apiClient.System.Info.Public.GetAsync();
+                        var systemInfo = await apiClient.System.Info.Public
+                            .GetAsync();
 
                         resetJellyfinUrl = false;
 
@@ -125,11 +126,11 @@ namespace Jellyfin.UWP
                     resetJellyfinUrl = true;
                 }
 
-                var localSettingsSession = localSettings.Values[JellyfinConstants.SessionName]?.ToString();
+                var localSettingsSession = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.SessionName]?.ToString();
 
                 if (string.IsNullOrWhiteSpace(localSettingsSession))
                 {
-                    CleanupValues(localSettings, settings);
+                    CleanupValues(settings);
 
                     accessToken = string.Empty;
                 }
@@ -148,7 +149,7 @@ namespace Jellyfin.UWP
                     }
                     catch (Exception exception)
                     {
-                        CleanupValues(localSettings, settings);
+                        CleanupValues(settings);
 
                         Log.Error("Failed to get user information on startup", exception);
                     }
@@ -176,15 +177,27 @@ namespace Jellyfin.UWP
                     }
                 }
 
+                SystemNavigationManager.GetForCurrentView().BackRequested += OnBackRequested;
+
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
         }
 
-        private static void CleanupValues(ApplicationDataContainer localSettings, JellyfinSdkSettings settings)
+        private void OnBackRequested(object sender, BackRequestedEventArgs e)
         {
-            localSettings.Values.Remove(JellyfinConstants.AccessTokenName);
-            localSettings.Values.Remove(JellyfinConstants.SessionName);
+            Frame rootFrame = Window.Current.Content as Frame;
+            if (rootFrame.CanGoBack)
+            {
+                rootFrame.GoBack();
+                e.Handled = true;
+            }
+        }
+
+        private void CleanupValues(JellyfinSdkSettings settings)
+        {
+            ApplicationData.Current.LocalSettings.Values.Remove(JellyfinConstants.AccessTokenName);
+            ApplicationData.Current.LocalSettings.Values.Remove(JellyfinConstants.SessionName);
 
             settings.SetAccessToken(string.Empty);
         }
