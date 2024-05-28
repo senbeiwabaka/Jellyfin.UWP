@@ -45,8 +45,8 @@ jobs:
           BuildMode: CI
           Configuration: Release
         
-       - name: Run Tests
-         run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
+      - name: Run Tests
+        run: vstest.console.exe /Platform:x64 .\tests\Jellyfin.UWP.Tests\bin\x64\Release\Jellyfin.UWP.Tests.build.appxrecipe
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
