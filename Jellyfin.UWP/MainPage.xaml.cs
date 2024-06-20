@@ -7,10 +7,10 @@ using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Toolkit.Uwp.UI;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Windows.Foundation;
-using Windows.Storage;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -35,6 +35,8 @@ namespace Jellyfin.UWP
 
             this.Loaded += MainPage_Loaded;
         }
+
+        public Type PageType { get; } = typeof(MainPage);
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -68,16 +70,6 @@ namespace Jellyfin.UWP
         private void ClickItemList(object sender, ItemClickEventArgs e)
         {
             Frame.Navigate(typeof(MediaListPage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
-
-        private void Logout_Click(object sender, RoutedEventArgs e)
-        {
-            var localSettings = ApplicationData.Current.LocalSettings;
-
-            localSettings.Values.Remove(JellyfinConstants.AccessTokenName);
-            localSettings.Values.Remove(JellyfinConstants.SessionName);
-
-            Frame.Navigate(typeof(LoginPage));
         }
 
         private async void MainPage_Loaded(object sender, RoutedEventArgs e)
@@ -208,11 +200,6 @@ namespace Jellyfin.UWP
 
                 previousButton.IsEnabled = true;
             }
-        }
-
-        private void SearchClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(SearchPage));
         }
 
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)

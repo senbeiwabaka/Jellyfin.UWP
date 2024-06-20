@@ -1,8 +1,9 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -38,6 +39,11 @@ namespace Jellyfin.UWP.Pages
 
         private async void EpisodePage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (DebugHelpers.IsDebugRelease)
+            {
+                tbDebugPageBlock.Visibility = Visibility.Visible;
+            }
+
             var context = (EpisodeViewModel)DataContext;
 
             await context.LoadMediaInformationAsync(id);

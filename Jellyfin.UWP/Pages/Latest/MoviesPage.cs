@@ -1,11 +1,11 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using Microsoft.Toolkit.Uwp.UI;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
-using Microsoft.Toolkit.Uwp.UI;
-using System;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -15,9 +15,6 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages.Latest
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MoviesPage : Page
     {
         private Guid id;

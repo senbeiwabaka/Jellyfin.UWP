@@ -81,6 +81,8 @@ namespace Jellyfin.UWP
                 Window.Current.Content = rootFrame;
             }
 
+            HDR.Test(Log);
+
             Ioc.Default.ConfigureServices(new ServiceCollection()
                .AddMemoryCache()
                .SetupJellyfin()
@@ -110,9 +112,10 @@ namespace Jellyfin.UWP
                         resetJellyfinUrl = false;
 
                         memoryCache.Set(JellyfinConstants.HostUrlName, jellyfinUrl);
+                        memoryCache.Set(JellyfinConstants.ServerVersionName, systemInfo.Version);
 
-                        Log.Debug("Server Name: {0}", systemInfo.ServerName);
                         Log.Debug("Server Version: {0}", systemInfo.Version);
+
                     }
                     catch (Exception ex)
                     {

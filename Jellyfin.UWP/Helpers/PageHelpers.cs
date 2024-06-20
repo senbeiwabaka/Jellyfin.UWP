@@ -21,7 +21,7 @@ namespace Jellyfin.UWP.Helpers
 
             var scrollViewer = listView.FindVisualChild<ScrollViewer>();
 
-            if (scrollViewer != null)
+            if (scrollViewer is not null && listView.ItemsPanelRoot is not null)
             {
                 var itemsPanelChildren = listView.ItemsPanelRoot.Children;
                 var viewportWidth = scrollViewer.ViewportWidth;

@@ -21,7 +21,7 @@
 
     <Grid Background="#101010">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="90" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -29,7 +29,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <uc:BackHomeControl Grid.Row="0" />
+        <uc:TopControl Grid.Row="0" />
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -45,7 +45,7 @@
 
             <ScrollViewer Grid.Column="1">
                 <StackPanel>
-                    <TextBlock Text="EPISODE" />
+                    <TextBlock x:Name="tbDebugPageBlock" Text="EPISODE" Visibility="Collapsed" />
 
                     <StackPanel Padding="30,0,0,0">
                         <StackPanel.Background>

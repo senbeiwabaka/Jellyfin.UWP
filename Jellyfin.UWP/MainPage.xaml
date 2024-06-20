@@ -49,7 +49,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100" />
+            <RowDefinition Height="90" />
+            <RowDefinition Height="50" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -57,46 +58,44 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Background="#202020" Padding="15,15,15,0">
-            <Grid Margin="0" Padding="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+        <uc:TopControl Grid.Row="0" PageType="{x:Bind PageType}" />
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding UserName}" VerticalAlignment="Center"></TextBlock>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="1">
-                    <Button Content="Search" Margin="0,0,15,0" Click="SearchClick" />
-                    <Button x:Name="Logout" Content="Logout" Margin="15,0,0,0" Click="Logout_Click"></Button>
-                </StackPanel>
-            </Grid>
+        <StackPanel Grid.Row="1" Padding="10,10,10,10">
+            <StackPanel.Background>
+                <SolidColorBrush Color="#202020" Opacity=".8" />
+            </StackPanel.Background>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button 
-                    x:Name="btn_Home" 
-                    Content="Home" 
-                    BorderThickness="0" 
-                    Background="#202020" 
-                    Foreground="White" 
-                    Margin="0,0,10,0" 
-                    Command="{Binding SwitchToHomeCommand}" 
+            <StackPanel  Orientation="Horizontal" HorizontalAlignment="Center">
+
+                <Button
+                    x:Name="btn_Home"
+                    Content="Home"
+                    BorderThickness="0"
+                    Foreground="White"
+                    Margin="0,0,10,0"
+                    Command="{Binding SwitchToHomeCommand}"
                     Click="btn_Home_Click"
-                    ToolTipService.ToolTip="Home Button"/>
-                <Button 
-                    x:Name="btn_Favorites" 
-                    Content="Favorites" 
-                    BorderThickness="0" 
-                    Background="#202020" 
-                    Foreground="White" 
-                    Margin="10,0,0,0" 
-                    Command="{Binding SwitchToFavoriteCommand}" 
-                    Click="btn_Favorites_Click" />
+                    ToolTipService.ToolTip="Home Button">
+                    <Button.Background>
+                        <SolidColorBrush Color="#202020" Opacity=".8" />
+                    </Button.Background>
+                </Button>
+                <Button
+                    x:Name="btn_Favorites"
+                    Content="Favorites"
+                    BorderThickness="0"
+                    Foreground="White"
+                    Margin="10,0,0,0"
+                    Command="{Binding SwitchToFavoriteCommand}"
+                    Click="btn_Favorites_Click">
+                    <Button.Background>
+                        <SolidColorBrush Color="#202020" Opacity=".8" />
+                    </Button.Background>
+                </Button>
             </StackPanel>
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsHomeSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Home">
+        <ScrollViewer Grid.Row="2" Margin="10" Visibility="{Binding IsHomeSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Home">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <TextBlock Text="My Media" Foreground="White" FontSize="40" />
@@ -217,7 +216,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <ScrollViewer Grid.Row="1" Margin="10" Visibility="{Binding IsFavoriteSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Favorites">
+        <ScrollViewer Grid.Row="2" Margin="10" Visibility="{Binding IsFavoriteSelected, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Favorites">
             <StackPanel>
                 <StackPanel Margin="0,0,0,10">
                     <Grid>
