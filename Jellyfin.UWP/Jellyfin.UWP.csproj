@@ -401,7 +401,7 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Nerdbank.GitVersioning">
-      <Version>3.6.133</Version>
+      <Version>3.6.139</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
