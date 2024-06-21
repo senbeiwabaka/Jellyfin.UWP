@@ -81,7 +81,7 @@ namespace Jellyfin.UWP
                 Window.Current.Content = rootFrame;
             }
 
-            HDR.Test(Log);
+            HDR.RunHDRCode(Log);
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
                .AddMemoryCache()
