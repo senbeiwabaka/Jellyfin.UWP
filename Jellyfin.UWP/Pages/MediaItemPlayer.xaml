@@ -17,11 +17,11 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50" />
+            <RowDefinition Height="90" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <uc:BackHomeControl Grid.Row="0" />
+        <uc:TopControl Grid.Row="0" />
 
         <Popup x:Name="NextEpisodePopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True">
             <StackPanel Background="Black" Margin="10" Padding="20">

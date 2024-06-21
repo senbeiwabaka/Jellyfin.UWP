@@ -11,9 +11,6 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class SearchPage : Page
     {
         private IMemoryCache memoryCache;
@@ -26,6 +23,8 @@ namespace Jellyfin.UWP.Pages
 
             this.Loaded += SearchPage_Loaded;
         }
+
+        public Type PageType { get; } = typeof(SearchPage);
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {

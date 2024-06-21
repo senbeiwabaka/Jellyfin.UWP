@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class SeasonPage : Page
     {
         private SeasonSeries seasonSeries;
@@ -20,7 +20,7 @@ namespace Jellyfin.UWP.Pages
 
             DataContext = Ioc.Default.GetRequiredService<SeasonViewModel>();
 
-            Loaded += SeriesPage_Loaded;
+            Loaded += SeasonPage_Loaded;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -66,9 +66,18 @@ namespace Jellyfin.UWP.Pages
             Frame.Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
         }
 
-        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
+        private async void SeasonPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await ((SeasonViewModel)DataContext).LoadMediaInformationAsync(seasonSeries);
+            if (DebugHelpers.IsDebugRelease)
+            {
+                tbDebugPageBlock.Visibility = Visibility.Visible;
+            }
+
+            var context = (SeasonViewModel)DataContext;
+
+            await context.LoadMediaInformationAsync(seasonSeries);
+
+            ApplicationView.GetForCurrentView().Title = $"{context.MediaItem.SeriesName} -- {context.MediaItem.Name}";
         }
 
         private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)

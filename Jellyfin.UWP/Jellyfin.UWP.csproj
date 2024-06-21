@@ -131,8 +131,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\BackHomeControl.xaml.cs">
-      <DependentUpon>BackHomeControl.xaml</DependentUpon>
+    <Compile Include="Controls\TopControl.cs">
+      <DependentUpon>TopControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\CountControl.xaml.cs">
       <DependentUpon>CountControl.xaml</DependentUpon>
@@ -146,7 +146,9 @@
     <Compile Include="Controls\ViewedIconControl.xaml.cs">
       <DependentUpon>ViewedIconControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DebugHelpers.cs" />
     <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\HDR.cs" />
     <Compile Include="Helpers\IMediaHelpers.cs" />
     <Compile Include="Helpers\IOCExtensions.cs" />
     <Compile Include="Helpers\JellyfinConstants.cs" />
@@ -185,6 +187,9 @@
     <Compile Include="Pages\Details\DetailsPage.cs">
       <DependentUpon>Details.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\LogsPage.xaml.cs">
+      <DependentUpon>LogsPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\MediaItemPlayer.xaml.cs">
       <DependentUpon>MediaItemPlayer.xaml</DependentUpon>
     </Compile>
@@ -194,7 +199,7 @@
     <Compile Include="Pages\SearchPage.xaml.cs">
       <DependentUpon>SearchPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SeasonPage.xaml.cs">
+    <Compile Include="Pages\Details\SeasonPage.xaml.cs">
       <DependentUpon>SeasonPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\Details\SeriesPage.xaml.cs">
@@ -285,7 +290,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Controls\BackHomeControl.xaml">
+    <Page Include="Controls\TopControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -329,6 +334,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\LogsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\MediaItemPlayer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -341,7 +350,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\SeasonPage.xaml">
+    <Page Include="Pages\Details\SeasonPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -392,7 +401,7 @@
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Nerdbank.GitVersioning">
-      <Version>3.6.133</Version>
+      <Version>3.6.139</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

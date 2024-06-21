@@ -1,5 +1,6 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
 using Windows.UI.ViewManagement;
@@ -9,9 +10,6 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class SeriesPage : Page
     {
         private Guid id;
@@ -73,6 +71,11 @@ namespace Jellyfin.UWP.Pages
 
         private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
         {
+            if (DebugHelpers.IsDebugRelease)
+            {
+                tbDebugPageBlock.Visibility = Visibility.Visible;
+            }
+
             var context = (SeriesDetailViewModel)DataContext;
 
             await context.LoadMediaInformationAsync(id);

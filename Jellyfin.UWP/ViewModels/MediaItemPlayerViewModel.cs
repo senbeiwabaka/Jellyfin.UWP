@@ -311,8 +311,9 @@ namespace Jellyfin.UWP
                 startTimeTicks = item.UserData.PlaybackPositionTicks.Value;
             }
 
+            var playbackBody = GetPlaybackInfoBody(user, startTimeTicks);
             playbackInfo = await apiClient.Items[item.Id.Value].PlaybackInfo
-                .PostAsync(GetPlaybackInfoBody(user.Id.Value, startTimeTicks));
+                .PostAsync(playbackBody);
 
             playbackSessionId = playbackInfo.PlaySessionId;
 
@@ -377,7 +378,7 @@ namespace Jellyfin.UWP
                 });
         }
 
-        private static PlaybackInfoDto GetPlaybackInfoBody(Guid userId, long startTimeTicks)
+        private static PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks)
         {
             const string mp4VideoFormats = "h264,vp8,vp9";
             const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
@@ -385,12 +386,12 @@ namespace Jellyfin.UWP
 
             return new PlaybackInfoDto
             {
-                UserId = userId,
+                UserId = user.Id.Value,
                 AutoOpenLiveStream = true,
-                EnableTranscoding = true,
+                EnableTranscoding = user.Policy.EnableVideoPlaybackTranscoding,
                 AllowVideoStreamCopy = true,
                 AllowAudioStreamCopy = true,
-                MaxStreamingBitrate = 20_000_000,
+                MaxStreamingBitrate = user.Policy.RemoteClientBitrateLimit,
                 MaxAudioChannels = 5,
                 StartTimeTicks = startTimeTicks,
                 EnableDirectStream = true,
@@ -420,21 +421,38 @@ namespace Jellyfin.UWP
                                 {
                                     new ProfileCondition
                                     {
-                                        Condition = ProfileCondition_Condition.EqualsAny,
+                                        Condition = ProfileCondition_Condition.NotEquals,
                                         Property = ProfileCondition_Property.IsAnamorphic,
                                         Value = "true",
+                                        IsRequired = false,
                                     },
                                     new ProfileCondition
                                     {
                                         Condition = ProfileCondition_Condition.EqualsAny,
                                         Property = ProfileCondition_Property.VideoProfile,
                                         Value = "high|main|baseline|constrained baseline",
+                                        IsRequired = false,
+                                    },
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileCondition_Condition.EqualsAny,
+                                        Property = ProfileCondition_Property.VideoRangeType,
+                                        Value = "SDR",
+                                        IsRequired = false,
                                     },
                                     new ProfileCondition
                                     {
                                         Condition = ProfileCondition_Condition.LessThanEqual,
                                         Property = ProfileCondition_Property.VideoLevel,
-                                        Value = "42",
+                                        Value = "52",
+                                        IsRequired = false,
+                                    },
+                                    new ProfileCondition
+                                    {
+                                        Condition = ProfileCondition_Condition.NotEquals,
+                                        Property = ProfileCondition_Property.IsInterlaced,
+                                        Value = "true",
+                                        IsRequired = false,
                                     },
                                 },
                                 Type = CodecProfile_Type.Video
