@@ -52,7 +52,6 @@ namespace Jellyfin.UWP.ViewModels
                     options.QueryParameters.Recursive = true;
                     options.QueryParameters.EnableTotalRecordCount = false;
                     options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.IsMovie = true;
                     options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Movie };
                 });
 
@@ -66,7 +65,7 @@ namespace Jellyfin.UWP.ViewModels
                             Name = x.Name,
                             Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType.Value,
+                            CollectionType = BaseItemDto_CollectionType.Movies,
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {
@@ -87,7 +86,6 @@ namespace Jellyfin.UWP.ViewModels
                     options.QueryParameters.Recursive = true;
                     options.QueryParameters.EnableTotalRecordCount = false;
                     options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.IsMovie = true;
                     options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Series };
                 });
 
@@ -102,7 +100,7 @@ namespace Jellyfin.UWP.ViewModels
                             Name = x.Name,
                             Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType.Value,
+                            CollectionType = BaseItemDto_CollectionType.Tvshows,
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {
@@ -126,7 +124,6 @@ namespace Jellyfin.UWP.ViewModels
                     options.QueryParameters.Recursive = true;
                     options.QueryParameters.EnableTotalRecordCount = false;
                     options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.IsMovie = true;
                     options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Episode };
                 });
 
@@ -140,7 +137,6 @@ namespace Jellyfin.UWP.ViewModels
                             Name = x.Name,
                             Url = MediaHelpers.SetImageUrl(x, "215", "380", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                            CollectionType = x.CollectionType.Value,
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {
