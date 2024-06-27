@@ -247,8 +247,11 @@ namespace Jellyfin.UWP
 
         public async Task<bool> IsTranscodingNeededBecauseOfVideo(IReadOnlyList<MediaStream> mediaStreams)
         {
-            // I have not seen where 10-bit will work at all so we automatically need to use the transcoded version of those
-            if (mediaStreams.Any(x => x.Type == MediaStream_Type.Video && x.BitDepth == 10))
+            // If it is H264 10 bit then we transcode it
+            if (mediaStreams.Any(x =>
+                x.Type == MediaStream_Type.Video &&
+                    x.BitDepth == 10 &&
+                    string.Equals("H264", x.Codec, StringComparison.CurrentCultureIgnoreCase)))
             {
                 return true;
             }
@@ -278,9 +281,9 @@ namespace Jellyfin.UWP
                 videoCodecsInstalled.AddRange(codecs);
             }
 
-            if (supportedVideoCodecs.ContainsKey(selectedVideoCodec))
+            if (supportedVideoCodecs.Keys.Any(x => string.Equals(x, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)))
             {
-                var videoCodecId = supportedVideoCodecs[selectedVideoCodec];
+                var videoCodecId = supportedVideoCodecs.Single(x => string.Equals(x.Key, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)).Value;
 
                 // Check to make sure the codec actually is there to use
                 return !videoCodecsInstalled.Exists(x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
