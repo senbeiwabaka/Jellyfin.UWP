@@ -182,8 +182,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
             Assert.IsTrue(needsTranscoding);
         }
 
-        [TestMethod]
-        public async Task IsTranscodingNeededBecauseOfVideo_True_NoSelectedStream_Unsupported10Bit()
+        [DataTestMethod]
+        [DataRow("h264")]
+        [DataRow("H264")]
+        public async Task IsTranscodingNeededBecauseOfVideo_True_NoSelectedStream_Unsupported10Bit(string codec)
         {
             // Arrange
             var requestAdapterMock = new Mock<IRequestAdapter>();
@@ -195,7 +197,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 new MediaStream
                 {
                     Type = MediaStream_Type.Video,
-                    Codec = "hevc",
+                    Codec = codec,
                     BitDepth = 10,
                 }
             };
@@ -262,8 +264,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
             Assert.IsTrue(needsTranscoding);
         }
 
-        [TestMethod]
-        public async Task IsTranscodingNeededBecauseOfVideo_True_Unsupported10Bit()
+        [DataTestMethod]
+        [DataRow("hevc")]
+        [DataRow("HEVC")]
+        public async Task IsTranscodingNeededBecauseOfVideo_HEVC_Supported10bit(string codec)
         {
             // Arrange
             var requestAdapterMock = new Mock<IRequestAdapter>();
@@ -275,7 +279,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 new MediaStream
                 {
                     Type = MediaStream_Type.Video,
-                    Codec = "hevc",
+                    Codec = codec,
                     Index = 1,
                     BitDepth = 10,
                 }
@@ -285,7 +289,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
             var needsTranscoding = await sut.IsTranscodingNeededBecauseOfVideo(mediaList);
 
             // Assert
-            Assert.IsTrue(needsTranscoding);
+            Assert.IsFalse(needsTranscoding);
         }
 
         [DataTestMethod]
