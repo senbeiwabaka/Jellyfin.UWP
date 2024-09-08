@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
-using Microsoft.Toolkit.Uwp.Helpers;
 using Windows.Storage;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -25,7 +24,7 @@ namespace Jellyfin.UWP.Pages
 
         private async void LogsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            if (SystemInformation.Instance.DeviceFamily != "Windows.Xbox")
+            if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily != "Windows.Xbox")
             {
                 ApplicationView.GetForCurrentView().Title = "Logs";
             }

@@ -15,11 +15,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
     {
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
-        public HomeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public HomeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task<ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>> LoadLatestAsync(ObservableCollection<UIMediaListItem> mediaList, CancellationToken cancellationToken = default)
@@ -52,13 +54,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             CollectionType = record.CollectionType,
                             UserData = new UIUserData
                             {
                                 IsFavorite = x.UserData.IsFavorite.Value,
                                 HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                                UnplayedItemCount = x.ChildCount ?? 0,
                             },
                         };
 
@@ -75,14 +77,14 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             CollectionType = x.CollectionType,
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {
                                 IsFavorite = x.UserData.IsFavorite.Value,
                                 HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                                UnplayedItemCount = x.ChildCount ?? 0,
                             },
                         })));
                 }
@@ -108,7 +110,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
-                        Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                         IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                         CollectionType = x.CollectionType.Value,
                         Type = x.Type.Value,
@@ -116,7 +118,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,
                             HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                            UnplayedItemCount = x.ChildCount ?? 0,
                         },
                     }));
 
@@ -142,14 +144,14 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
                             SeriesName = x.SeriesName,
                             UserData = new UIUserData
                             {
                                 IsFavorite = x.UserData.IsFavorite.Value,
                                 HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                                UnplayedItemCount = x.ChildCount ?? 0,
                             },
                         }));
 
@@ -180,7 +182,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                             {
                                 IsFavorite = x.UserData.IsFavorite.Value,
                                 HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount.HasValue ? x.ChildCount.Value : 0,
+                                UnplayedItemCount = x.ChildCount ?? 0,
                             },
                         }));
 

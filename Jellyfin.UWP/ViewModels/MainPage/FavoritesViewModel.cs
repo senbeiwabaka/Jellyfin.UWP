@@ -14,11 +14,13 @@ namespace Jellyfin.UWP.ViewModels.MainPage
     {
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
-        public FavoritesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public FavoritesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task<ObservableCollection<UIMediaListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default)
@@ -47,7 +49,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
                             SeriesName = x.SeriesName,
                             UserData = new UIUserData
@@ -89,7 +91,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
                             UserData = new UIUserData
                             {
@@ -124,7 +126,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
-                        ImageUrl = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        ImageUrl = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                     }));
 
             return items;
@@ -156,7 +158,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
                             SeriesName = x.SeriesName,
                             UserData = new UIUserData

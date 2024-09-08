@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Latest
 {
@@ -15,6 +15,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
     {
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
         [ObservableProperty]
         private bool hasEnoughDataForContinueScrolling;
@@ -39,10 +40,11 @@ namespace Jellyfin.UWP.ViewModels.Latest
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> resumeMediaList;
 
-        public ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task LoadInitialAsync(Guid id)
@@ -110,7 +112,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                     Id = x.Id.Value,
                     Name = x.Name,
                     Url = GetItemImage(x),
-                    CollectionType = x.CollectionType.Value,
+                    CollectionType = x.CollectionType,
                 };
 
                 item.UserData.IsFavorite = x.UserData.IsFavorite.Value;
@@ -145,7 +147,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.ThumbName),
+                            Url = mediaHelpers.SetThumbImageUrl(x, "317", "564"),
                             Type = x.Type.Value,
                             SeriesName = x.SeriesName,
                         }));

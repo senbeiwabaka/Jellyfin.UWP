@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.Helpers;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -189,7 +188,7 @@ namespace Jellyfin.UWP.Pages
 
         private async void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
         {
-            if (SystemInformation.Instance.DeviceFamily == "Windows.Xbox")
+            if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
             {
                 _mediaPlayerElement.IsFullWindow = true;
             }
@@ -262,7 +261,7 @@ namespace Jellyfin.UWP.Pages
             Window.Current.CoreWindow.PointerCursor = null;
             Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
-            if (SystemInformation.Instance.DeviceFamily != "Windows.Xbox")
+            if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily != "Windows.Xbox")
             {
                 ApplicationView.GetForCurrentView().Title = item.Name;
             }

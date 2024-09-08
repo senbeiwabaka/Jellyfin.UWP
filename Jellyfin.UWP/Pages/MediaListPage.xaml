@@ -8,7 +8,7 @@
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:MediaListViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"

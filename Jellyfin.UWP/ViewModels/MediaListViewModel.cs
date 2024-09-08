@@ -19,6 +19,7 @@ namespace Jellyfin.UWP.ViewModels
         private const int Limit = 100;
 
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
         private readonly UserDto user;
 
         [ObservableProperty]
@@ -47,9 +48,10 @@ namespace Jellyfin.UWP.ViewModels
         [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
         private int totalRecords = 0;
 
-        public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
             this.user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         }
 
@@ -70,7 +72,7 @@ namespace Jellyfin.UWP.ViewModels
             {
                 Id = item.Id.Value,
                 Name = item.Name,
-                Url = MediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
+                Url = mediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
                 Type = item.Type.Value,
                 CollectionType = item.CollectionType.Value,
                 UserData = new UIUserData
@@ -164,12 +166,12 @@ namespace Jellyfin.UWP.ViewModels
 
             FilteringFilters = new ObservableCollection<FiltersModel>
             {
-                new FiltersModel { DisplayName = "Played", Filter = ItemFilter.IsPlayed },
-                new FiltersModel { DisplayName = "UnPlayed",Filter = ItemFilter.IsUnplayed },
-                new FiltersModel { DisplayName = "Resumable", Filter = ItemFilter.IsResumable },
-                new FiltersModel { DisplayName = "Favorites", Filter = ItemFilter.IsFavorite },
-                new FiltersModel { DisplayName = "Likes", Filter = ItemFilter.Likes },
-                new FiltersModel { DisplayName = "Dislikes", Filter = ItemFilter.Dislikes },
+                new() { DisplayName = "Played", Filter = ItemFilter.IsPlayed },
+                new() { DisplayName = "UnPlayed",Filter = ItemFilter.IsUnplayed },
+                new() { DisplayName = "Resumable", Filter = ItemFilter.IsResumable },
+                new() { DisplayName = "Favorites", Filter = ItemFilter.IsFavorite },
+                new() { DisplayName = "Likes", Filter = ItemFilter.Likes },
+                new() { DisplayName = "Dislikes", Filter = ItemFilter.Dislikes },
             };
         }
 
@@ -214,7 +216,7 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
                             Type = x.Type.Value,
                             CollectionType = x.CollectionType,
                             UserData = new UIUserData
