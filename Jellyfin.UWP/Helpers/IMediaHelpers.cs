@@ -16,5 +16,7 @@ namespace Jellyfin.UWP.Helpers
         string SetImageUrl(BaseItemDto item, string height, string width, string tagKey);
 
         string SetImageUrl(BaseItemPerson person, string height, string width);
+
+        string SetThumbImageUrl(BaseItemDto item, string height, string width);
     }
 }

@@ -15,6 +15,7 @@ namespace Jellyfin.UWP.ViewModels
         private const int Limit = 24;
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> episodesMediaList;
@@ -34,10 +35,11 @@ namespace Jellyfin.UWP.ViewModels
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesMediaList;
 
-        public SearchViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public SearchViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task LoadSearchAsync(string query)
@@ -63,7 +65,7 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = BaseItemDto_CollectionType.Movies,
                             Type = x.Type.Value,
@@ -98,7 +100,7 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             CollectionType = BaseItemDto_CollectionType.Tvshows,
                             Type = x.Type.Value,
@@ -135,7 +137,7 @@ namespace Jellyfin.UWP.ViewModels
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
-                            Url = MediaHelpers.SetImageUrl(x, "215", "380", JellyfinConstants.PrimaryName),
+                            Url = mediaHelpers.SetImageUrl(x, "215", "380", JellyfinConstants.PrimaryName),
                             IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
                             Type = x.Type.Value,
                             UserData = new UIUserData

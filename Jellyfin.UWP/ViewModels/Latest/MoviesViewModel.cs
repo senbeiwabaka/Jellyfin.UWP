@@ -16,6 +16,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
     {
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
+        private readonly IMediaHelpers mediaHelpers;
 
         [ObservableProperty]
         private bool hasEnoughDataForContinueScrolling;
@@ -37,10 +38,11 @@ namespace Jellyfin.UWP.ViewModels.Latest
 
         private Guid id;
 
-        public MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
+        public MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
             this.memoryCache = memoryCache;
             this.apiClient = apiClient;
+            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task LoadInitialAsync(Guid id)
@@ -99,7 +101,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                 {
                     Id = x.Id.Value,
                     Name = x.Name,
-                    Url = MediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
+                    Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
                     Type = x.Type.Value,
                 }));
         }
@@ -159,7 +161,7 @@ namespace Jellyfin.UWP.ViewModels.Latest
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
-                        Url = MediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
+                        Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
                         Type = x.Type.Value,
                     });
 

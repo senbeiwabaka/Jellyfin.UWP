@@ -58,7 +58,7 @@ namespace Jellyfin.UWP.Helpers
                     s.GetRequiredService<JellyfinSdkSettings>(),
                     s.GetRequiredService<IHttpClientFactory>().CreateClient("Default")))
                 .AddScoped<JellyfinApiClient>()
-                .AddScoped<IMediaHelpers, MediaHelpers2>();
+                .AddScoped<IMediaHelpers, MediaHelpers>();
 
             return services;
         }

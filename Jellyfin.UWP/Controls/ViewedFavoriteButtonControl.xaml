@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Controls"
-    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:ViewedFavoriteViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="300"

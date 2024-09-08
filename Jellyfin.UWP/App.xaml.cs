@@ -81,7 +81,7 @@ namespace Jellyfin.UWP
                 Window.Current.Content = rootFrame;
             }
 
-            HDR.RunHDRCode(Log);
+            HdrCheck.RunHDRCode(Log);
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
                .AddMemoryCache()
@@ -225,7 +225,9 @@ namespace Jellyfin.UWP
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-            //TODO: Save application state and stop any background activity
+
+            Log.Debug("suspending");
+
             deferral.Complete();
         }
     }

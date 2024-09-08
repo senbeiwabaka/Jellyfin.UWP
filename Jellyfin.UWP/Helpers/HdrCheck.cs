@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Jellyfin.UWP.Helpers
 {
-    internal static class HDR
+    internal static class HdrCheck
     {
         internal static void RunHDRCode(ILogger Log)
         {
@@ -13,13 +13,17 @@ namespace Jellyfin.UWP.Helpers
             {
                 var err = GetDisplayConfigBufferSizes(QDC.QDC_ONLY_ACTIVE_PATHS, out var pathCount, out var modeCount);
                 if (err != 0)
+                {
                     throw new Win32Exception(err);
+                }
 
                 var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
                 err = QueryDisplayConfig(QDC.QDC_ONLY_ACTIVE_PATHS, ref pathCount, paths, ref modeCount, modes, IntPtr.Zero);
                 if (err != 0)
+                {
                     throw new Win32Exception(err);
+                }
 
                 foreach (var path in paths)
                 {
@@ -31,7 +35,9 @@ namespace Jellyfin.UWP.Helpers
                     info.header.id = path.targetInfo.id;
                     err = DisplayConfigGetDeviceInfo(ref info);
                     if (err != 0)
+                    {
                         throw new Win32Exception(err);
+                    }
 
                     var colorInfo = new DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO();
                     colorInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
@@ -40,11 +46,13 @@ namespace Jellyfin.UWP.Helpers
                     colorInfo.header.id = path.targetInfo.id;
                     err = DisplayConfigGetDeviceInfo(ref colorInfo);
                     if (err != 0)
+                    {
                         throw new Win32Exception(err);
+                    }
 
                     Log.Debug("Monitor Friendly Device Name: {0}", info.monitorFriendlyDeviceName);
-                    Log.Debug(" Advanced Color Supported: {0}", colorInfo.advancedColorSupported);
-                    Log.Debug(" Advanced Color Enabled: {0}", colorInfo.advancedColorEnabled);
+                    Log.Debug("\tAdvanced Color Supported: {0}", colorInfo.AdvancedColorSupported);
+                    Log.Debug("\tAdvanced Color Enabled: {0}", colorInfo.AdvancedColorEnabled);
                 }
             }
             catch (Exception e)
@@ -198,10 +206,10 @@ namespace Jellyfin.UWP.Helpers
             public DISPLAYCONFIG_COLOR_ENCODING colorEncoding;
             public int bitsPerColorChannel;
 
-            public bool advancedColorSupported => (value & 0x1) == 0x1;
-            public bool advancedColorEnabled => (value & 0x2) == 0x2;
-            public bool wideColorEnforced => (value & 0x4) == 0x4;
-            public bool advancedColorForceDisabled => (value & 0x8) == 0x8;
+            public readonly bool AdvancedColorSupported => (value & 0x1) == 0x1;
+            public readonly bool AdvancedColorEnabled => (value & 0x2) == 0x2;
+            public readonly bool WideColorEnforced => (value & 0x4) == 0x4;
+            public readonly bool AdvancedColorForceDisabled => (value & 0x8) == 0x8;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -217,9 +225,9 @@ namespace Jellyfin.UWP.Helpers
             public uint LowPart;
             public int HighPart;
 
-            public long Value => ((long)HighPart << 32) | LowPart;
+            public readonly long Value => ((long)HighPart << 32) | LowPart;
 
-            public override string ToString() => Value.ToString();
+            public override readonly string ToString() => Value.ToString();
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -237,7 +245,7 @@ namespace Jellyfin.UWP.Helpers
             public uint Numerator;
             public uint Denominator;
 
-            public override string ToString() => Numerator + " / " + Denominator;
+            public override readonly string ToString() => Numerator + " / " + Denominator;
         }
 
         [StructLayout(LayoutKind.Sequential)]

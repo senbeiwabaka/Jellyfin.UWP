@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
+using System;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -17,6 +17,8 @@ namespace Jellyfin.UWP.Pages.Latest
 {
     public sealed partial class MoviesPage : Page
     {
+        private readonly IMediaHelpers mediaHelpers;
+
         private Guid id;
 
         public MoviesPage()
@@ -24,6 +26,8 @@ namespace Jellyfin.UWP.Pages.Latest
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<MoviesViewModel>();
+
+            mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
             this.Loaded += LatestMoviesPage_Loaded;
         }
@@ -71,7 +75,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
             if (item.Type == BaseItemDto_Type.AggregateFolder)
             {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
+                var playId = await mediaHelpers.GetPlayIdAsync(item);
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
                 Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);

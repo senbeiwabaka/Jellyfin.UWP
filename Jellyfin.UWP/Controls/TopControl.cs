@@ -3,7 +3,6 @@ using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.Helpers;
 using System;
 using System.Reflection;
 using Windows.Storage;
@@ -82,7 +81,7 @@ namespace Jellyfin.UWP.Controls
 
         private async void OpenLogsClick(object sender, RoutedEventArgs e)
         {
-            if (SystemInformation.Instance.DeviceFamily == "Windows.Xbox")
+            if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
             {
                 ((Frame)Window.Current.Content).Navigate(typeof(LogsPage));
             }

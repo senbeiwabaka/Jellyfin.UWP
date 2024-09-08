@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -6,7 +7,6 @@ using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Toolkit.Uwp.UI;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -23,11 +23,15 @@ namespace Jellyfin.UWP
     [ExcludeFromCodeCoverage]
     public sealed partial class MainPage : Page
     {
+        private readonly IMediaHelpers mediaHelpers;
+
         public MainPage()
         {
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
+
+            mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
             var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
@@ -205,7 +209,7 @@ namespace Jellyfin.UWP
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)
         {
             var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
-            var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+            var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
             Frame.Navigate(typeof(SeriesPage), seriesId);
         }

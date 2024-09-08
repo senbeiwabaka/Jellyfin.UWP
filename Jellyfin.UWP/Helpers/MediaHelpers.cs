@@ -1,21 +1,27 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.Helpers
 {
-    internal static class MediaHelpers
+    internal sealed class MediaHelpers : IMediaHelpers
     {
-        public static async Task<Guid> GetPlayIdAsync(UIMediaListItem mediaItem)
+        private readonly JellyfinApiClient apiClient;
+        private readonly IMemoryCache memoryCache;
+
+        public MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient apiClient)
         {
-            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
+            this.memoryCache = memoryCache;
+            this.apiClient = apiClient;
+        }
+
+        public async Task<Guid> GetPlayIdAsync(UIMediaListItem mediaItem)
+        {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var apiClient = Ioc.Default.GetService<JellyfinApiClient>();
             var seasons = await apiClient.Shows[mediaItem.Id].Seasons
                 .GetAsync(options =>
                 {
@@ -50,33 +56,17 @@ namespace Jellyfin.UWP.Helpers
                 nextUpItem?.Id);
         }
 
-        public static Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId)
+        public Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId)
         {
-            return GetPlayIdAsync(
-                mediaItem.Id ?? Guid.Empty,
-                mediaItem.Type == BaseItemDto_Type.Movie,
-                mediaItem.Type == BaseItemDto_Type.Episode,
-                seasonsData,
-                seriesNextUpId);
+            throw new NotImplementedException();
         }
 
-        public static async Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId)
+        public Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId)
         {
-            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var apiClient = Ioc.Default.GetService<JellyfinApiClient>();
-            var episodeItem = await apiClient.Items[episodeId]
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                });
-            //var userLibraryClient = Ioc.Default.GetService<IUserLibraryClient>();
-            //var episodeItem = await userLibraryClient.GetItemAsync(user.Id, episodeId);
-
-            return episodeItem.SeriesId.Value;
+            throw new NotImplementedException();
         }
 
-        public static string SetImageUrl(BaseItemDto item, string height, string width, string tagKey)
+        public string SetImageUrl(BaseItemDto item, string height, string width, string tagKey)
         {
             var imageTags = item.ImageTags?.AdditionalData;
             if (imageTags is null || imageTags.Count == 0 || !imageTags.ContainsKey(tagKey))
@@ -84,27 +74,32 @@ namespace Jellyfin.UWP.Helpers
                 return "https://cdn.onlinewebfonts.com/svg/img_331373.png";
             }
 
-            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
             var url = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
             var imageTagId = imageTags[tagKey];
 
             return $"{url}/Items/{item.Id}/Images/{tagKey}?fillHeight={height}&fillWidth={width}&quality=96&tag={imageTagId}";
         }
 
-        public static string SetImageUrl(BaseItemPerson person, string height, string width)
+        public string SetImageUrl(BaseItemPerson person, string height, string width)
         {
             if (string.IsNullOrWhiteSpace(person.PrimaryImageTag))
             {
                 return "https://cdn.onlinewebfonts.com/svg/img_331373.png";
             }
 
-            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
             var url = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
 
             return $"{url}/Items/{person.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight={height}&fillWidth={width}&quality=96&tag={person.PrimaryImageTag}";
         }
 
-        private static async Task<Guid> GetPlayIdAsync(
+        public string SetThumbImageUrl(BaseItemDto item, string height, string width)
+        {
+            var url = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+
+            return $"{url}/Items/{item.ParentThumbItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight={height}&fillWidth={width}&quality=96&tag={item.ParentThumbImageTag}";
+        }
+
+        private async Task<Guid> GetPlayIdAsync(
             Guid mediaId,
             bool isMovie,
             bool isEpisode,
@@ -129,11 +124,9 @@ namespace Jellyfin.UWP.Helpers
             return await GetSeriesEpisodeIdAsync(mediaId, seriesData);
         }
 
-        private static async Task<Guid> GetSeriesEpisodeIdAsync(Guid mediaId, UIMediaListItem[] seriesData)
+        private async Task<Guid> GetSeriesEpisodeIdAsync(Guid mediaId, UIMediaListItem[] seriesData)
         {
-            var memoryCache = Ioc.Default.GetService<IMemoryCache>();
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var apiClient = Ioc.Default.GetService<JellyfinApiClient>();
             var episodes = await apiClient.Shows[mediaId].Episodes
                 .GetAsync(options =>
                 {

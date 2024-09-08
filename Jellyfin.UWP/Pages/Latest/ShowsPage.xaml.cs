@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Toolkit.Uwp.UI;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
+using System;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +15,8 @@ namespace Jellyfin.UWP.Pages.Latest
 {
     public sealed partial class ShowsPage : Page
     {
+        private readonly IMediaHelpers mediaHelpers;
+
         private Guid id;
 
         public ShowsPage()
@@ -22,6 +24,8 @@ namespace Jellyfin.UWP.Pages.Latest
             this.InitializeComponent();
 
             DataContext = Ioc.Default.GetRequiredService<ShowsViewModel>();
+
+            mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
             this.Loaded += LatestShowsPage_Loaded;
         }
@@ -68,7 +72,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
             if (item.Type == BaseItemDto_Type.AggregateFolder)
             {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
+                var playId = await mediaHelpers.GetPlayIdAsync(item);
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
                 Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
@@ -185,7 +189,7 @@ namespace Jellyfin.UWP.Pages.Latest
         private async void SeriesLink_Click(object sender, RoutedEventArgs e)
         {
             var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
-            var seriesId = await MediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+            var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
             Frame.Navigate(typeof(DetailsPage), seriesId);
         }

@@ -1,4 +1,5 @@
-﻿using Jellyfin.Sdk.Generated.Models;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
@@ -9,6 +10,8 @@ namespace Jellyfin.UWP.Controls
 {
     public sealed partial class PlayButtonControl : UserControl
     {
+        private readonly IMediaHelpers mediaHelpers;
+
         public static readonly DependencyProperty PositionLeftProperty =
             DependencyProperty.Register(
                 nameof(PositionLeft),
@@ -26,6 +29,8 @@ namespace Jellyfin.UWP.Controls
         public PlayButtonControl()
         {
             this.InitializeComponent();
+
+            mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
         }
 
         public string PositionLeft
@@ -47,7 +52,7 @@ namespace Jellyfin.UWP.Controls
 
             if (item.Type == BaseItemDto_Type.AggregateFolder)
             {
-                var playId = await MediaHelpers.GetPlayIdAsync(item);
+                var playId = await mediaHelpers.GetPlayIdAsync(item);
                 var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
                 ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
