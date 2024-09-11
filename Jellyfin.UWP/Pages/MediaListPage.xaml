@@ -50,7 +50,13 @@
                         <DropDownButton.Flyout>
                             <Flyout>
                                 <ListView
-                                    ItemsSource="{Binding FilteringFilters}" SelectionMode="Multiple" IsItemClickEnabled="True" IsTapEnabled="True" ItemClick="FiltersFiltering_ItemClick" SelectionChanged="FiltersFiltering_SelectionChanged" x:Name="FiltersFiltering">
+                                    ItemsSource="{Binding FilteringFilters}"
+                                    SelectionMode="Multiple"
+                                    IsItemClickEnabled="True"
+                                    IsTapEnabled="True"
+                                    ItemClick="FiltersFiltering_ItemClick"
+                                    SelectionChanged="FiltersFiltering_SelectionChanged"
+                                    x:Name="FiltersFiltering">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:FiltersModel">
                                             <ListViewItem IsSelected="{Binding IsSelected, Mode=TwoWay}">
