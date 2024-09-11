@@ -127,6 +127,7 @@
     <Compile Include="ViewModels\DetailsViewModelTests.cs" />
     <Compile Include="ViewModels\LoginViewModelTests.cs" />
     <Compile Include="ViewModels\MediaItemPlayerViewModelTests.cs" />
+    <Compile Include="ViewModels\MediaListViewModelTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="UnitTestApp.xaml">

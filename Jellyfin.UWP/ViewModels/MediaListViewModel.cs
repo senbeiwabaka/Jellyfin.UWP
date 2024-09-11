@@ -74,7 +74,7 @@ namespace Jellyfin.UWP.ViewModels
                 Name = item.Name,
                 Url = mediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
                 Type = item.Type.Value,
-                CollectionType = item.CollectionType.Value,
+                CollectionType = item.CollectionType,
                 UserData = new UIUserData
                 {
                     IsFavorite = item.UserData.IsFavorite.Value,
