@@ -44,10 +44,21 @@ namespace Jellyfin.UWP.ViewModels.Details
 
             if (item is not null)
             {
+                var name = string.Empty;
+
+                if (!item.ParentIndexNumber.HasValue || !item.IndexNumber.HasValue)
+                {
+                    name = item.Name;
+                }
+                else
+                {
+                    name = $"S{item.ParentIndexNumber}:E{item.IndexNumber} - {item.Name}";
+                }
+
                 NextUpItem = new UIMediaListItem
                 {
                     Id = item.Id.Value,
-                    Name = $"S{item.ParentIndexNumber}:E{item.IndexNumber} - {item.Name}",
+                    Name = name,
                     Url = MediaHelpers.SetImageUrl(item, "296", "526", JellyfinConstants.PrimaryName),
                     UserData = new UIUserData
                     {

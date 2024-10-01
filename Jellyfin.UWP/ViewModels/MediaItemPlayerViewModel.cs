@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP
@@ -125,7 +125,9 @@ namespace Jellyfin.UWP
 
             if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
             {
-                audioMediaStream = mediaSourceInfo.MediaStreams.Single(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
+                var stream = mediaSourceInfo.MediaStreams.SingleOrDefault(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
+
+                audioMediaStream = stream ?? mediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio);
             }
             else
             {
@@ -402,11 +404,13 @@ namespace Jellyfin.UWP
                 {
                     CodecProfiles = new List<CodecProfile>
                         {
-                            new() {
+                            new()
+                            {
                                 Codec = "aac",
                                 Conditions = new List<ProfileCondition>
                                 {
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.Equals,
                                         Property = ProfileCondition_Property.IsSecondaryAudio,
                                         Value = "false",
@@ -414,35 +418,41 @@ namespace Jellyfin.UWP
                                 },
                                 Type = CodecProfile_Type.VideoAudio
                             },
-                            new() {
+                            new()
+                            {
                                 Codec = "h264",
                                 Conditions = new List<ProfileCondition>
                                 {
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.NotEquals,
                                         Property = ProfileCondition_Property.IsAnamorphic,
                                         Value = "true",
                                         IsRequired = false,
                                     },
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.EqualsAny,
                                         Property = ProfileCondition_Property.VideoProfile,
                                         Value = "high|main|baseline|constrained baseline",
                                         IsRequired = false,
                                     },
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.EqualsAny,
                                         Property = ProfileCondition_Property.VideoRangeType,
                                         Value = "SDR",
                                         IsRequired = false,
                                     },
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.LessThanEqual,
                                         Property = ProfileCondition_Property.VideoLevel,
                                         Value = "52",
                                         IsRequired = false,
                                     },
-                                    new() {
+                                    new()
+                                    {
                                         Condition = ProfileCondition_Condition.NotEquals,
                                         Property = ProfileCondition_Property.IsInterlaced,
                                         Value = "true",
@@ -454,36 +464,42 @@ namespace Jellyfin.UWP
                         },
                     DirectPlayProfiles = new List<DirectPlayProfile>
                         {
-                            new() {
+                            new()
+                            {
                                 Container = "mp4,m4v",
                                 Type = DirectPlayProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
                                 AudioCodec = audioFormarts,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "mkv",
                                 Type = DirectPlayProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
                                 AudioCodec = audioFormarts,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "m4a",
                                 AudioCodec = "aac",
                                 Type = DirectPlayProfile_Type.Audio,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "m4b",
                                 AudioCodec = "aac",
                                 Type = DirectPlayProfile_Type.Audio,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "mp3",
                                 Type = DirectPlayProfile_Type.Audio,
                             },
                         },
                     TranscodingProfiles = new List<TranscodingProfile>
                         {
-                            new() {
+                            new()
+                            {
                                 Container = "ts",
                                 Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "aac",
@@ -493,7 +509,8 @@ namespace Jellyfin.UWP
                                 BreakOnNonKeyFrames = true,
                                 MinSegments = 1,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "aac",
                                 Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "aac",
@@ -501,7 +518,8 @@ namespace Jellyfin.UWP
                                 Protocol = TranscodingProfile_Protocol.Http,
                                 MaxAudioChannels = "2",
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "mp3",
                                 Type = TranscodingProfile_Type.Audio,
                                 AudioCodec = "mp3",
@@ -509,7 +527,8 @@ namespace Jellyfin.UWP
                                 Protocol = TranscodingProfile_Protocol.Http,
                                 MaxAudioChannels = "2",
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "ts",
                                 Type = TranscodingProfile_Type.Video,
                                 VideoCodec = "h264",
@@ -520,7 +539,8 @@ namespace Jellyfin.UWP
                                 MinSegments = 1,
                                 Protocol = TranscodingProfile_Protocol.Hls,
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "mp4",
                                 Type = TranscodingProfile_Type.Video,
                                 VideoCodec = mp4VideoFormats,
@@ -529,7 +549,8 @@ namespace Jellyfin.UWP
                                 CopyTimestamps = true,
                                 AudioCodec = "aac,mp3",
                             },
-                            new() {
+                            new()
+                            {
                                 Container = "mkv",
                                 Type = TranscodingProfile_Type.Video,
                                 VideoCodec = mkvVideoFormats,
