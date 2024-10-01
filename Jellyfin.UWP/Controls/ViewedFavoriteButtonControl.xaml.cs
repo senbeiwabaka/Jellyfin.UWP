@@ -29,6 +29,8 @@ namespace Jellyfin.UWP.Controls
                 typeof(ViewedFavoriteButtonControl),
                 new PropertyMetadata(null));
 
+        private readonly ViewedFavoriteViewModel context;
+
         public ViewedFavoriteButtonControl()
         {
             this.InitializeComponent();
@@ -36,6 +38,8 @@ namespace Jellyfin.UWP.Controls
             DataContext = Ioc.Default.GetRequiredService<ViewedFavoriteViewModel>();
 
             Loaded += ViewedFavoriteButtonControl_Loaded;
+
+            context = DataContext as ViewedFavoriteViewModel;
         }
 
         public event RoutedEventHandler ButtonClick;
@@ -60,21 +64,21 @@ namespace Jellyfin.UWP.Controls
 
         private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
         {
-            await ((ViewedFavoriteViewModel)DataContext).FavoriteStateAsync();
+            await context.FavoriteStateAsync();
 
             ButtonClick?.Invoke(this, new RoutedEventArgs());
         }
 
         private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
         {
-            await ((ViewedFavoriteViewModel)DataContext).PlayedStateAsync();
+            await context.PlayedStateAsync();
 
             ButtonClick?.Invoke(this, new RoutedEventArgs());
         }
 
         private void ViewedFavoriteButtonControl_Loaded(object sender, RoutedEventArgs e)
         {
-            ((ViewedFavoriteViewModel)DataContext).Initialize(Item);
+            context.Initialize(Item);
         }
     }
 }

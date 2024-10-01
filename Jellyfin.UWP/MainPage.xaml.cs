@@ -24,6 +24,7 @@ namespace Jellyfin.UWP
     public sealed partial class MainPage : Page
     {
         private readonly IMediaHelpers mediaHelpers;
+        private readonly MainViewModel context;
 
         public MainPage()
         {
@@ -38,6 +39,8 @@ namespace Jellyfin.UWP
             memoryCache.Remove("Searched-Text");
 
             this.Loaded += MainPage_Loaded;
+
+            context = DataContext as MainViewModel;
         }
 
         public Type PageType { get; } = typeof(MainPage);
@@ -59,16 +62,16 @@ namespace Jellyfin.UWP
 
         private void btn_Favorites_Click(object sender, RoutedEventArgs e)
         {
-            ((MainViewModel)DataContext).HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
-            ((MainViewModel)DataContext).HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
-            ((MainViewModel)DataContext).HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
-            ((MainViewModel)DataContext).HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
+            context.HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
+            context.HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
+            context.HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
+            context.HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
         }
 
         private void btn_Home_Click(object sender, RoutedEventArgs e)
         {
-            ((MainViewModel)DataContext).HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
-            ((MainViewModel)DataContext).HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+            context.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
+            context.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
         }
 
         private void ClickItemList(object sender, ItemClickEventArgs e)
@@ -80,12 +83,12 @@ namespace Jellyfin.UWP
         {
             ApplicationView.GetForCurrentView().Title = string.Empty;
 
-            await ((MainViewModel)DataContext).LoadInitialAsync();
+            await context.LoadInitialAsync();
 
             SetupLatest();
 
-            ((MainViewModel)DataContext).HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
-            ((MainViewModel)DataContext).HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+            context.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
+            context.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -219,7 +222,7 @@ namespace Jellyfin.UWP
             lv_Latest.Children.Clear();
             lv_Latest.UpdateLayout();
 
-            foreach (var item in ((MainViewModel)DataContext).MediaListGrouped)
+            foreach (var item in context.MediaListGrouped)
             {
                 if (!item.Any())
                 {

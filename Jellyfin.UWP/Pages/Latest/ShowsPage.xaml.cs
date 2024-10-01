@@ -6,6 +6,7 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -16,6 +17,7 @@ namespace Jellyfin.UWP.Pages.Latest
     public sealed partial class ShowsPage : Page
     {
         private readonly IMediaHelpers mediaHelpers;
+        private readonly ShowsViewModel context;
 
         private Guid id;
 
@@ -28,6 +30,8 @@ namespace Jellyfin.UWP.Pages.Latest
             mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
             this.Loaded += LatestShowsPage_Loaded;
+
+            context = DataContext as ShowsViewModel;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -44,11 +48,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
         private async void LatestShowsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await ((ShowsViewModel)DataContext).LoadInitialAsync(id);
-
-            ((ShowsViewModel)DataContext).HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
-            ((ShowsViewModel)DataContext).HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
-            ((ShowsViewModel)DataContext).HasEnoughDataForNextUpScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+            await Run();
         }
 
         private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -191,7 +191,21 @@ namespace Jellyfin.UWP.Pages.Latest
             var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
             var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
-            Frame.Navigate(typeof(DetailsPage), seriesId);
+            Frame.Navigate(typeof(SeriesPage), seriesId);
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await Run();
+        }
+
+        private async Task Run()
+        {
+            await context.LoadInitialAsync(id);
+
+            context.HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
+            context.HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
+            context.HasEnoughDataForNextUpScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
         }
     }
 }

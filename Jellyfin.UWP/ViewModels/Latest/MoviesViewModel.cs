@@ -76,6 +76,12 @@ namespace Jellyfin.UWP.ViewModels.Latest
                         Name = x.Name,
                         Url = GetContinueItemImage(x),
                         Type = x.Type.Value,
+                        UserData = new UIUserData
+                        {
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            HasBeenWatched = x.UserData.Played.Value,
+                            UnplayedItemCount = 0,
+                        },
                     }));
 
             HasResumeMedia = ResumeMediaList.Count > 0;
@@ -103,11 +109,19 @@ namespace Jellyfin.UWP.ViewModels.Latest
                     Name = x.Name,
                     Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
                     Type = x.Type.Value,
+                    UserData = new UIUserData
+                    {
+                        IsFavorite = x.UserData.IsFavorite.Value,
+                        HasBeenWatched = x.UserData.Played.Value,
+                        UnplayedItemCount = 0,
+                    },
                 }));
         }
 
         private async Task LoadRecommendationsAsync()
         {
+            RecommendationListGrouped = new ObservableGroupedCollection<Recommendation, UIMediaListItem>();
+
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
             var itemsResult = await apiClient.Movies.Recommendations
                 .GetAsync(options =>
@@ -118,8 +132,6 @@ namespace Jellyfin.UWP.ViewModels.Latest
                     options.QueryParameters.ItemLimit = 8;
                     options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.MediaSourceCount, };
                 });
-
-            RecommendationListGrouped = new ObservableGroupedCollection<Recommendation, UIMediaListItem>();
 
             foreach (var item in itemsResult)
             {
@@ -163,6 +175,12 @@ namespace Jellyfin.UWP.ViewModels.Latest
                         Name = x.Name,
                         Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
                         Type = x.Type.Value,
+                        UserData = new UIUserData
+                        {
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            HasBeenWatched = x.UserData.Played.Value,
+                            UnplayedItemCount = 0,
+                        },
                     });
 
                 RecommendationListGrouped.Add(new ObservableGroup<Recommendation, UIMediaListItem>(recommendation, items));

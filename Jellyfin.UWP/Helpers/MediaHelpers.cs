@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using Jellyfin.Sdk;
+﻿using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.Helpers
 {
@@ -58,12 +58,25 @@ namespace Jellyfin.UWP.Helpers
 
         public Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId)
         {
-            throw new NotImplementedException();
+            return GetPlayIdAsync(
+                mediaItem.Id ?? Guid.Empty,
+                mediaItem.Type == BaseItemDto_Type.Movie,
+                mediaItem.Type == BaseItemDto_Type.Episode,
+                seasonsData,
+                seriesNextUpId);
         }
 
-        public Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId)
+        public async Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId)
         {
-            throw new NotImplementedException();
+            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var episodeItem = await apiClient.Items[episodeId]
+                .GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
+            //var userLibraryClient = Ioc.Default.GetService<IUserLibraryClient>();
+            //var episodeItem = await userLibraryClient.GetItemAsync(user.Id, episodeId);
+            return episodeItem.SeriesId.Value;
         }
 
         public string SetImageUrl(BaseItemDto item, string height, string width, string tagKey)
