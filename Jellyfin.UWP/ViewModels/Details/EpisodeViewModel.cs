@@ -45,6 +45,8 @@ namespace Jellyfin.UWP.ViewModels.Details
                             IsFavorite = x.UserData.IsFavorite.Value,
                             HasBeenWatched = x.UserData.Played.Value,
                         },
+                        Type = x.Type.Value,
+                        CollectionType = x.CollectionType,
                     };
 
                     return item;

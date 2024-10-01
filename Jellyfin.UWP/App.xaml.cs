@@ -154,9 +154,17 @@ namespace Jellyfin.UWP
                     {
                         CleanupValues(settings);
 
+                        accessToken = string.Empty;
+
                         Log.Error("Failed to get user information on startup", exception);
                     }
                 }
+            }
+
+            if(DebugHelpers.IsDebugRelease)
+            {
+                Log.Debug("Is reset jellyfin true: {0}", resetJellyfinUrl);
+                Log.Debug("Is access token missing: {0}", string.IsNullOrWhiteSpace(accessToken));
             }
 
             if (!args.PrelaunchActivated)
@@ -187,7 +195,7 @@ namespace Jellyfin.UWP
             }
         }
 
-        private void OnBackRequested(object sender, BackRequestedEventArgs e)
+        private static void OnBackRequested(object sender, BackRequestedEventArgs e)
         {
             Frame rootFrame = Window.Current.Content as Frame;
             if (rootFrame.CanGoBack)
@@ -197,7 +205,7 @@ namespace Jellyfin.UWP
             }
         }
 
-        private void CleanupValues(JellyfinSdkSettings settings)
+        private static void CleanupValues(JellyfinSdkSettings settings)
         {
             ApplicationData.Current.LocalSettings.Values.Remove(JellyfinConstants.AccessTokenName);
             ApplicationData.Current.LocalSettings.Values.Remove(JellyfinConstants.SessionName);
@@ -212,7 +220,13 @@ namespace Jellyfin.UWP
         /// <param name="e">Details about the navigation failure</param>
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
+            Log.Error("Failed to navigate", e.Exception);
+
+            ((Frame)Window.Current.Content).ForwardStack.Clear();
+            ((Frame)Window.Current.Content).BackStack.Clear();
+            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
+
+            //throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
 
         /// <summary>
