@@ -17,36 +17,20 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <DataTemplate x:Key="UIContinueMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
-                <Canvas>
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="170" Canvas.Top="95" Canvas.ZIndex="2">
-                            <Button Click="MediaPlayButton_Click">
-                                <Button.Background>
-                                    <SolidColorBrush Color="#000000" />
-                                </Button.Background>
-                                <SymbolIcon Symbol="Play" />
-                            </Button>
-                        </Grid>
-                    </Canvas>
-                </Canvas>
+                <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
                 <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
-                <Canvas>
-                    <Canvas Background="Transparent">
-                        <Grid Canvas.Left="95" Canvas.Top="150" Canvas.ZIndex="2">
-                            <Button Click="MediaPlayButton_Click">
-                                <Button.Background>
-                                    <SolidColorBrush Color="#000000" />
-                                </Button.Background>
-                                <SymbolIcon Symbol="Play" />
-                            </Button>
-                        </Grid>
-                    </Canvas>
-                </Canvas>
+                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>

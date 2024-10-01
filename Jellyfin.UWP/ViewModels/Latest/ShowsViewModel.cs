@@ -150,6 +150,12 @@ namespace Jellyfin.UWP.ViewModels.Latest
                             Url = mediaHelpers.SetThumbImageUrl(x, "317", "564"),
                             Type = x.Type.Value,
                             SeriesName = x.SeriesName,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                HasBeenWatched = x.UserData.Played.Value,
+                                UnplayedItemCount = x.ChildCount ?? 0,
+                            },
                         }));
         }
 
@@ -175,6 +181,12 @@ namespace Jellyfin.UWP.ViewModels.Latest
                             Name = x.Name,
                             Url = GetContinueItemImage(x),
                             Type = x.Type.Value,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                HasBeenWatched = x.UserData.Played.Value,
+                                UnplayedItemCount = x.ChildCount ?? 0,
+                            },
                         }));
 
             HasResumeMedia = ResumeMediaList.Count > 0;

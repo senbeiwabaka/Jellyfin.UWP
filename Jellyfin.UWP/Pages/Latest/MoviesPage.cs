@@ -6,6 +6,7 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Latest;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -18,6 +19,7 @@ namespace Jellyfin.UWP.Pages.Latest
     public sealed partial class MoviesPage : Page
     {
         private readonly IMediaHelpers mediaHelpers;
+        private readonly MoviesViewModel context;
 
         private Guid id;
 
@@ -30,16 +32,13 @@ namespace Jellyfin.UWP.Pages.Latest
             mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
             this.Loaded += LatestMoviesPage_Loaded;
+
+            context = DataContext as MoviesViewModel;
         }
 
         private async void LatestMoviesPage_Loaded(object sender, RoutedEventArgs e)
         {
-            await ((MoviesViewModel)DataContext).LoadInitialAsync(id);
-
-            ((MoviesViewModel)DataContext).HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
-            ((MoviesViewModel)DataContext).HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
-
-            SetupRecommendation();
+            await Run();
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -191,7 +190,9 @@ namespace Jellyfin.UWP.Pages.Latest
 
         private void SetupRecommendation()
         {
-            foreach (var item in ((MoviesViewModel)DataContext).RecommendationListGrouped)
+            sp_Recommendations.Children.Clear();
+
+            foreach (var item in context.RecommendationListGrouped)
             {
                 if (!item.Any())
                 {
@@ -234,6 +235,21 @@ namespace Jellyfin.UWP.Pages.Latest
                 listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
                 listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
             }
+        }
+
+        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+        {
+            await Run();
+        }
+
+        private async Task Run()
+        {
+            await context.LoadInitialAsync(id);
+
+            context.HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
+            context.HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
+
+            SetupRecommendation();
         }
     }
 }
