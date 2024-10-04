@@ -38,7 +38,7 @@ namespace Jellyfin.UWP.Helpers
                     {
                         throw new Win32Exception(err);
                     }
-
+                     
                     var colorInfo = new DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO();
                     colorInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
                     colorInfo.header.size = Marshal.SizeOf<DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO>();
@@ -50,7 +50,7 @@ namespace Jellyfin.UWP.Helpers
                         throw new Win32Exception(err);
                     }
 
-                    Log.Debug("Monitor Friendly Device Name: {0}", info.monitorFriendlyDeviceName);
+                    Log.Debug("Device Friendly Name: {0}", info.monitorFriendlyDeviceName);
                     Log.Debug("\tAdvanced Color Supported: {0}", colorInfo.AdvancedColorSupported);
                     Log.Debug("\tAdvanced Color Enabled: {0}", colorInfo.AdvancedColorEnabled);
                 }

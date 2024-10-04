@@ -24,13 +24,6 @@ namespace Jellyfin.UWP.Helpers
         public static IServiceCollection SetupJellyfin(this IServiceCollection services)
         {
             var settings = new JellyfinSdkSettings();
-            //{
-            //    BaseUrl = jellyfinUrl,
-            //    ClientName = "Jellyfin.UWP",
-            //    ClientVersion = Assembly.GetEntryAssembly().GetName().Version.ToString(),
-            //    DeviceName = Environment.MachineName,
-            //    DeviceId = "Jellyfin.UWP",
-            //};
 
             settings.Initialize(
                 "Jellyfin.UWP",

@@ -23,7 +23,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
             this.mediaHelpers = mediaHelpers;
         }
 
-        public async Task<ObservableCollection<UIMediaListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default)
+        public async Task<ObservableCollection<UIMainPageListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
             var itemsResult = await apiClient.Items
@@ -40,12 +40,12 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                     options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Episode, };
                 }, cancellationToken: cancellationToken);
 
-            var items = new ObservableCollection<UIMediaListItem>(
+            var items = new ObservableCollection<UIMainPageListItem>(
                 itemsResult
                     .Items
                     .Select(x =>
                     {
-                        var item = new UIMediaListItemSeries
+                        var item = new UIMainPageListItem
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
@@ -57,6 +57,8 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                                 HasBeenWatched = x.UserData.Played.Value,
                                 IsFavorite = true,
                             },
+                            IndexNumber = x.IndexNumber,
+                            ParentIndexNumber = x.ParentIndexNumber,
                         };
 
                         return item;

@@ -209,12 +209,21 @@ namespace Jellyfin.UWP
             }
         }
 
-        private async void SeriesLink_Click(object sender, RoutedEventArgs e)
+        private async void MediaItemLink_Click(object sender, RoutedEventArgs e)
         {
-            var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
-            var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+            var dataContext = ((HyperlinkButton)sender).DataContext;
+            var mediaItem = (UIMediaListItem)dataContext;
 
-            Frame.Navigate(typeof(SeriesPage), seriesId);
+            if (mediaItem.Type == BaseItemDto_Type.Episode)
+            {
+                var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+
+                Frame.Navigate(typeof(SeriesPage), seriesId);
+            }
+            else
+            {
+                Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)dataContext).Id);
+            }
         }
 
         private void SetupLatest()

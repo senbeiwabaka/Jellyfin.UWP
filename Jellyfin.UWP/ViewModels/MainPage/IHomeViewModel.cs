@@ -14,6 +14,6 @@ namespace Jellyfin.UWP.ViewModels.MainPage
 
         Task<ObservableCollection<UIMediaListItemSeries>> LoadNextUpAsync(CancellationToken cancellationToken = default);
 
-        Task<(ObservableCollection<UIMediaListItem>, bool)> LoadResumeItemsAsync(CancellationToken cancellationToken = default);
+        Task<(ObservableCollection<UIMainPageListItem>, bool)> LoadResumeItemsAsync(CancellationToken cancellationToken = default);
     }
 }

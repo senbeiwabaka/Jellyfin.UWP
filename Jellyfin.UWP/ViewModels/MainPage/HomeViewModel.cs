@@ -158,7 +158,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
             return nextupMediaList;
         }
 
-        public async Task<(ObservableCollection<UIMediaListItem>, bool)> LoadResumeItemsAsync(CancellationToken cancellationToken = default)
+        public async Task<(ObservableCollection<UIMainPageListItem>, bool)> LoadResumeItemsAsync(CancellationToken cancellationToken = default)
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
             var itemsResult = await apiClient.UserItems.Resume
@@ -168,11 +168,11 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                     options.QueryParameters.EnableTotalRecordCount = false;
                 }, cancellationToken: cancellationToken);
 
-            var resumeMediaList = new ObservableCollection<UIMediaListItem>(
+            var resumeMediaList = new ObservableCollection<UIMainPageListItem>(
                 itemsResult
                     .Items
                     .Select(x =>
-                        new UIMediaListItem
+                        new UIMainPageListItem
                         {
                             Id = x.Id.Value,
                             Name = x.Name,
@@ -184,6 +184,10 @@ namespace Jellyfin.UWP.ViewModels.MainPage
                                 HasBeenWatched = x.UserData.Played.Value,
                                 UnplayedItemCount = x.ChildCount ?? 0,
                             },
+                            Year = x.ProductionYear?.ToString() ?? "1900",
+                            SeriesName = x.SeriesName,
+                            IndexNumber = x.IndexNumber,
+                            ParentIndexNumber = x.ParentIndexNumber,
                         }));
 
             var hasResumeMedia = resumeMediaList.Count > 0;

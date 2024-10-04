@@ -14,14 +14,19 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-        <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
+        <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMainPageListItem">
             <StackPanel Width="380">
                 <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                 <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                 <Image x:Name="im_ItemImage" Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
-                <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+
+                <HyperlinkButton FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click">
+                    <TextBlock Text="{x:Bind TextLine1}" FontSize="14" TextTrimming="CharacterEllipsis" TextDecorations="Underline" />
+                </HyperlinkButton>
+                
+                <TextBlock Text="{x:Bind TextLine2}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
         <DataTemplate x:Key="UISeriesMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
@@ -203,7 +208,7 @@
                                     <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                                     <Image Source="{x:Bind Url}" Width="380" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
-                                    <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />
+                                    <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
