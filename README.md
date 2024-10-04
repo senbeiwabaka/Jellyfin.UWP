@@ -2,7 +2,7 @@
 ----------------------------
 
 [![Build and Tests](https://github.com/senbeiwabaka/Jellyfin.UWP/actions/workflows/main.yml/badge.svg)](https://github.com/senbeiwabaka/Jellyfin.UWP/actions/workflows/main.yml)
-[![Quality Gate Status](https://sonarqube.mjy-home.duckdns.org/api/project_badges/measure?project=senbeiwabaka_Jellyfin.UWP_AYuW2VkcOTfeuyv7RdaP&metric=alert_status&token=sqb_6c07531063c194729707722741753a732644e274)](https://sonarqube.mjy-home.duckdns.org/dashboard?id=senbeiwabaka_Jellyfin.UWP_AYuW2VkcOTfeuyv7RdaP)
+[![Quality Gate Status](https://sonarqube.mjy-home.duckdns.org/api/project_badges/measure?project=senbeiwabaka_Jellyfin.UWP_7dc6acd8-bf51-4fb5-b404-27af13d1269f&metric=alert_status&token=sqb_e8533c3b8185b5fe47cd1c2efd6d48bf9457c7bd)](https://sonarqube.mjy-home.duckdns.org/dashboard?id=senbeiwabaka_Jellyfin.UWP_7dc6acd8-bf51-4fb5-b404-27af13d1269f)
 
 This is a UWP application for Windows store and Xbox to use Jellyfin.
 It should operate very similiar to the website.
