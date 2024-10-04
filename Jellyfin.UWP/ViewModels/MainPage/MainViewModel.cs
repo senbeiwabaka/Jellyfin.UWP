@@ -18,7 +18,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
         private readonly IMemoryCache memoryCache;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> favoriteEpisodesList;
+        private ObservableCollection<UIMainPageListItem> favoriteEpisodesList;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> favoriteMoviesList;
@@ -66,7 +66,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
         private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
 
         [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> resumeMediaList;
+        private ObservableCollection<UIMainPageListItem> resumeMediaList;
 
         [ObservableProperty]
         private string userName;

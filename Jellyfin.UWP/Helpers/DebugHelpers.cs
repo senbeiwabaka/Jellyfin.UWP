@@ -1,5 +1,8 @@
-﻿namespace Jellyfin.UWP.Helpers
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Jellyfin.UWP.Helpers
 {
+    [ExcludeFromCodeCoverage]
     internal static class DebugHelpers
     {
         internal static bool IsDebugRelease

@@ -165,6 +165,7 @@
     <Compile Include="Models\Recommendation.cs" />
     <Compile Include="Models\SeasonSeries.cs" />
     <Compile Include="Models\UIItem.cs" />
+    <Compile Include="Models\UIMainPageListItem.cs" />
     <Compile Include="Models\UIMediaListItem.cs" />
     <Compile Include="Models\UIMediaListItemSeries.cs" />
     <Compile Include="Models\UIMediaStream.cs" />

@@ -7,7 +7,7 @@ namespace Jellyfin.UWP.ViewModels.MainPage
 {
     internal interface IFavoritesViewModel
     {
-        Task<ObservableCollection<UIMediaListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default);
+        Task<ObservableCollection<UIMainPageListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default);
 
         Task<ObservableCollection<UIMediaListItem>> GetMoviesAsync(CancellationToken cancellationToken = default);
 
