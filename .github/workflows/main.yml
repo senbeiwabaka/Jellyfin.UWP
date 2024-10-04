@@ -53,19 +53,19 @@ jobs:
         # run: dotnet test .\tests\Jellyfin.UWP.UI.Tests\ -c Release
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4.4.0
         with:
           java-version: 17
           distribution: 'zulu'
       - name: Cache SonarQube packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4.0.2
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarQube scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v3
+        uses: actions/cache@v4.0.2
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -76,14 +76,14 @@ jobs:
         run: |
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool install dotnet-sonarscanner --tool-path .\.sonar\scanner --version 6.0.0
-      # - name: Build and analyze
-        # env:
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-        # shell: powershell
-        # run: |
-          # .\.sonar\scanner\dotnet-sonarscanner begin /k:"senbeiwabaka_Jellyfin.UWP_AYuW2VkcOTfeuyv7RdaP" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-          # msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:q
-          # .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+        shell: powershell
+        run: |
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"senbeiwabaka_Jellyfin.UWP_7dc6acd8-bf51-4fb5-b404-27af13d1269f" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          msbuild.exe Jellyfin.UWP.sln /p:configuration="Release" /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64"  -v:q
+          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
     if: ${{ github.ref == 'refs/heads/master' }}
