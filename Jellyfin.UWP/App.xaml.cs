@@ -145,7 +145,7 @@ namespace Jellyfin.UWP
                         settings.SetAccessToken(accessToken);
 
                         var user = await apiClient.Users.Me.GetAsync();
-                        var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
+                        var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession);
 
                         memoryCache.Set(JellyfinConstants.UserName, user);
                         memoryCache.Set(JellyfinConstants.SessionName, session);

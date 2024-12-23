@@ -13,17 +13,8 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details
 {
-    internal partial class DetailsViewModel : ObservableObject
+    internal sealed partial class DetailsViewModel : MediaDetailsViewModel
     {
-        protected readonly IMemoryCache memoryCache;
-        protected readonly JellyfinApiClient apiClient;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaStream> audioStreams;
-
-        [ObservableProperty]
-        private string audioType;
-
         [ObservableProperty]
         private ObservableCollection<UIPersonItem> castAndCrew;
 
@@ -37,21 +28,6 @@ namespace Jellyfin.UWP.ViewModels.Details
         private string genres;
 
         [ObservableProperty]
-        private bool hasMultipleAudioStreams;
-
-        [ObservableProperty]
-        private bool hasMultipleSubtitleStreams;
-
-        [ObservableProperty]
-        private bool hasMultipleVideoStreams;
-
-        [ObservableProperty]
-        private bool hasSubtitle;
-
-        [ObservableProperty]
-        private string imageUrl;
-
-        [ObservableProperty]
         private bool isEpisode;
 
         [ObservableProperty]
@@ -59,9 +35,6 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         [ObservableProperty]
         private bool isNotMovie;
-
-        [ObservableProperty]
-        private BaseItemDto mediaItem;
 
         [ObservableProperty]
         private string mediaTagLines;
@@ -73,98 +46,19 @@ namespace Jellyfin.UWP.ViewModels.Details
         private string runTime;
 
         [ObservableProperty]
-        private UIMediaStream selectedAudioStream;
-
-        [ObservableProperty]
-        private UIMediaStream selectedSubtitleStream;
-
-        [ObservableProperty]
-        private UIMediaStreamVideo selectedVideoStream;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> seriesMetadata;
-
-        [ObservableProperty]
         private ObservableCollection<UIMediaListItem> similiarMediaList;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaStream> subtitleStreams;
-
-        [ObservableProperty]
-        private string subtitleType;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaStreamVideo> videoStreams;
-
-        [ObservableProperty]
-        private string videoType;
 
         [ObservableProperty]
         private string writer;
 
         public DetailsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+            : base(memoryCache, apiClient, mediaHelpers)
         {
-            this.memoryCache = memoryCache;
-            this.apiClient = apiClient;
-            MediaHelpers = mediaHelpers;
         }
 
-        protected IMediaHelpers MediaHelpers { get; }
-
-        public virtual Task<Guid> GetPlayIdAsync()
-        {
-            return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray(), null);
-        }
-
-        public async Task LoadMediaInformationAsync(Guid id)
+        protected override async Task DetailsExtraExecuteAsync()
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var userLibraryItem = await apiClient.Items[id]
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                });
-
-            MediaItem = userLibraryItem;
-
-            if (MediaItem.MediaSourceCount > 0)
-            {
-                VideoType = MediaItem.MediaSources?[0].MediaStreams?[0].DisplayTitle;
-            }
-            else
-            {
-                VideoType = MediaItem.MediaStreams?.Find(x => x.Type == MediaStream_Type.Video && x.IsDefault.Value)?.DisplayTitle;
-
-                SelectedVideoStream = new UIMediaStreamVideo
-                {
-                    Index = 0,
-                    IsSelected = true,
-                };
-            }
-
-            if (MediaItem.MediaStreams is not null)
-            {
-                AudioType = MediaItem.MediaStreams.Find(x => x.Type == MediaStream_Type.Audio && x.IsDefault.Value)?.DisplayTitle;
-                SubtitleType = MediaItem.MediaStreams.Find(x => x.Type == MediaStream_Type.Subtitle && x.IsDefault.Value)?.DisplayTitle;
-
-                HasSubtitle = MediaItem.HasSubtitles.HasValue && MediaItem.HasSubtitles.Value;
-                HasMultipleSubtitleStreams = MediaItem.MediaStreams.Count(x => x.Type == MediaStream_Type.Subtitle) > 1;
-
-                if (HasMultipleSubtitleStreams)
-                {
-                    SubtitleStreams = new ObservableCollection<UIMediaStream>(
-                                      MediaItem.MediaStreams
-                                      .Where(x => x.Type == MediaStream_Type.Subtitle)
-                                      .Select(x => new UIMediaStream
-                                      {
-                                          Index = x.Index.Value,
-                                          IsSelected = x.IsDefault.Value,
-                                          Title = x.DisplayTitle,
-                                      }));
-
-                    SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams[0];
-                }
-            }
 
             if (MediaItem.RunTimeTicks.HasValue)
             {
@@ -195,23 +89,6 @@ namespace Jellyfin.UWP.ViewModels.Details
                     ImageUrl = MediaHelpers.SetImageUrl(x, "446", "298"), // MediaHelpers.SetImageUrl(x, "446", "298"),
                     Role = x.Role,
                 }));
-
-            if (MediaItem.Type == BaseItemDto_Type.Movie || MediaItem.Type == BaseItemDto_Type.Episode)
-            {
-                if (MediaItem.MediaSourceCount > 1)
-                {
-                    HasMultipleVideoStreams = true;
-
-                    SetVideoStreams();
-                }
-
-                if (MediaItem.MediaStreams.Count(x => x.Type == MediaStream_Type.Audio) > 1)
-                {
-                    HasMultipleAudioStreams = true;
-
-                    SetAudioStreams();
-                }
-            }
 
             IsMovie = MediaItem.Type == BaseItemDto_Type.Movie;
             IsEpisode = MediaItem.Type == BaseItemDto_Type.Episode;
@@ -245,21 +122,6 @@ namespace Jellyfin.UWP.ViewModels.Details
 
                     return item;
                 }));
-
-            ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName); //MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
-
-            await ExtraExecuteAsync();
-        }
-
-        protected virtual Task ExtraExecuteAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        [RelayCommand]
-        private void ChangeVideoSelection()
-        {
-            SetAudioStreams();
         }
 
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
@@ -310,43 +172,6 @@ namespace Jellyfin.UWP.ViewModels.Details
             }
 
             await LoadMediaInformationAsync(MediaItem.Id.Value);
-        }
-
-        private void SetAudioStreams()
-        {
-            var index = 0;
-
-            AudioStreams = new ObservableCollection<UIMediaStream>(
-                                   MediaItem.MediaSources[SelectedVideoStream.Index]
-                                   .MediaStreams
-                                   .Where(x => x.Type == MediaStream_Type.Audio)
-                                   .Select(x => new UIMediaStream
-                                   {
-                                       Index = index++,
-                                       IsSelected = x.IsDefault.Value,
-                                       Title = x.DisplayTitle,
-                                       MediaStreamIndex = x.Index.Value,
-                                   }));
-
-            SelectedAudioStream = AudioStreams.Single(x => x.IsSelected);
-        }
-
-        private void SetVideoStreams()
-        {
-            var index = 0;
-
-            VideoStreams = new ObservableCollection<UIMediaStreamVideo>(
-                                   MediaItem.MediaSources
-                                   .Select(x => new UIMediaStreamVideo
-                                   {
-                                       Index = index++,
-                                       Title = x.Name,
-                                       VideoId = x.Id,
-                                   }));
-
-            VideoStreams[0].IsSelected = true;
-
-            SelectedVideoStream = VideoStreams.Single(x => x.IsSelected);
         }
     }
 }

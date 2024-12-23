@@ -1,40 +1,29 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Jellyfin.UWP.ViewModels.Details;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels
 {
-    internal sealed partial class SeasonViewModel : ObservableObject
+    internal sealed partial class SeasonViewModel : MediaViewModel
     {
-        private readonly IMemoryCache memoryCache;
-        private readonly JellyfinApiClient apiClient;
-        private readonly IMediaHelpers mediaHelpers;
-
-        [ObservableProperty]
-        private string imageUrl;
-
-        [ObservableProperty]
-        private BaseItemDto mediaItem;
-
         private SeasonSeries seasonSeries;
 
         [ObservableProperty]
         private ObservableCollection<UIMediaListItemSeries> seriesMetadata;
 
         public SeasonViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+            : base(memoryCache, apiClient, mediaHelpers)
         {
-            this.memoryCache = memoryCache;
-            this.apiClient = apiClient;
-            this.mediaHelpers = mediaHelpers;
         }
 
         public async Task EpisodeFavoriteStateAsync(UIItem item)
@@ -60,7 +49,7 @@ namespace Jellyfin.UWP.ViewModels
             {
                 Id = item.Id.Value,
                 Name = item.Name,
-                Url = mediaHelpers.SetImageUrl(item, "500", "500", JellyfinConstants.PrimaryName),
+                Url = MediaHelpers.SetImageUrl(item, "500", "500", JellyfinConstants.PrimaryName),
                 Description = item.Overview,
                 UserData = new UIUserData
                 {
@@ -70,7 +59,7 @@ namespace Jellyfin.UWP.ViewModels
             };
         }
 
-        public async Task<Guid> GetPlayIdAsync()
+        public override async Task<Guid> GetPlayIdAsync()
         {
             if (!SeriesMetadata.Any(x => x.IsSelected))
             {
@@ -111,7 +100,7 @@ namespace Jellyfin.UWP.ViewModels
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
-                        Url = mediaHelpers.SetImageUrl(x, "500", "500", JellyfinConstants.PrimaryName),
+                        Url = MediaHelpers.SetImageUrl(x, "500", "500", JellyfinConstants.PrimaryName),
                         Description = x.Overview,
                         UserData = new UIUserData
                         {
@@ -123,7 +112,7 @@ namespace Jellyfin.UWP.ViewModels
                     return item;
                 }));
 
-            ImageUrl = mediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
+            ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
 
             this.seasonSeries = seasonSeries;
         }

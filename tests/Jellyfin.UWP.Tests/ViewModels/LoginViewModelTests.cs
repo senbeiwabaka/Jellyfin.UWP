@@ -54,7 +54,7 @@ namespace Jellyfin.UWP.Tests.ViewModels
                 {
                     postRequest = (RequestInformation)invocation.Arguments[0];
                 }))
-                .ReturnsAsync(new AuthenticationResult { AccessToken = "1", SessionInfo = new SessionInfo(), })
+                .ReturnsAsync(new AuthenticationResult { AccessToken = "1", SessionInfo = new SessionInfoDto(), })
                 .Verifiable();
 
             ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName] = "https://test.com";

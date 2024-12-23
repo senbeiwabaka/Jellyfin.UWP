@@ -13,10 +13,14 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details
 {
-    internal sealed partial class SeriesDetailViewModel : DetailsViewModel
+    internal sealed partial class SeriesDetailViewModel : MediaViewModel
     {
         [ObservableProperty]
         private UIMediaListItem nextUpItem;
+
+        [ObservableProperty]
+        private ObservableCollection<UIMediaListItem> seriesMetadata;
+
 
         public SeriesDetailViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
             : base(memoryCache, apiClient, mediaHelpers)
@@ -96,6 +100,10 @@ namespace Jellyfin.UWP.ViewModels.Details
                             UnplayedItemCount = x.UserData.UnplayedItemCount,
                             HasBeenWatched = x.UserData.Played.Value,
                         },
+                        CollectionType = x.CollectionType,
+                        IsFolder = x.IsFolder ?? false,
+                        IndexNumber = x.IndexNumber.Value,
+                        Type = x.Type ?? BaseItemDto_Type.AggregateFolder,
                     };
 
                     return item;
