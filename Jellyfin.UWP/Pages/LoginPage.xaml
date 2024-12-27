@@ -10,7 +10,6 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10" x:Name="MainCenterStack">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="Username: " Padding="10" />

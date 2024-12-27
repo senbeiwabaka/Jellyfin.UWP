@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
-using MetroLog;
+//using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -18,7 +18,7 @@ namespace Jellyfin.UWP.ViewModels
         private readonly IMemoryCache memoryCache;
         private readonly JellyfinApiClient apiClient;
         private readonly JellyfinSdkSettings settings;
-        private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<LoginViewModel>();
+        //private readonly ILogger Log = LogManagerFactory.DefaultLogManager.GetLogger<LoginViewModel>();
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
@@ -63,7 +63,7 @@ namespace Jellyfin.UWP.ViewModels
 
                 if (HasErrors)
                 {
-                    Log.Debug("has errors so can't log in.");
+                    //Log.Debug("has errors so can't log in.");
 
                     Message = "Either username or password were wrong";
 
@@ -103,7 +103,7 @@ namespace Jellyfin.UWP.ViewModels
             }
             catch (Exception e)
             {
-                Log.Error("Login error", e);
+                //Log.Error("Login error", e);
 
                 Message = "An error occurred. Please try again.";
 

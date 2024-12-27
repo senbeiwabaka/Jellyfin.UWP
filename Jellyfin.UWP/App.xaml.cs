@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages;
-using MetroLog;
-using MetroLog.Targets;
+//using MetroLog;
+//using MetroLog.Targets;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -26,7 +26,7 @@ namespace Jellyfin.UWP
     /// </summary>
     public partial class App : Application
     {
-        private readonly ILogger Log;
+        //private readonly ILogger Log;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -37,21 +37,21 @@ namespace Jellyfin.UWP
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-#if DEBUG
-            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Debug, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
-#else
-            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
-#endif
+//#if DEBUG
+//            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Debug, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
+//#else
+//            LogManagerFactory.DefaultConfiguration.AddTarget(MetroLog.LogLevel.Info, MetroLog.LogLevel.Fatal, new StreamingFileTarget());
+//#endif
 
-            GlobalCrashHandler.Configure();
+//            //GlobalCrashHandler.Configure();
 
-            Log = LogManagerFactory.DefaultLogManager.GetLogger<App>();
+//            Log = LogManagerFactory.DefaultLogManager.GetLogger<App>();
 
-            this.UnhandledException += (sender, e) =>
-            {
-                e.Handled = true;
-                Log.Error("unhandled exception", e.Exception);
-            };
+//            this.UnhandledException += (sender, e) =>
+//            {
+//                e.Handled = true;
+//                Log.Error("unhandled exception", e.Exception);
+//            };
         }
 
         /// <summary>
@@ -81,7 +81,6 @@ namespace Jellyfin.UWP
                 Window.Current.Content = rootFrame;
             }
 
-            HdrCheck.RunHDRCode(Log);
 
             Ioc.Default.ConfigureServices(new ServiceCollection()
                .AddMemoryCache()
@@ -114,14 +113,13 @@ namespace Jellyfin.UWP
                         memoryCache.Set(JellyfinConstants.HostUrlName, jellyfinUrl);
                         memoryCache.Set(JellyfinConstants.ServerVersionName, systemInfo.Version);
 
-                        Log.Debug("Server Version: {0}", systemInfo.Version);
-
+                        //Log.Debug("Server Version: {0}", systemInfo.Version);
                     }
                     catch (Exception ex)
                     {
                         resetJellyfinUrl = true;
 
-                        Log.Error(ex.Message, ex);
+                        //Log.Error(ex.Message, ex);
                     }
                 }
                 else
@@ -145,7 +143,7 @@ namespace Jellyfin.UWP
                         settings.SetAccessToken(accessToken);
 
                         var user = await apiClient.Users.Me.GetAsync();
-                        var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfo>(localSettingsSession);
+                        var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession);
 
                         memoryCache.Set(JellyfinConstants.UserName, user);
                         memoryCache.Set(JellyfinConstants.SessionName, session);
@@ -156,15 +154,15 @@ namespace Jellyfin.UWP
 
                         accessToken = string.Empty;
 
-                        Log.Error("Failed to get user information on startup", exception);
+                        //Log.Error("Failed to get user information on startup", exception);
                     }
                 }
             }
 
-            if(DebugHelpers.IsDebugRelease)
+            if (DebugHelpers.IsDebugRelease)
             {
-                Log.Debug("Is reset jellyfin true: {0}", resetJellyfinUrl);
-                Log.Debug("Is access token missing: {0}", string.IsNullOrWhiteSpace(accessToken));
+                //Log.Debug("Is reset jellyfin true: {0}", resetJellyfinUrl);
+                //Log.Debug("Is access token missing: {0}", string.IsNullOrWhiteSpace(accessToken));
             }
 
             if (!args.PrelaunchActivated)
@@ -220,7 +218,7 @@ namespace Jellyfin.UWP
         /// <param name="e">Details about the navigation failure</param>
         private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            Log.Error("Failed to navigate", e.Exception);
+            //Log.Error("Failed to navigate", e.Exception);
 
             ((Frame)Window.Current.Content).ForwardStack.Clear();
             ((Frame)Window.Current.Content).BackStack.Clear();
@@ -240,7 +238,7 @@ namespace Jellyfin.UWP
         {
             var deferral = e.SuspendingOperation.GetDeferral();
 
-            Log.Debug("suspending");
+            //Log.Debug("suspending");
 
             deferral.Complete();
         }

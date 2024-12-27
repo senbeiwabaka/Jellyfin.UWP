@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -33,7 +32,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
             this.Loaded += LatestMoviesPage_Loaded;
 
-            context = DataContext as MoviesViewModel;
+            context = (MoviesViewModel)DataContext;
         }
 
         private async void LatestMoviesPage_Loaded(object sender, RoutedEventArgs e)

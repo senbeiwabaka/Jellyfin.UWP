@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -31,7 +30,7 @@ namespace Jellyfin.UWP.Pages.Latest
 
             this.Loaded += LatestShowsPage_Loaded;
 
-            context = DataContext as ShowsViewModel;
+            context = (ShowsViewModel)DataContext;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)

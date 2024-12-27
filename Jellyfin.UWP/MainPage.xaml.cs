@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -40,7 +39,7 @@ namespace Jellyfin.UWP
 
             this.Loaded += MainPage_Loaded;
 
-            context = DataContext as MainViewModel;
+            context = (MainViewModel)DataContext;
         }
 
         public Type PageType { get; } = typeof(MainPage);
@@ -319,8 +318,6 @@ namespace Jellyfin.UWP
 
         private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
         {
-            var context = (MainViewModel)DataContext;
-
             if (context.IsHomeSelected)
             {
                 await context.HomeLoadAsync();

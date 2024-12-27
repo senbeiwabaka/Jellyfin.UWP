@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:app1="using:Jellyfin.UWP"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:converters="using:Jellyfin.UWP.Converters"
     d:DataContext="{d:DesignInstance Type=app1:MediaItemPlayerViewModel}"
   mc:Ignorable="d"
   Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">

@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using MetroLog;
+//using MetroLog;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Core;
 using Windows.Media.Playback;
@@ -28,7 +28,7 @@ namespace Jellyfin.UWP.Pages
     {
         private readonly DispatcherTimer dispatcherTimer;
         private readonly DisplayRequest displayRequest;
-        private readonly ILogger Log;
+        //private readonly ILogger Log;
         private readonly Stopwatch stopwatch = new();
         private readonly Dictionary<TimedTextSource, string> ttsMap = new();
         private readonly IMemoryCache memoryCache;
@@ -52,7 +52,7 @@ namespace Jellyfin.UWP.Pages
             dispatcherTimer.Tick += DispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 5);
 
-            Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
+            //Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
 
             displayRequest = new DisplayRequest();
         }
@@ -78,7 +78,7 @@ namespace Jellyfin.UWP.Pages
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message, ex);
+                //Log.Error(ex.Message, ex);
             }
 
             base.OnNavigatingFrom(e);
@@ -137,7 +137,7 @@ namespace Jellyfin.UWP.Pages
             {
                 context.IsTranscoding = true;
 
-                Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
+                //Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
             }
 
             MediaSource source;
@@ -180,7 +180,7 @@ namespace Jellyfin.UWP.Pages
             }
             catch (Exception ex)
             {
-                Log.Error("failed to open source", ex);
+                //Log.Error("failed to open source", ex);
             }
 
             return source;
@@ -308,12 +308,12 @@ namespace Jellyfin.UWP.Pages
 
         private void MediaPlaybackItem_TimedMetadataTracksChanged(MediaPlaybackItem sender, Windows.Foundation.Collections.IVectorChangedEventArgs args)
         {
-            Log.Debug("Timed metadata track has changed");
+            //Log.Debug("Timed metadata track has changed");
         }
 
         private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
         {
-            Log.Debug("Media has ended playback");
+            //Log.Debug("Media has ended playback");
 
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
                       CoreDispatcherPriority.Normal,
@@ -341,29 +341,29 @@ namespace Jellyfin.UWP.Pages
 
         private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
         {
-            Log.Error($"Error: {args.Error} with Message: {args.ErrorMessage}", args.ExtendedErrorCode);
+            //Log.Error($"Error: {args.Error} with Message: {args.ErrorMessage}", args.ExtendedErrorCode);
         }
 
         private void PlaybackSession_BufferingEnded(MediaPlaybackSession sender, object args)
         {
-            Log.Debug("Buffering has ended");
+            //Log.Debug("Buffering has ended");
         }
 
         private void PlaybackSession_BufferingStarted(MediaPlaybackSession sender, object args)
         {
-            Log.Debug("Buffering has started");
+            //Log.Debug("Buffering has started");
 
             if (args is MediaPlaybackSessionBufferingStartedEventArgs)
             {
                 var value = args as MediaPlaybackSessionBufferingStartedEventArgs;
 
-                Log.Info("Buffering: Is playback interrupted: {0}", value.IsPlaybackInterruption);
+                //Log.Info("Buffering: Is playback interrupted: {0}", value.IsPlaybackInterruption);
             }
         }
 
         private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
         {
-            Log.Debug("Playback state has changed");
+            //Log.Debug("Playback state has changed");
         }
 
         private void Tts_Resolved(TimedTextSource sender, TimedTextSourceResolveResultEventArgs args)
@@ -371,7 +371,7 @@ namespace Jellyfin.UWP.Pages
             // Handle errors
             if (args.Error != null)
             {
-                Log.Error($"Subtitle error: {args.Error.ErrorCode}", args.Error.ExtendedError);
+                //Log.Error($"Subtitle error: {args.Error.ErrorCode}", args.Error.ExtendedError);
 
                 var ignoreAwaitWarning = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                 {
