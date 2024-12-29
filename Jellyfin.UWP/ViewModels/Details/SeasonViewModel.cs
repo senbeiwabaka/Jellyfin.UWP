@@ -38,8 +38,8 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task<UIMediaListItemSeries> GetLatestOnSeriesItemAsync(Guid id)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var item = await apiClient.Items[id]
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var item = await ApiClient.Items[id]
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
@@ -71,8 +71,8 @@ namespace Jellyfin.UWP.ViewModels
 
         public async Task LoadMediaInformationAsync(SeasonSeries seasonSeries)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var userLibraryItem = await apiClient.Items[seasonSeries.SeasonId].
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var userLibraryItem = await ApiClient.Items[seasonSeries.SeasonId].
                 GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
@@ -80,7 +80,7 @@ namespace Jellyfin.UWP.ViewModels
 
             MediaItem = userLibraryItem;
 
-            var episodes = await apiClient.Shows[seasonSeries.SeriesId].Episodes
+            var episodes = await ApiClient.Shows[seasonSeries.SeriesId].Episodes
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
@@ -119,11 +119,11 @@ namespace Jellyfin.UWP.ViewModels
 
         private async Task ChangeFavoriteStateAsync(Guid id, bool isFavorite, CancellationToken cancellationToken = default)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (isFavorite)
             {
-                _ = await apiClient.UserFavoriteItems[id]
+                _ = await ApiClient.UserFavoriteItems[id]
                     .DeleteAsync(options =>
                      {
                          options.QueryParameters.UserId = user.Id;
@@ -131,7 +131,7 @@ namespace Jellyfin.UWP.ViewModels
             }
             else
             {
-                _ = await apiClient.UserFavoriteItems[id]
+                _ = await ApiClient.UserFavoriteItems[id]
                     .PostAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -141,11 +141,11 @@ namespace Jellyfin.UWP.ViewModels
 
         private async Task ChangePlayStateAsync(Guid id, bool hasBeenWatched, CancellationToken cancellationToken = default)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (hasBeenWatched)
             {
-                _ = await apiClient.UserPlayedItems[id]
+                _ = await ApiClient.UserPlayedItems[id]
                     .DeleteAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -153,7 +153,7 @@ namespace Jellyfin.UWP.ViewModels
             }
             else
             {
-                _ = await apiClient.UserPlayedItems[id]
+                _ = await ApiClient.UserPlayedItems[id]
                     .PostAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -172,8 +172,8 @@ namespace Jellyfin.UWP.ViewModels
 
         private async Task<Guid> GetSeriesEpisodeIdAsync()
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var episodes = await apiClient.Shows[seasonSeries.SeriesId].Episodes
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var episodes = await ApiClient.Shows[seasonSeries.SeriesId].Episodes
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;

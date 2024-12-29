@@ -36,8 +36,8 @@ namespace Jellyfin.UWP.ViewModels.Details
         {
             NextUpItem = null;
 
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var nextUp = await apiClient.Shows.NextUp
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var nextUp = await ApiClient.Shows.NextUp
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
@@ -74,7 +74,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                 };
             }
 
-            var seasons = await apiClient.Shows[MediaItem.Id.Value].Seasons
+            var seasons = await ApiClient.Shows[MediaItem.Id.Value].Seasons
                 .GetAsync(option =>
                 {
                     option.QueryParameters.UserId = user.Id;
@@ -112,7 +112,7 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         private string SetSeasonImageUrl(BaseItemDto item)
         {
-            var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+            var baseUrl = MemoryCache.Get<string>(JellyfinConstants.HostUrlName);
             var imageTags = item.ImageTags.AdditionalData;
             if (imageTags.ContainsKey(JellyfinConstants.PrimaryName))
             {
@@ -125,13 +125,13 @@ namespace Jellyfin.UWP.ViewModels.Details
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task NextUpFavoriteStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (NextUpItem != null)
             {
                 if (NextUpItem.UserData.IsFavorite)
                 {
-                    _ = await apiClient.UserFavoriteItems[NextUpItem.Id]
+                    _ = await ApiClient.UserFavoriteItems[NextUpItem.Id]
                     .DeleteAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -139,7 +139,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                 }
                 else
                 {
-                    _ = await apiClient.UserFavoriteItems[NextUpItem.Id]
+                    _ = await ApiClient.UserFavoriteItems[NextUpItem.Id]
                     .PostAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -153,13 +153,13 @@ namespace Jellyfin.UWP.ViewModels.Details
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task NextUpPlayedStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (NextUpItem != null)
             {
                 if (NextUpItem.UserData.HasBeenWatched)
                 {
-                    _ = await apiClient.UserPlayedItems[NextUpItem.Id]
+                    _ = await ApiClient.UserPlayedItems[NextUpItem.Id]
                     .DeleteAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -167,7 +167,7 @@ namespace Jellyfin.UWP.ViewModels.Details
                 }
                 else
                 {
-                    _ = await apiClient.UserPlayedItems[NextUpItem.Id]
+                    _ = await ApiClient.UserPlayedItems[NextUpItem.Id]
                     .PostAsync(options =>
                      {
                          options.QueryParameters.UserId = user.Id;

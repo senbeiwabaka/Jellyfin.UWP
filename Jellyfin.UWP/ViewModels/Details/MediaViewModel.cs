@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
-using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details
 {
@@ -23,14 +18,14 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         public MediaViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
         {
-            this.memoryCache = memoryCache;
-            this.apiClient = apiClient;
+            MemoryCache = memoryCache;
+            ApiClient = apiClient;
             MediaHelpers = mediaHelpers;
         }
 
-        protected JellyfinApiClient apiClient { get; }
+        protected JellyfinApiClient ApiClient { get; }
         protected IMediaHelpers MediaHelpers { get; }
-        protected IMemoryCache memoryCache { get; }
+        protected IMemoryCache MemoryCache { get; }
 
         public virtual Task<Guid> GetPlayIdAsync()
         {
@@ -39,8 +34,8 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         public async Task LoadMediaInformationAsync(Guid id)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var userLibraryItem = await apiClient.Items[id]
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var userLibraryItem = await ApiClient.Items[id]
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;

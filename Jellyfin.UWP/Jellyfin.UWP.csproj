@@ -391,13 +391,13 @@
       <Version>1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory">
-      <Version>9.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>9.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Http">
-      <Version>9.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.2.14</Version>
@@ -408,16 +408,11 @@
     <PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed">
       <Version>2.0.1</Version>
     </PackageReference>
-    <PackageReference Include="Nerdbank.GitVersioning">
-      <Version>3.7.112</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>9.0.0</Version>
+      <Version>8.0.1</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>9.0.0</Version>
+      <Version>8.0.5</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

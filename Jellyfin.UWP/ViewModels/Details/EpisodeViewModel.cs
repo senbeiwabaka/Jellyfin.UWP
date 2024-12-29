@@ -22,8 +22,8 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         protected override async Task DetailsExtraExecuteAsync()
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var episodes = await apiClient.Shows[MediaItem.SeriesId.Value].Episodes
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var episodes = await ApiClient.Shows[MediaItem.SeriesId.Value].Episodes
                 .GetAsync(options =>
                 {
                     options.QueryParameters.SeasonId = MediaItem.ParentId;

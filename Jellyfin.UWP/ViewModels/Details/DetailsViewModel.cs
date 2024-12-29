@@ -58,7 +58,7 @@ namespace Jellyfin.UWP.ViewModels.Details
 
         protected override async Task DetailsExtraExecuteAsync()
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (MediaItem.RunTimeTicks.HasValue)
             {
@@ -94,7 +94,7 @@ namespace Jellyfin.UWP.ViewModels.Details
             IsEpisode = MediaItem.Type == BaseItemDto_Type.Episode;
             IsNotMovie = MediaItem.Type == BaseItemDto_Type.Series;
 
-            var similiarItems = await apiClient.Items[MediaItem.Id.Value].Similar
+            var similiarItems = await ApiClient.Items[MediaItem.Id.Value].Similar
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
@@ -127,11 +127,11 @@ namespace Jellyfin.UWP.ViewModels.Details
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task FavoriteStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (MediaItem.UserData.IsFavorite.Value)
             {
-                _ = await apiClient.UserFavoriteItems[MediaItem.Id.Value]
+                _ = await ApiClient.UserFavoriteItems[MediaItem.Id.Value]
                     .DeleteAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -139,7 +139,7 @@ namespace Jellyfin.UWP.ViewModels.Details
             }
             else
             {
-                _ = await apiClient.UserFavoriteItems[MediaItem.Id.Value]
+                _ = await ApiClient.UserFavoriteItems[MediaItem.Id.Value]
                     .PostAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -152,11 +152,11 @@ namespace Jellyfin.UWP.ViewModels.Details
         [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
         private async Task PlayedStateAsync(CancellationToken cancellationToken)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
             if (MediaItem.UserData.Played.Value)
             {
-                _ = await apiClient.UserPlayedItems[MediaItem.Id.Value]
+                _ = await ApiClient.UserPlayedItems[MediaItem.Id.Value]
                     .DeleteAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
@@ -164,7 +164,7 @@ namespace Jellyfin.UWP.ViewModels.Details
             }
             else
             {
-                _ = await apiClient.UserPlayedItems[MediaItem.Id.Value]
+                _ = await ApiClient.UserPlayedItems[MediaItem.Id.Value]
                     .PostAsync(options =>
                     {
                         options.QueryParameters.UserId = user.Id;
