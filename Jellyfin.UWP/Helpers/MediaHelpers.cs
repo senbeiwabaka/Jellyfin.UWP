@@ -22,7 +22,12 @@ namespace Jellyfin.UWP.Helpers
         public async Task<Guid> GetPlayIdAsync(UIMediaListItem mediaItem)
         {
             var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var seasons = await apiClient.Shows[mediaItem.Id].Seasons
+            var season = await apiClient.Items[mediaItem.Id].
+                GetAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
+            var seasons = await apiClient.Shows[season.ParentId.Value].Seasons
                 .GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;

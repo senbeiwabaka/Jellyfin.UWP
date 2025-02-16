@@ -335,7 +335,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionPlayingAsync()
         {
-            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
+            var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
             var playbackStartInfo = new PlaybackStartInfo
             {
                 ItemId = item.Id,
@@ -352,7 +352,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionProgressAsync(long position, bool isPaused)
         {
-            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
+            var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
             var playbackProgressInfo = new PlaybackProgressInfo
             {
                 SessionId = session.Id,
@@ -370,7 +370,7 @@ namespace Jellyfin.UWP
 
         public async Task SessionStopAsync(long position)
         {
-            var session = memoryCache.Get<SessionInfo>(JellyfinConstants.SessionName);
+            var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
 
             await apiClient.Sessions.Playing.Stopped
                 .PostAsync(new PlaybackStopInfo

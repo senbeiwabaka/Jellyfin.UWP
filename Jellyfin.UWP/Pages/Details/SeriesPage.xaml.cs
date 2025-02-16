@@ -29,21 +29,6 @@ namespace Jellyfin.UWP.Pages
             var playId = await context.GetPlayIdAsync();
             var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
-            if (context.HasMultipleAudioStreams && (context.IsMovie || context.IsEpisode))
-            {
-                var selected = context.SelectedAudioStream;
-
-                detailsItemPlayRecord.SelectedAudioIndex = selected.Index;
-                detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selected.MediaStreamIndex;
-            }
-
-            if (context.HasMultipleVideoStreams && (context.IsMovie || context.IsEpisode))
-            {
-                var selected = context.SelectedVideoStream;
-
-                detailsItemPlayRecord.SelectedVideoId = selected.VideoId;
-            }
-
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 

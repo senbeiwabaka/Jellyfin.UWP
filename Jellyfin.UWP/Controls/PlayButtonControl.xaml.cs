@@ -49,21 +49,21 @@ namespace Jellyfin.UWP.Controls
         {
             var button = (Button)sender;
             var item = (UIMediaListItem)button.DataContext;
+            DetailsItemPlayRecord detailsItemPlayRecord;
 
-            if (item.Type == BaseItemDto_Type.AggregateFolder)
+            if (item.Type == BaseItemDto_Type.Season)
             {
                 var playId = await mediaHelpers.GetPlayIdAsync(item);
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+                detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
 
                 ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
             }
-
-            if (item.Type == BaseItemDto_Type.Episode || item.Type == BaseItemDto_Type.Movie)
+            else
             {
-                var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
-
-                ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+                detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
             }
+
+            ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
     }
 }

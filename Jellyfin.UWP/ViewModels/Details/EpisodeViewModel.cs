@@ -1,16 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details
 {
-    internal sealed partial class EpisodeViewModel : DetailsViewModel
+    internal sealed partial class EpisodeViewModel : MediaDetailsViewModel
     {
         [ObservableProperty]
         private ObservableCollection<UIMediaListItem> seriesEpisodes;
@@ -20,10 +20,10 @@ namespace Jellyfin.UWP.ViewModels.Details
         {
         }
 
-        protected override async Task ExtraExecuteAsync()
+        protected override async Task DetailsExtraExecuteAsync()
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var episodes = await apiClient.Shows[MediaItem.SeriesId.Value].Episodes
+            var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            var episodes = await ApiClient.Shows[MediaItem.SeriesId.Value].Episodes
                 .GetAsync(options =>
                 {
                     options.QueryParameters.SeasonId = MediaItem.ParentId;
