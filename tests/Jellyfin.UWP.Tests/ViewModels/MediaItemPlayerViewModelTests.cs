@@ -339,10 +339,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
             {
                 requestAdapterMock.Setup(x => x.SendCollectionAsync(
                 It.IsAny<RequestInformation>(),
-                It.IsAny<ParsableFactory<SessionInfo>>(),
+                It.IsAny<ParsableFactory<SessionInfoDto>>(),
                 It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<IReadOnlyList<SessionInfo>>(session))
+                .ReturnsAsync(Newtonsoft.Json.JsonConvert.DeserializeObject<IReadOnlyList<SessionInfoDto>>(session))
                 .Verifiable();
 
                 //sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
@@ -353,10 +353,10 @@ namespace Jellyfin.UWP.Tests.ViewModels
             {
                 requestAdapterMock.Setup(x => x.SendCollectionAsync(
                 It.IsAny<RequestInformation>(),
-                It.IsAny<ParsableFactory<SessionInfo>>(),
+                It.IsAny<ParsableFactory<SessionInfoDto>>(),
                 It.IsAny<Dictionary<string, ParsableFactory<IParsable>>>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new List<SessionInfo>())
+                .ReturnsAsync(new List<SessionInfoDto>())
                 .Verifiable();
 
                 //sessionClientMock.Setup(x => x.GetSessionsAsync(null, "Jellyfin.UWP", null, It.IsAny<CancellationToken>()))
