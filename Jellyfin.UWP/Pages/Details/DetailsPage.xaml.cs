@@ -8,23 +8,38 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages.Details;
 
-internal sealed partial class SeriesPage : Page
+public sealed partial class DetailsPage : Page
 {
     private Guid id;
 
-    public SeriesPage()
+    public DetailsPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
-        DataContext = Ioc.Default.GetRequiredService<SeriesDetailViewModel>();
+        DataContext = Ioc.Default.GetRequiredService<DetailsViewModel>();
     }
 
-    internal SeriesDetailViewModel ViewModel => (SeriesDetailViewModel)DataContext;
+    internal DetailsViewModel ViewModel => (DetailsViewModel)DataContext;
 
     public async void PlayClick(object sender, RoutedEventArgs e)
     {
         var playId = await ViewModel.GetPlayIdAsync();
         var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+        if (ViewModel.HasMultipleAudioStreams && (ViewModel.IsMovie || ViewModel.IsEpisode))
+        {
+            var selected = ViewModel.SelectedAudioStream;
+
+            detailsItemPlayRecord.SelectedAudioIndex = selected.Index;
+            detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selected.MediaStreamIndex;
+        }
+
+        if (ViewModel.HasMultipleVideoStreams && (ViewModel.IsMovie || ViewModel.IsEpisode))
+        {
+            var selected = ViewModel.SelectedVideoStream;
+
+            detailsItemPlayRecord.SelectedVideoId = selected.VideoId;
+        }
 
         Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
     }
@@ -41,19 +56,9 @@ internal sealed partial class SeriesPage : Page
         base.OnNavigatedTo(e);
     }
 
-    private void NextUpButton_Click(object sender, RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(EpisodePage), ViewModel.NextUpItem?.Id);
-    }
-
-    private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ViewModel.MediaItem.Id.Value, });
-    }
-
     private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
     {
-        Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
+        Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
     }
 
     private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)

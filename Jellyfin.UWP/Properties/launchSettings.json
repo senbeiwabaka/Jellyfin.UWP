@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Jellyfin.UWP": {
+      "commandName": "MsixPackage"
+    }
+  }
+}

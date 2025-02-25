@@ -1,40 +1,42 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
+using System.ComponentModel.DataAnnotations;
 using Jellyfin.UWP.Helpers;
 using Windows.Storage;
+using WinRT;
 
-namespace Jellyfin.UWP.ViewModels
+namespace Jellyfin.UWP.ViewModels;
+
+[GeneratedBindableCustomProperty]
+public partial class SetupViewModel : ObservableValidator
 {
-    internal sealed partial class SetupViewModel : ObservableValidator
+    public delegate void EventHandler();
+
+    public event EventHandler? SuccessfullySetUrl;
+
+    public IRelayCommand CompleteCommand => field ??= new RelayCommand(Complete, CanGoToLoginPage);
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CompleteCommand))]
+    [Required(AllowEmptyStrings = false)]
+    [Url]
+    public partial string? JellyfinUrl { get; set; }
+
+    private bool CanGoToLoginPage()
     {
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(CompleteCommand))]
-        [Required(AllowEmptyStrings = false)]
-        [Url]
-        private string jellyfinUrl;
+        return !string.IsNullOrWhiteSpace(JellyfinUrl) && Uri.IsWellFormedUriString(JellyfinUrl, UriKind.Absolute);
+    }
 
-        public delegate void EventHandler();
+    private void Complete()
+    {
+        ValidateAllProperties();
 
-        public event EventHandler SuccessfullySetUrl;
-
-        private bool CanGoToLoginPage()
+        if (CanGoToLoginPage())
         {
-            return !string.IsNullOrWhiteSpace(JellyfinUrl) && Uri.IsWellFormedUriString(JellyfinUrl, UriKind.Absolute);
-        }
+            ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName] = JellyfinUrl;
 
-        [RelayCommand(CanExecute = nameof(CanGoToLoginPage))]
-        private void Complete()
-        {
-            ValidateAllProperties();
-
-            if (CanGoToLoginPage())
-            {
-                ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName] = JellyfinUrl;
-
-                SuccessfullySetUrl?.Invoke();
-            }
+            SuccessfullySetUrl?.Invoke();
         }
     }
 }

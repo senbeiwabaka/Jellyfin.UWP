@@ -7,78 +7,77 @@ using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Threading.Tasks;
 
-namespace Jellyfin.UWP.ViewModels.Controls
+namespace Jellyfin.UWP.ViewModels.Controls;
+
+internal sealed partial class ViewedFavoriteViewModel : ObservableObject
 {
-    internal sealed partial class ViewedFavoriteViewModel : ObservableObject
+    private readonly JellyfinApiClient apiClient;
+    private readonly IMemoryCache memoryCache;
+
+    [ObservableProperty]
+    private bool isFavorite;
+
+    [ObservableProperty]
+    private bool hasBeenWatched;
+
+    private UIItem item;
+
+    public ViewedFavoriteViewModel(JellyfinApiClient apiClient, IMemoryCache memoryCache)
     {
-        private readonly JellyfinApiClient apiClient;
-        private readonly IMemoryCache memoryCache;
+        this.apiClient = apiClient;
+        this.memoryCache = memoryCache;
+    }
 
-        [ObservableProperty]
-        private bool isFavorite;
+    public async Task FavoriteStateAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
-        [ObservableProperty]
-        private bool hasBeenWatched;
-
-        private UIItem item;
-
-        public ViewedFavoriteViewModel(JellyfinApiClient apiClient, IMemoryCache memoryCache)
+        if (item.UserData.IsFavorite)
         {
-            this.apiClient = apiClient;
-            this.memoryCache = memoryCache;
+            _ = await apiClient.UserFavoriteItems[item.Id]
+                .DeleteAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
         }
-
-        public async Task FavoriteStateAsync()
+        else
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-
-            if (item.UserData.IsFavorite)
-            {
-                _ = await apiClient.UserFavoriteItems[item.Id]
-                    .DeleteAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
-            else
-            {
-                _ = await apiClient.UserFavoriteItems[item.Id]
-                    .PostAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
+            _ = await apiClient.UserFavoriteItems[item.Id]
+                .PostAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
         }
+    }
 
-        public void Initialize(UIItem item)
+    public void Initialize(UIItem item)
+    {
+        this.item = item;
+
+        IsFavorite = this.item.UserData.IsFavorite;
+        HasBeenWatched = this.item.UserData.HasBeenWatched;
+    }
+
+    public async Task PlayedStateAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+
+        if (item.UserData.HasBeenWatched)
         {
-            this.item = item;
-
-            IsFavorite = this.item.UserData.IsFavorite;
-            HasBeenWatched = this.item.UserData.HasBeenWatched;
+            _ = await apiClient.UserPlayedItems[item.Id]
+                .DeleteAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                });
         }
-
-        public async Task PlayedStateAsync()
+        else
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-
-            if (item.UserData.HasBeenWatched)
-            {
-                _ = await apiClient.UserPlayedItems[item.Id]
-                    .DeleteAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
-            else
-            {
-                _ = await apiClient.UserPlayedItems[item.Id]
-                    .PostAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                        options.QueryParameters.DatePlayed = DateTimeOffset.Now;
-                    });
-            }
+            _ = await apiClient.UserPlayedItems[item.Id]
+                .PostAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                });
         }
     }
 }

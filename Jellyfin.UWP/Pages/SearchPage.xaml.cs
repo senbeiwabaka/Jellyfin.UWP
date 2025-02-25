@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -9,93 +10,93 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages;
+
+public sealed partial class SearchPage : Page
 {
-    public sealed partial class SearchPage : Page
+    private IMemoryCache memoryCache;
+
+    private string searchText;
+
+    public SearchPage()
     {
-        private IMemoryCache memoryCache;
+        this.InitializeComponent();
 
-        private string searchText;
+        this.Loaded += SearchPage_Loaded;
+    }
 
-        public SearchPage()
+    internal Type PageType { get; } = typeof(SearchPage);
+    internal SearchViewModel ViewModel => (SearchViewModel)DataContext;
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+
+        if (e.NavigationMode == NavigationMode.Back || (e.NavigationMode == NavigationMode.New && string.Equals(e.SourcePageType.Name, "MainPage", StringComparison.CurrentCultureIgnoreCase)))
         {
-            this.InitializeComponent();
+            NavigationCacheMode = NavigationCacheMode.Disabled;
+
+            this.Loaded -= SearchPage_Loaded;
+
+            PageHelpers.ResetPageCache();
+        }
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        if (e.NavigationMode == NavigationMode.New)
+        {
+            DataContext = Ioc.Default.GetRequiredService<SearchViewModel>();
+            memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
             this.Loaded += SearchPage_Loaded;
         }
+    }
 
-        public Type PageType { get; } = typeof(SearchPage);
+    private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        await ViewModel.LoadSearchAsync(args.QueryText);
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        searchText = args.QueryText;
+    }
+
+    private void ListView_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        var text = memoryCache.GetOrCreate<string>("Searched-Text", entry =>
         {
-            base.OnNavigatedFrom(e);
+            entry.SetValue(searchText);
 
-            if (e.NavigationMode == NavigationMode.Back || (e.NavigationMode == NavigationMode.New && string.Equals(e.SourcePageType.Name, "MainPage", StringComparison.CurrentCultureIgnoreCase)))
-            {
-                NavigationCacheMode = NavigationCacheMode.Disabled;
+            return searchText;
+        });
 
-                this.Loaded -= SearchPage_Loaded;
-
-                PageHelpers.ResetPageCache();
-            }
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            memoryCache.Set<string>("Searched-Text", searchText);
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+    }
+
+    private async void SearchPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        searchText = memoryCache.Get<string>("Searched-Text");
+
+        asbSearch.Text = string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(searchText))
         {
-            base.OnNavigatedTo(e);
+            asbSearch.Text = searchText;
 
-            if (e.NavigationMode == NavigationMode.New)
-            {
-                DataContext = Ioc.Default.GetRequiredService<SearchViewModel>();
-                memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
-
-                this.Loaded += SearchPage_Loaded;
-            }
+            await ViewModel.LoadSearchAsync(searchText);
         }
 
-        private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            await ((SearchViewModel)DataContext).LoadSearchAsync(args.QueryText);
+        ApplicationView.GetForCurrentView().Title = "Search";
+    }
 
-            searchText = args.QueryText;
-        }
-
-        private void ListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            var text = memoryCache.GetOrCreate<string>("Searched-Text", entry =>
-            {
-                entry.SetValue(searchText);
-
-                return searchText;
-            });
-
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                memoryCache.Set<string>("Searched-Text", searchText);
-            }
-
-            Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
-
-        private async void SearchPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            searchText = memoryCache.Get<string>("Searched-Text");
-
-            asbSearch.Text = string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(searchText))
-            {
-                asbSearch.Text = searchText;
-
-                await ((SearchViewModel)DataContext).LoadSearchAsync(searchText);
-            }
-
-            ApplicationView.GetForCurrentView().Title = "Search";
-        }
-
-        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-        {
-            await ((SearchViewModel)DataContext).LoadSearchAsync(asbSearch.Text);
-        }
+    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadSearchAsync(asbSearch.Text);
     }
 }

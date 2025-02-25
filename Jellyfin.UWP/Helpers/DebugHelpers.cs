@@ -1,20 +1,19 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Jellyfin.UWP.Helpers
+namespace Jellyfin.UWP.Helpers;
+
+[ExcludeFromCodeCoverage]
+internal static class DebugHelpers
 {
-    [ExcludeFromCodeCoverage]
-    internal static class DebugHelpers
+    internal static bool IsDebugRelease
     {
-        internal static bool IsDebugRelease
+        get
         {
-            get
-            {
 #if DEBUG
-                return true;
+            return true;
 #else
-                return false;
+            return false;
 #endif
-            }
         }
     }
 }

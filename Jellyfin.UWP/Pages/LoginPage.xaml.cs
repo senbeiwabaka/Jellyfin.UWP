@@ -1,73 +1,71 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.ViewModels;
 using System.Threading;
+using Jellyfin.UWP.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages;
+
+public sealed partial class LoginPage : Page
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class LoginPage : Page
+    public LoginPage()
     {
-        public LoginPage()
+        InitializeComponent();
+
+        DataContext = Ioc.Default.GetRequiredService<LoginViewModel>();
+
+        Loaded += LoginPage_Loaded;
+        Unloaded += LoginPage_Unloaded;
+    }
+
+    internal LoginViewModel ViewModel => (LoginViewModel)DataContext;
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        if (Frame.CanGoForward)
         {
-            this.InitializeComponent();
-
-            DataContext = Ioc.Default.GetRequiredService<LoginViewModel>();
-
-            this.Loaded += LoginPage_Loaded;
-            this.Unloaded += LoginPage_Unloaded;
+            Frame.ForwardStack.Clear();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        if (Frame.CanGoBack)
         {
-            if (this.Frame.CanGoForward)
-            {
-                this.Frame.ForwardStack.Clear();
-            }
-
-            if (this.Frame.CanGoBack)
-            {
-                this.Frame.BackStack.Clear();
-            }
-
-            base.OnNavigatedTo(e);
+            Frame.BackStack.Clear();
         }
 
-        private void btnChangeURL_Click(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(SetupPage));
-        }
+        base.OnNavigatedTo(e);
+    }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).OpenPopup = false;
-        }
+    private void btnChangeURL_Click(object sender, RoutedEventArgs e)
+    {
+        ((Frame)Window.Current.Content).Navigate(typeof(SetupPage));
+    }
 
-        private void LoginPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
-        }
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.OpenPopup = false;
+    }
 
-        private void LoginPage_SuccessfullyLoggedIn()
-        {
-            ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
-        }
+    private void LoginPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SuccessfullyLoggedIn += LoginPage_SuccessfullyLoggedIn;
+    }
 
-        private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
-        {
-            ((LoginViewModel)DataContext).SuccessfullyLoggedIn -= LoginPage_SuccessfullyLoggedIn;
-        }
+    private void LoginPage_SuccessfullyLoggedIn()
+    {
+        ((Frame)Window.Current.Content).Navigate(typeof(MainPage));
+    }
 
-        private void PasswordBox_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+    private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SuccessfullyLoggedIn -= LoginPage_SuccessfullyLoggedIn;
+    }
+
+    private void PasswordBox_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter)
         {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                ((LoginViewModel)DataContext).LoginCommand.Execute(CancellationToken.None);
-            }
+            ViewModel.LoginCommand.Execute(CancellationToken.None);
         }
     }
 }

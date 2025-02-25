@@ -1,37 +1,40 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels.Latest;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages.Latest;
 
-internal sealed partial class ShowsPage : Page
+internal sealed partial class MoviesPage : Page
 {
     private readonly IMediaHelpers mediaHelpers;
 
     private Guid id;
 
-    public ShowsPage()
+    public MoviesPage()
     {
         InitializeComponent();
 
-        DataContext = Ioc.Default.GetRequiredService<ShowsViewModel>();
+        DataContext = Ioc.Default.GetRequiredService<MoviesViewModel>();
 
         mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
 
-        Loaded += LatestShowsPage_Loaded;
+        Loaded += LatestMoviesPage_Loaded;
     }
 
-    internal ShowsViewModel ViewModel => (ShowsViewModel)DataContext;
+    internal MoviesViewModel ViewModel => (MoviesViewModel)DataContext;
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
@@ -45,7 +48,7 @@ internal sealed partial class ShowsPage : Page
         base.OnNavigatedTo(e);
     }
 
-    private async void LatestShowsPage_Loaded(object sender, RoutedEventArgs e)
+    private async void LatestMoviesPage_Loaded(object sender, RoutedEventArgs e)
     {
         await Run();
     }
@@ -91,7 +94,8 @@ internal sealed partial class ShowsPage : Page
 
         ViewModel.HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
         ViewModel.HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
-        ViewModel.HasEnoughDataForNextUpScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+
+        SetupRecommendation();
     }
 
     private void ScrollLeft_Click(object sender, RoutedEventArgs e)
@@ -194,12 +198,53 @@ internal sealed partial class ShowsPage : Page
         }
     }
 
-    private async void SeriesLink_Click(object sender, RoutedEventArgs e)
+    private void SetupRecommendation()
     {
-        var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
-        var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
+        sp_Recommendations.Children.Clear();
 
-        //Frame.Navigate(typeof(SeriesPage), seriesId);
+        foreach (var item in ViewModel.RecommendationListGrouped)
+        {
+            if (!item.Any())
+            {
+                continue;
+            }
+
+            var stackPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = item.Key.DisplayName,
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 40.0d,
+            });
+
+            sp_Recommendations.Children.Add(stackPanel);
+
+            var listView = new ListView
+            {
+                ItemsSource = new ObservableCollection<UIMediaListItem>(item),
+                ItemsPanel = PageHelpers.GetItemsPanelTemplate(),
+                IsItemClickEnabled = true,
+                ItemTemplate = (DataTemplate)Resources["UIMediaListItemDataTemplate"]
+            };
+
+            listView.ItemClick += MediaClickItemList;
+
+            sp_Recommendations.Children.Add(listView);
+
+            listView.UpdateLayout();
+
+            var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
+
+            listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
+            listViewScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
+            listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
+            listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+        }
     }
 
     private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)

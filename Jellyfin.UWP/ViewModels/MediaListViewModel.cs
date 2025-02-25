@@ -12,159 +12,159 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Jellyfin.UWP.ViewModels
+namespace Jellyfin.UWP.ViewModels;
+
+internal partial class MediaListViewModel : ObservableObject
 {
-    internal partial class MediaListViewModel : ObservableObject
+    private const int Limit = 100;
+
+    private readonly JellyfinApiClient apiClient;
+    private readonly IMediaHelpers mediaHelpers;
+    private readonly UserDto user;
+
+    [ObservableProperty]
+    private string countInformation;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LoadPreviousCommand))]
+    private int currentIndex = 0;
+
+    [ObservableProperty]
+    private ObservableCollection<FiltersModel> filteringFilters;
+
+    [ObservableProperty]
+    private ObservableCollection<GenreFiltersModel> genresFilterList;
+
+    private BaseItemKind itemType;
+
+    [ObservableProperty]
+    private ObservableCollection<UIMediaListItem> mediaList;
+
+    private Guid? parentId;
+
+    private BaseItemDto parentItem;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
+    private int totalRecords = 0;
+
+    public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
     {
-        private const int Limit = 100;
+        this.apiClient = apiClient;
+        this.mediaHelpers = mediaHelpers;
+        this.user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+    }
 
-        private readonly JellyfinApiClient apiClient;
-        private readonly IMediaHelpers mediaHelpers;
-        private readonly UserDto user;
+    public void FilterReset()
+    {
+        CurrentIndex = 0;
+    }
 
-        [ObservableProperty]
-        private string countInformation;
+    public async Task<UIMediaListItem> GetLatestOnItemAsync(Guid id)
+    {
+        var item = await apiClient.Items[id]
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+            });
 
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(LoadPreviousCommand))]
-        private int currentIndex = 0;
-
-        [ObservableProperty]
-        private ObservableCollection<FiltersModel> filteringFilters;
-
-        [ObservableProperty]
-        private ObservableCollection<GenreFiltersModel> genresFilterList;
-
-        private BaseItemKind itemType;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> mediaList;
-
-        private Guid? parentId;
-
-        private BaseItemDto parentItem;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
-        private int totalRecords = 0;
-
-        public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+        return new UIMediaListItem
         {
-            this.apiClient = apiClient;
-            this.mediaHelpers = mediaHelpers;
-            this.user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+            Id = item.Id.Value,
+            Name = item.Name,
+            Url = mediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
+            Type = item.Type.Value,
+            CollectionType = item.CollectionType,
+            UserData = new UIUserData
+            {
+                IsFavorite = item.UserData.IsFavorite.Value,
+                UnplayedItemCount = item.UserData.UnplayedItemCount,
+                HasBeenWatched = item.UserData.Played.Value,
+            },
+        };
+    }
+
+    public string GetTitle()
+    {
+        return parentItem?.Name ?? "No Title";
+    }
+
+    public async Task InitialLoadAsync(Guid id)
+    {
+        if (parentId is not null && parentItem is not null)
+        {
+            return;
         }
 
-        public void FilterReset()
+        parentId = id;
+
+        var items = await apiClient.Items
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.StartIndex = 0;
+                options.QueryParameters.Limit = 1;
+                options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
+                options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
+                options.QueryParameters.Ids = new[] { parentId, };
+            });
+
+        itemType = BaseItemKind.BoxSet;
+
+        parentItem = items.Items[0];
+
+        if (parentItem.CollectionType == BaseItemDto_CollectionType.Movies)
         {
-            CurrentIndex = 0;
+            itemType = BaseItemKind.Movie;
         }
 
-        public async Task<UIMediaListItem> GetLatestOnItemAsync(Guid id)
+        if (parentItem.CollectionType == BaseItemDto_CollectionType.Tvshows)
         {
-            var item = await apiClient.Items[id]
-                .GetAsync(options =>
+            itemType = BaseItemKind.Series;
+        }
+
+        await LoadMediaAsync();
+    }
+
+    public async Task IsFavoriteStateAsync(bool isFavorite, Guid id)
+    {
+        if (isFavorite)
+        {
+            _ = await apiClient.UserFavoriteItems[id]
+                .DeleteAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
                 });
-
-            return new UIMediaListItem
-            {
-                Id = item.Id.Value,
-                Name = item.Name,
-                Url = mediaHelpers.SetImageUrl(item, "384", "210", JellyfinConstants.PrimaryName),
-                Type = item.Type.Value,
-                CollectionType = item.CollectionType,
-                UserData = new UIUserData
-                {
-                    IsFavorite = item.UserData.IsFavorite.Value,
-                    UnplayedItemCount = item.UserData.UnplayedItemCount,
-                    HasBeenWatched = item.UserData.Played.Value,
-                },
-            };
         }
-
-        public string GetTitle()
+        else
         {
-            return parentItem?.Name ?? "No Title";
-        }
-
-        public async Task InitialLoadAsync(Guid id)
-        {
-            if (parentId is not null && parentItem is not null)
-            {
-                return;
-            }
-
-            parentId = id;
-
-            var items = await apiClient.Items
-                .GetAsync(options =>
+            _ = await apiClient.UserFavoriteItems[id]
+                .PostAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.StartIndex = 0;
-                    options.QueryParameters.Limit = 1;
-                    options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
-                    options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
-                    options.QueryParameters.Ids = new[] { parentId, };
                 });
+        }
+    }
 
-            itemType = BaseItemKind.BoxSet;
-
-            parentItem = items.Items[0];
-
-            if (parentItem.CollectionType == BaseItemDto_CollectionType.Movies)
-            {
-                itemType = BaseItemKind.Movie;
-            }
-
-            if (parentItem.CollectionType == BaseItemDto_CollectionType.Tvshows)
-            {
-                itemType = BaseItemKind.Series;
-            }
-
-            await LoadMediaAsync();
+    public async Task LoadFiltersAsync()
+    {
+        if (GenresFilterList is not null && GenresFilterList.Count > 0)
+        {
+            return;
         }
 
-        public async Task IsFavoriteStateAsync(bool isFavorite, Guid id)
-        {
-            if (isFavorite)
+        var filtersResult = await apiClient.Items.Filters2
+            .GetAsync(options =>
             {
-                _ = await apiClient.UserFavoriteItems[id]
-                    .DeleteAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
-            else
-            {
-                _ = await apiClient.UserFavoriteItems[id]
-                    .PostAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
-        }
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.ParentId = parentId;
+                options.QueryParameters.IncludeItemTypes = new[] { itemType };
+            });
 
-        public async Task LoadFiltersAsync()
-        {
-            if (GenresFilterList is not null && GenresFilterList.Count > 0)
-            {
-                return;
-            }
+        GenresFilterList = new ObservableCollection<GenreFiltersModel>(
+            filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id.Value, Name = x.Name }));
 
-            var filtersResult = await apiClient.Items.Filters2
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.ParentId = parentId;
-                    options.QueryParameters.IncludeItemTypes = new[] { itemType };
-                });
-
-            GenresFilterList = new ObservableCollection<GenreFiltersModel>(
-                filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id.Value, Name = x.Name }));
-
-            FilteringFilters = new ObservableCollection<FiltersModel>
+        FilteringFilters = new ObservableCollection<FiltersModel>
             {
                 new() { DisplayName = "Played", Filter = ItemFilter.IsPlayed },
                 new() { DisplayName = "UnPlayed",Filter = ItemFilter.IsUnplayed },
@@ -173,134 +173,133 @@ namespace Jellyfin.UWP.ViewModels
                 new() { DisplayName = "Likes", Filter = ItemFilter.Likes },
                 new() { DisplayName = "Dislikes", Filter = ItemFilter.Dislikes },
             };
+    }
+
+    public async Task LoadMediaAsync(
+        Guid?[] genreIds = null,
+        ItemFilter[] itemFilters = null,
+        CancellationToken cancellationToken = default)
+    {
+        var itemsResult = await apiClient.Items
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.ParentId = parentId;
+                options.QueryParameters.StartIndex = CurrentIndex;
+                options.QueryParameters.Limit = Limit;
+                options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
+                options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
+                options.QueryParameters.GenreIds = genreIds;
+                options.QueryParameters.Filters = itemFilters;
+                options.QueryParameters.IncludeItemTypes = new[] { itemType };
+                options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
+            },
+            cancellationToken: cancellationToken);
+
+        TotalRecords = itemsResult.TotalRecordCount.Value;
+
+        if (CurrentIndex == 0)
+        {
+            CountInformation = $"1-{Limit} of {itemsResult.TotalRecordCount}";
+        }
+        else
+        {
+            CountInformation = $"{CurrentIndex}-{(CurrentIndex - 1) + Limit} of {itemsResult.TotalRecordCount}";
         }
 
-        public async Task LoadMediaAsync(
-            Guid?[] genreIds = null,
-            ItemFilter[] itemFilters = null,
-            CancellationToken cancellationToken = default)
+        MediaList = new ObservableCollection<UIMediaListItem>(
+            itemsResult
+                .Items
+                .Select(x =>
+                {
+                    var item = new UIMediaListItem
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = mediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
+                        Type = x.Type.Value,
+                        CollectionType = x.CollectionType,
+                        UserData = new UIUserData
+                        {
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            HasBeenWatched = x.UserData.Played.Value,
+                        },
+                    };
+
+                    return item;
+                }));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLoadNext))]
+    public async Task LoadNextAsync(CancellationToken cancellationToken)
+    {
+        if (CurrentIndex == 0)
         {
-            var itemsResult = await apiClient.Items
-                .GetAsync(options =>
+            CurrentIndex += Limit + 1;
+        }
+        else
+        {
+            CurrentIndex += Limit;
+        }
+
+        await LoadMediaAsync(
+            GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
+            FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
+            cancellationToken);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLoadPrevious))]
+    public async Task LoadPreviousAsync(CancellationToken cancellationToken)
+    {
+        if (CurrentIndex < 0)
+        {
+            CurrentIndex = 0;
+        }
+        else
+        {
+            CurrentIndex -= Limit;
+        }
+
+        if (CurrentIndex == 1)
+        {
+            CurrentIndex = 0;
+        }
+
+        await LoadMediaAsync(
+            GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
+            FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
+            cancellationToken);
+    }
+
+    public async Task PlayedStateAsync(bool hasBeenViewed, Guid id)
+    {
+        if (hasBeenViewed)
+        {
+            _ = await apiClient.UserPlayedItems[id]
+                .DeleteAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.ParentId = parentId;
-                    options.QueryParameters.StartIndex = CurrentIndex;
-                    options.QueryParameters.Limit = Limit;
-                    options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
-                    options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
-                    options.QueryParameters.GenreIds = genreIds;
-                    options.QueryParameters.Filters = itemFilters;
-                    options.QueryParameters.IncludeItemTypes = new[] { itemType };
-                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
-                },
-                cancellationToken: cancellationToken);
-
-            TotalRecords = itemsResult.TotalRecordCount.Value;
-
-            if (CurrentIndex == 0)
-            {
-                CountInformation = $"1-{Limit} of {itemsResult.TotalRecordCount}";
-            }
-            else
-            {
-                CountInformation = $"{CurrentIndex}-{(CurrentIndex - 1) + Limit} of {itemsResult.TotalRecordCount}";
-            }
-
-            MediaList = new ObservableCollection<UIMediaListItem>(
-                itemsResult
-                    .Items
-                    .Select(x =>
-                    {
-                        var item = new UIMediaListItem
-                        {
-                            Id = x.Id.Value,
-                            Name = x.Name,
-                            Url = mediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
-                            Type = x.Type.Value,
-                            CollectionType = x.CollectionType,
-                            UserData = new UIUserData
-                            {
-                                IsFavorite = x.UserData.IsFavorite.Value,
-                                UnplayedItemCount = x.UserData.UnplayedItemCount,
-                                HasBeenWatched = x.UserData.Played.Value,
-                            },
-                        };
-
-                        return item;
-                    }));
+                });
         }
-
-        [RelayCommand(CanExecute = nameof(CanLoadNext))]
-        public async Task LoadNextAsync(CancellationToken cancellationToken)
+        else
         {
-            if (CurrentIndex == 0)
-            {
-                CurrentIndex += Limit + 1;
-            }
-            else
-            {
-                CurrentIndex += Limit;
-            }
-
-            await LoadMediaAsync(
-                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
-                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
-                cancellationToken);
+            _ = await apiClient.UserPlayedItems[id]
+                .PostAsync(options =>
+                {
+                    options.QueryParameters.UserId = user.Id;
+                    options.QueryParameters.DatePlayed = DateTimeOffset.Now;
+                });
         }
+    }
 
-        [RelayCommand(CanExecute = nameof(CanLoadPrevious))]
-        public async Task LoadPreviousAsync(CancellationToken cancellationToken)
-        {
-            if (CurrentIndex < 0)
-            {
-                CurrentIndex = 0;
-            }
-            else
-            {
-                CurrentIndex -= Limit;
-            }
+    private bool CanLoadNext()
+    {
+        return (CurrentIndex + Limit) < TotalRecords;
+    }
 
-            if (CurrentIndex == 1)
-            {
-                CurrentIndex = 0;
-            }
-
-            await LoadMediaAsync(
-                GenresFilterList?.Where(x => x.IsSelected).Select(x => x.Id).Cast<Guid?>().ToArray(),
-                FilteringFilters?.Where(x => x.IsSelected).Select(x => x.Filter).ToArray(),
-                cancellationToken);
-        }
-
-        public async Task PlayedStateAsync(bool hasBeenViewed, Guid id)
-        {
-            if (hasBeenViewed)
-            {
-                _ = await apiClient.UserPlayedItems[id]
-                    .DeleteAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                    });
-            }
-            else
-            {
-                _ = await apiClient.UserPlayedItems[id]
-                    .PostAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                        options.QueryParameters.DatePlayed = DateTimeOffset.Now;
-                    });
-            }
-        }
-
-        private bool CanLoadNext()
-        {
-            return (CurrentIndex + Limit) < TotalRecords;
-        }
-
-        private bool CanLoadPrevious()
-        {
-            return (CurrentIndex - Limit) > 0;
-        }
+    private bool CanLoadPrevious()
+    {
+        return (CurrentIndex - Limit) > 0;
     }
 }

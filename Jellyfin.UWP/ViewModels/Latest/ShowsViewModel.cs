@@ -1,195 +1,191 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Jellyfin.UWP.ViewModels.Latest
+namespace Jellyfin.UWP.ViewModels.Latest;
+
+internal sealed partial class ShowsViewModel : ObservableObject
 {
-    internal sealed partial class ShowsViewModel : ObservableObject
+    private readonly IMemoryCache memoryCache;
+    private readonly JellyfinApiClient apiClient;
+    private readonly IMediaHelpers mediaHelpers;
+
+    [ObservableProperty]
+    private bool hasEnoughDataForContinueScrolling;
+
+    [ObservableProperty]
+    private bool hasEnoughDataForLatestScrolling;
+
+    [ObservableProperty]
+    private bool hasEnoughDataForNextUpScrolling;
+
+    [ObservableProperty]
+    private bool hasResumeMedia;
+
+    private Guid id;
+
+    [ObservableProperty]
+    private ObservableCollection<UIMediaListItem> latestMediaList;
+
+    [ObservableProperty]
+    private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
+
+    [ObservableProperty]
+    private ObservableCollection<UIMediaListItem> resumeMediaList;
+
+    public ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
     {
-        private readonly IMemoryCache memoryCache;
-        private readonly JellyfinApiClient apiClient;
-        private readonly IMediaHelpers mediaHelpers;
+        this.memoryCache = memoryCache;
+        this.apiClient = apiClient;
+        this.mediaHelpers = mediaHelpers;
+    }
 
-        [ObservableProperty]
-        private bool hasEnoughDataForContinueScrolling;
+    public async Task LoadInitialAsync(Guid id)
+    {
+        this.id = id;
 
-        [ObservableProperty]
-        private bool hasEnoughDataForLatestScrolling;
+        await LoadResumeItemsAsync();
+        await LoadLatestAsync();
+        await LoadNextUpAsync();
+    }
 
-        [ObservableProperty]
-        private bool hasEnoughDataForNextUpScrolling;
-
-        [ObservableProperty]
-        private bool hasResumeMedia;
-
-        private Guid id;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> latestMediaList;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> resumeMediaList;
-
-        public ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+    private string GetContinueItemImage(BaseItemDto item)
+    {
+        var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+        if (item.ParentThumbItemId != null)
         {
-            this.memoryCache = memoryCache;
-            this.apiClient = apiClient;
-            this.mediaHelpers = mediaHelpers;
+            return $"{baseUrl}/Items/{item.ParentThumbItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentThumbImageTag}";
         }
 
-        public async Task LoadInitialAsync(Guid id)
+        if (item.ParentBackdropItemId != null)
         {
-            this.id = id;
-
-            await LoadResumeItemsAsync();
-            await LoadLatestAsync();
-            await LoadNextUpAsync();
+            return $"{baseUrl}/Items/{item.ParentBackdropItemId}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentBackdropImageTags[0]}";
         }
 
-        private string GetContinueItemImage(BaseItemDto item)
+        return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
+    }
+
+    private string GetItemImage(BaseItemDto item)
+    {
+        var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+        if (item.ImageTags.AdditionalData.ContainsKey(JellyfinConstants.ThumbName))
         {
-            var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
-            if (item.ParentThumbItemId != null)
-            {
-                return $"{baseUrl}/Items/{item.ParentThumbItemId}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentThumbImageTag}";
-            }
-
-            if (item.ParentBackdropItemId != null)
-            {
-                return $"{baseUrl}/Items/{item.ParentBackdropItemId}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ParentBackdropImageTags[0]}";
-            }
-
-            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
+            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData["Thumb"]}";
         }
 
-        private string GetItemImage(BaseItemDto item)
+        if (item.BackdropImageTags.Count > 0)
         {
-            var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
-            if (item.ImageTags.AdditionalData.ContainsKey(JellyfinConstants.ThumbName))
-            {
-                return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.ThumbName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData["Thumb"]}";
-            }
-
-            if (item.BackdropImageTags.Count > 0)
-            {
-                return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
-            }
-
-            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
+            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
         }
 
-        private async Task LoadLatestAsync()
-        {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.Items.Latest
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.Limit = 30;
-                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
-                    options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.EnableImageTypes = new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, };
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Episode, };
-                });
+        return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
+    }
 
-            LatestMediaList = new ObservableCollection<UIMediaListItem>(
-            itemsResult
-            .Select(x =>
+    private async Task LoadLatestAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Items.Latest
+            .GetAsync(options =>
             {
-                var item = new UIMediaListItemSeries
-                {
-                    Id = x.Id.Value,
-                    Name = x.Name,
-                    Url = GetItemImage(x),
-                    CollectionType = x.CollectionType,
-                };
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.Limit = 30;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.ImageTypeLimit = 1;
+                options.QueryParameters.EnableImageTypes = [ImageType.Primary, ImageType.Backdrop, ImageType.Thumb,];
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Episode,];
+            });
 
-                item.UserData.IsFavorite = x.UserData.IsFavorite.Value;
-                item.UserData.HasBeenWatched = x.UserData.Played.Value;
-                item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
-
-                return item;
-            }));
-        }
-
-        private async Task LoadNextUpAsync()
+        LatestMediaList = [.. itemsResult
+        .Select(x =>
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.Shows.NextUp
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.StartIndex = 0;
-                    options.QueryParameters.Limit = 24;
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.DateCreated, ItemFields.MediaSourceCount, };
-                    options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.EnableImageTypes = new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, };
-                    options.QueryParameters.EnableTotalRecordCount = false;
-                });
+            var item = new UIMediaListItemSeries
+            {
+                Id = x.Id.Value,
+                Name = x.Name,
+                Url = GetItemImage(x),
+                CollectionType = x.CollectionType,
+            };
 
-            NextupMediaList = new ObservableCollection<UIMediaListItemSeries>(
-                itemsResult
-                    .Items
-                    .Select(x =>
-                        new UIMediaListItemSeries
+            item.UserData.IsFavorite = x.UserData.IsFavorite.Value;
+            item.UserData.HasBeenWatched = x.UserData.Played.Value;
+            item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
+
+            return item;
+        })];
+    }
+
+    private async Task LoadNextUpAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Shows.NextUp
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.StartIndex = 0;
+                options.QueryParameters.Limit = 24;
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio, ItemFields.DateCreated, ItemFields.MediaSourceCount,];
+                options.QueryParameters.ImageTypeLimit = 1;
+                options.QueryParameters.EnableImageTypes = [ImageType.Primary, ImageType.Backdrop, ImageType.Thumb,];
+                options.QueryParameters.EnableTotalRecordCount = false;
+            });
+
+        NextupMediaList = [.. itemsResult
+                .Items
+                .Select(x =>
+                    new UIMediaListItemSeries
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = mediaHelpers.SetThumbImageUrl(x, "317", "564"),
+                        Type = x.Type.Value,
+                        SeriesName = x.SeriesName,
+                        UserData = new UIUserData
                         {
-                            Id = x.Id.Value,
-                            Name = x.Name,
-                            Url = mediaHelpers.SetThumbImageUrl(x, "317", "564"),
-                            Type = x.Type.Value,
-                            SeriesName = x.SeriesName,
-                            UserData = new UIUserData
-                            {
-                                IsFavorite = x.UserData.IsFavorite.Value,
-                                HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount ?? 0,
-                            },
-                        }));
-        }
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            HasBeenWatched = x.UserData.Played.Value,
+                            UnplayedItemCount = x.ChildCount ?? 0,
+                        },
+                    })];
+    }
 
-        private async Task LoadResumeItemsAsync()
-        {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.UserItems.Resume
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.Limit = 24;
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.EnableTotalRecordCount = false;
-                });
+    private async Task LoadResumeItemsAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.UserItems.Resume
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.Limit = 24;
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.EnableTotalRecordCount = false;
+            });
 
-            ResumeMediaList = new ObservableCollection<UIMediaListItem>(
-                itemsResult
-                    .Items
-                    .Select(x =>
-                        new UIMediaListItem
+        ResumeMediaList = [.. itemsResult
+                .Items
+                .Select(x =>
+                    new UIMediaListItem
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = GetContinueItemImage(x),
+                        Type = x.Type.Value,
+                        UserData = new UIUserData
                         {
-                            Id = x.Id.Value,
-                            Name = x.Name,
-                            Url = GetContinueItemImage(x),
-                            Type = x.Type.Value,
-                            UserData = new UIUserData
-                            {
-                                IsFavorite = x.UserData.IsFavorite.Value,
-                                HasBeenWatched = x.UserData.Played.Value,
-                                UnplayedItemCount = x.ChildCount ?? 0,
-                            },
-                        }));
+                            IsFavorite = x.UserData.IsFavorite.Value,
+                            HasBeenWatched = x.UserData.Played.Value,
+                            UnplayedItemCount = x.ChildCount ?? 0,
+                        },
+                    })];
 
-            HasResumeMedia = ResumeMediaList.Count > 0;
-        }
+        HasResumeMedia = ResumeMediaList.Count > 0;
     }
 }

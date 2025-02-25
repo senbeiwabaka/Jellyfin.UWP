@@ -1,151 +1,153 @@
-﻿using System;
-using System.Linq;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.Filters;
+using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels;
+using System;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages;
+
+internal sealed partial class MediaListPage : Page
 {
-    public sealed partial class MediaListPage : Page
+    private Guid id;
+
+    public MediaListPage()
     {
-        private Guid id;
+        this.InitializeComponent();
+    }
 
-        public MediaListPage()
+    internal MediaListViewModel ViewModel => (MediaListViewModel)DataContext;
+
+    public void ClickItemList(object sender, ItemClickEventArgs e)
+    {
+        var mediaItem = (UIMediaListItem)e.ClickedItem;
+
+        if (mediaItem.Type == BaseItemDto_Type.Episode)
         {
-            this.InitializeComponent();
+            Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
+        }
+        else if (mediaItem.Type == BaseItemDto_Type.Movie)
+        {
+            Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
+        }
+        else
+        {
+            Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
+        }
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+
+        if (e.NavigationMode == NavigationMode.Back || (e.NavigationMode == NavigationMode.New && string.Equals(e.SourcePageType.Name, "MainPage", StringComparison.CurrentCultureIgnoreCase)))
+        {
+            NavigationCacheMode = NavigationCacheMode.Disabled;
+
+            this.Loaded -= MediaListPage_Loaded;
+
+            PageHelpers.ResetPageCache();
+        }
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        if (e.NavigationMode == NavigationMode.New)
+        {
+            DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
+
+            this.Loaded += MediaListPage_Loaded;
         }
 
-        public void ClickItemList(object sender, ItemClickEventArgs e)
-        {
-            var mediaItem = (UIMediaListItem)e.ClickedItem;
+        id = (Guid)e.Parameter;
+    }
 
-            if (mediaItem.Type == BaseItemDto_Type.Episode)
-            {
-                Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
-            }
-            else if (mediaItem.Type == BaseItemDto_Type.Movie)
-            {
-                Frame.Navigate(typeof(DetailsPage), mediaItem.Id);
-            }
-            else
-            {
-                Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
-            }
-        }
+    private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var item = (UIMediaListItem)button.DataContext;
+        var items = ViewModel.MediaList;
+        var index = items.IndexOf(item);
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            base.OnNavigatedFrom(e);
+        await ViewModel.IsFavoriteStateAsync(item.UserData.IsFavorite, item.Id);
 
-            if (e.NavigationMode == NavigationMode.Back || (e.NavigationMode == NavigationMode.New && string.Equals(e.SourcePageType.Name, "MainPage", StringComparison.CurrentCultureIgnoreCase)))
-            {
-                NavigationCacheMode = NavigationCacheMode.Disabled;
+        var updateItem = await ViewModel.GetLatestOnItemAsync(item.Id);
 
-                this.Loaded -= MediaListPage_Loaded;
+        items[index] = updateItem;
+    }
 
-                PageHelpers.ResetPageCache();
-            }
-        }
+    private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var item = (UIMediaListItem)button.DataContext;
+        
+        var items = ViewModel.MediaList;
+        var index = items.IndexOf(item);
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
+        await ViewModel.PlayedStateAsync(item.UserData.HasBeenWatched, item.Id);
 
-            if (e.NavigationMode == NavigationMode.New)
-            {
-                DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
+        var updateItem = await ViewModel.GetLatestOnItemAsync(item.Id);
 
-                this.Loaded += MediaListPage_Loaded;
-            }
+        items[index] = updateItem;
+    }
 
-            id = (Guid)e.Parameter;
-        }
+    private async void FiltersButton_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadFiltersAsync();
 
-        private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-            var context = (MediaListViewModel)DataContext;
-            var items = context.MediaList;
-            var index = items.IndexOf(item);
+        Filters.IsOpen = true;
+    }
 
-            await context.IsFavoriteStateAsync(item.UserData.IsFavorite, item.Id);
+    private void FiltersFiltering_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        Filters.IsOpen = false;
+    }
 
-            var updateItem = await context.GetLatestOnItemAsync(item.Id);
+    private async void FiltersFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ViewModel.FilterReset();
 
-            items[index] = updateItem;
-        }
+        var listView = (ListView)sender;
+        var currentListViewSelectedItems = listView.SelectedItems.Cast<FiltersModel>();
+        var genresSelectedItems = GenreFiltering.SelectedItems.Cast<GenreFiltersModel>();
 
-        private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
-        {
-            var button = (Button)sender;
-            var item = (UIMediaListItem)button.DataContext;
-            var context = (MediaListViewModel)DataContext;
-            var items = context.MediaList;
-            var index = items.IndexOf(item);
+        await ViewModel.LoadMediaAsync(
+            genresSelectedItems.Any() ? genresSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
+            currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Filter).ToArray() : null);
+    }
 
-            await context.PlayedStateAsync(item.UserData.HasBeenWatched, item.Id);
+    private void GenreFiltering_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        Filters.IsOpen = false;
+    }
 
-            var updateItem = await context.GetLatestOnItemAsync(item.Id);
+    private async void GenreFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ViewModel.FilterReset();
 
-            items[index] = updateItem;
-        }
+        var listView = (ListView)sender;
+        var currentListViewSelectedItems = listView.SelectedItems.Cast<GenreFiltersModel>();
+        var itemFiltersSelectedItems = FiltersFiltering.SelectedItems.Cast<FiltersModel>();
 
-        private async void FiltersButton_Click(object sender, RoutedEventArgs e)
-        {
-            await ((MediaListViewModel)DataContext).LoadFiltersAsync();
+        await ViewModel.LoadMediaAsync(
+            currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
+            itemFiltersSelectedItems.Any() ? itemFiltersSelectedItems.Select(x => x.Filter).ToArray() : null);
+    }
 
-            Filters.IsOpen = true;
-        }
+    private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.InitialLoadAsync(id);
 
-        private void FiltersFiltering_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Filters.IsOpen = false;
-        }
-
-        private async void FiltersFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ((MediaListViewModel)DataContext).FilterReset();
-
-            var listView = (ListView)sender;
-            var currentListViewSelectedItems = listView.SelectedItems.Cast<FiltersModel>();
-            var genresSelectedItems = GenreFiltering.SelectedItems.Cast<GenreFiltersModel>();
-
-            await ((MediaListViewModel)DataContext).LoadMediaAsync(
-                genresSelectedItems.Any() ? genresSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
-                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Filter).ToArray() : null);
-        }
-
-        private void GenreFiltering_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Filters.IsOpen = false;
-        }
-
-        private async void GenreFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ((MediaListViewModel)DataContext).FilterReset();
-
-            var listView = (ListView)sender;
-            var currentListViewSelectedItems = listView.SelectedItems.Cast<GenreFiltersModel>();
-            var itemFiltersSelectedItems = FiltersFiltering.SelectedItems.Cast<FiltersModel>();
-
-            await ((MediaListViewModel)DataContext).LoadMediaAsync(
-                currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
-                itemFiltersSelectedItems.Any() ? itemFiltersSelectedItems.Select(x => x.Filter).ToArray() : null);
-        }
-
-        private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            await ((MediaListViewModel)DataContext).InitialLoadAsync(id);
-
-            ApplicationView.GetForCurrentView().Title = ((MediaListViewModel)DataContext).GetTitle();
-        }
+        ApplicationView.GetForCurrentView().Title = ViewModel.GetTitle();
     }
 }

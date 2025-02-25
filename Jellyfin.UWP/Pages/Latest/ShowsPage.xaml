@@ -4,44 +4,47 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
-    xmlns:converters="using:Jellyfin.UWP.Converters"
     d:DataContext="{d:DesignInstance Type=uwp:ShowsViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
                 <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                 <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
-                
+
                 <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
+
         <DataTemplate x:Key="UIShowMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
                 <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
                 <uc:CountControl PositionLeft="195" PositionTop="10" Item="{x:Bind}" />
                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                 <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
-                
+
                 <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
+
         <DataTemplate x:Key="UIEpisodeMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
             <StackPanel Width="380">
                 <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
                 <uc:CountControl PositionLeft="195" PositionTop="10" Item="{x:Bind}" />
                 <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
                 <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
-                
+
                 <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                 <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" x:Name="SeriesLink" Click="SeriesLink_Click" />
                 <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -59,7 +62,7 @@
 
         <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <StackPanel Margin="0,0,0,10"  Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Margin="0,0,0,10"  Visibility="{x:Bind ViewModel.HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -68,7 +71,7 @@
 
                         <TextBlock Text="Continue Watching" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForContinueScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{x:Bind ViewModel.HasEnoughDataForContinueScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
@@ -79,15 +82,15 @@
                     </Grid>
 
                     <ListView
-                        x:Name="lv_Continue"
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        ScrollViewer.HorizontalScrollMode="Disabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
-                        ItemClick="{x:Bind MediaClickItemList}"
-                        IsItemClickEnabled="True"
-                        ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
+                    x:Name="lv_Continue"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                    ScrollViewer.HorizontalScrollMode="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ItemsSource="{x:Bind ViewModel.ResumeMediaList, Mode=OneWay}"
+                    ItemClick="{x:Bind MediaClickItemList}"
+                    IsItemClickEnabled="True"
+                    ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
@@ -105,7 +108,7 @@
 
                         <TextBlock Text="Latest Episodes" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForLatestScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{x:Bind ViewModel.HasEnoughDataForLatestScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
@@ -116,15 +119,15 @@
                     </Grid>
 
                     <ListView
-                        x:Name="lv_Latest"
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        ScrollViewer.HorizontalScrollMode="Disabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{Binding LatestMediaList, Mode=OneWay}"
-                        ItemClick="{x:Bind MediaClickItemList}"
-                        IsItemClickEnabled="True"
-                        ItemTemplate="{StaticResource UIShowMediaListItemDataTemplate}">
+                    x:Name="lv_Latest"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                    ScrollViewer.HorizontalScrollMode="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ItemsSource="{x:Bind ViewModel.LatestMediaList, Mode=OneWay}"
+                    ItemClick="{x:Bind MediaClickItemList}"
+                    IsItemClickEnabled="True"
+                    ItemTemplate="{StaticResource UIShowMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
@@ -142,7 +145,7 @@
 
                         <TextBlock Text="Next Up" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForNextUpScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{x:Bind ViewModel.HasEnoughDataForNextUpScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
@@ -153,15 +156,15 @@
                     </Grid>
 
                     <ListView
-                        x:Name="lv_NextUp"
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        ScrollViewer.HorizontalScrollMode="Disabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{Binding NextupMediaList, Mode=OneWay}"
-                        ItemClick="{x:Bind MediaClickItemList}"
-                        IsItemClickEnabled="True"
-                        ItemTemplate="{StaticResource UIEpisodeMediaListItemDataTemplate}">
+                    x:Name="lv_NextUp"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                    ScrollViewer.HorizontalScrollMode="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    ItemsSource="{x:Bind ViewModel.NextupMediaList, Mode=OneWay}"
+                    ItemClick="{x:Bind MediaClickItemList}"
+                    IsItemClickEnabled="True"
+                    ItemTemplate="{StaticResource UIEpisodeMediaListItemDataTemplate}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />

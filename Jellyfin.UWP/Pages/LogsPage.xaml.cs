@@ -6,45 +6,41 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages;
+
+internal sealed partial class LogsPage : Page
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class LogsPage : Page
+    public LogsPage()
     {
-        public LogsPage()
-        {
-            this.InitializeComponent();
+        this.InitializeComponent();
 
-            this.Loaded += LogsPage_Loaded;
+        this.Loaded += LogsPage_Loaded;
+    }
+
+    public Type PageType { get; } = typeof(LogsPage);
+
+    private async void LogsPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily != "Windows.Xbox")
+        {
+            ApplicationView.GetForCurrentView().Title = "Logs";
         }
 
-        public Type PageType { get; } = typeof(LogsPage);
+        var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
+        var files = (await folder.GetFilesAsync()).OrderByDescending(x => x.DateCreated).Take(3);
 
-        private async void LogsPage_Loaded(object sender, RoutedEventArgs e)
+        var content = new StringBuilder();
+
+        foreach (var file in files.OrderBy(x => x.DateCreated))
         {
-            if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily != "Windows.Xbox")
-            {
-                ApplicationView.GetForCurrentView().Title = "Logs";
-            }
-
-            var folder = await ApplicationData.Current.LocalFolder.GetFolderAsync("MetroLogs");
-            var files = (await folder.GetFilesAsync()).OrderByDescending(x => x.DateCreated).Take(3);
-
-            var content = new StringBuilder();
-
-            foreach (var file in files.OrderBy(x => x.DateCreated))
-            {
-                content.Append(await FileIO.ReadTextAsync(file));
-            }
-
-            tbLobs.Text = content.ToString();
+            content.Append(await FileIO.ReadTextAsync(file));
         }
 
-        private void BtnBack_Click(object sender, RoutedEventArgs e)
-        {
-            ((Frame)Window.Current.Content).GoBack();
-        }
+        tbLobs.Text = content.ToString();
+    }
+
+    private void BtnBack_Click(object sender, RoutedEventArgs e)
+    {
+        ((Frame)Window.Current.Content).GoBack();
     }
 }
