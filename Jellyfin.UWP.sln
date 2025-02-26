@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jellyfin.UWP.UI.Tests", "tests\Jellyfin.UWP.UI.Tests\Jellyfin.UWP.UI.Tests.csproj", "{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,26 +57,6 @@ Global
 		{3CCE3C4F-4C73-43F5-989E-50DEAD988E7D}.Release|x86.ActiveCfg = Release|x86
 		{3CCE3C4F-4C73-43F5-989E-50DEAD988E7D}.Release|x86.Build.0 = Release|x86
 		{3CCE3C4F-4C73-43F5-989E-50DEAD988E7D}.Release|x86.Deploy.0 = Release|x86
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|ARM.Build.0 = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|x64.Build.0 = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Debug|x86.Build.0 = Debug|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|ARM.ActiveCfg = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|ARM.Build.0 = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|ARM64.Build.0 = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|x64.ActiveCfg = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|x64.Build.0 = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|x86.ActiveCfg = Release|Any CPU
-		{6DD8CEF1-070D-495A-0B6F-1D50ABC696EE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
