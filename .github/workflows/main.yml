@@ -34,8 +34,8 @@ jobs:
       - name: Navigate to Workspace
         run: cd $GITHUB_WORKSPACE
 
-      - name: Restore Packages
-        run: nuget restore Jellyfin.UWP.sln -Verbosity quiet
+      # - name: Restore Packages
+      #   run: nuget restore Jellyfin.UWP.sln -Verbosity quiet
 
       - name: Build Solution
         run: |
