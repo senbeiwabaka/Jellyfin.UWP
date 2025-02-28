@@ -38,13 +38,13 @@ internal sealed partial class MediaItemPlayer : Page
 
     public MediaItemPlayer()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
         DataContext = Ioc.Default.GetRequiredService<MediaItemPlayerViewModel>();
         memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
-        this.Loaded += MediaItemPlayer_Loaded;
-        this.Unloaded += MediaItemPlayer_Unloaded;
+        Loaded += MediaItemPlayer_Loaded;
+        Unloaded += MediaItemPlayer_Unloaded;
 
         dispatcherTimer = new DispatcherTimer();
         dispatcherTimer.Tick += DispatcherTimer_Tick;
@@ -105,11 +105,11 @@ internal sealed partial class MediaItemPlayer : Page
         }
     }
 
-    private async void DispatcherTimer_Tick(object sender, object e)
+    private async void DispatcherTimer_Tick(object? sender, object e)
     {
         await ViewModel.SessionProgressAsync(
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
+                  _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
+                  _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
 
         if (_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.TotalSeconds + 30 >= _mediaPlayerElement.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds
             && item.Type == BaseItemDto_Type.Episode
@@ -193,14 +193,14 @@ internal sealed partial class MediaItemPlayer : Page
             _mediaPlayerElement.IsFullWindow = true;
         }
 
-        var mediaControlsCommandBar = this.mediaControls.FindVisualChild<CommandBar>();
+        var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>();
 
         var settingsAppBarButton = new AppBarButton
         {
             Icon = new SymbolIcon(Symbol.Setting),
             Label = "Settings"
         };
-        settingsAppBarButton.Click += (_, _) => this.SettingsPopup.IsOpen = true;
+        settingsAppBarButton.Click += (_, _) => SettingsPopup.IsOpen = true;
 
         mediaControlsCommandBar.PrimaryCommands.Add(settingsAppBarButton);
 

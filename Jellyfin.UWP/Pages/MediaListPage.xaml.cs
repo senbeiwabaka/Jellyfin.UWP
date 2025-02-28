@@ -21,7 +21,7 @@ internal sealed partial class MediaListPage : Page
 
     public MediaListPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 
     internal MediaListViewModel ViewModel => (MediaListViewModel)DataContext;
@@ -52,7 +52,7 @@ internal sealed partial class MediaListPage : Page
         {
             NavigationCacheMode = NavigationCacheMode.Disabled;
 
-            this.Loaded -= MediaListPage_Loaded;
+            Loaded -= MediaListPage_Loaded;
 
             PageHelpers.ResetPageCache();
         }
@@ -66,7 +66,7 @@ internal sealed partial class MediaListPage : Page
         {
             DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
 
-            this.Loaded += MediaListPage_Loaded;
+            Loaded += MediaListPage_Loaded;
         }
 
         id = (Guid)e.Parameter;

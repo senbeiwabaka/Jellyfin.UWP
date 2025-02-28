@@ -20,9 +20,9 @@ public sealed partial class SearchPage : Page
 
     public SearchPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
-        this.Loaded += SearchPage_Loaded;
+        Loaded += SearchPage_Loaded;
     }
 
     internal Type PageType { get; } = typeof(SearchPage);
@@ -36,7 +36,7 @@ public sealed partial class SearchPage : Page
         {
             NavigationCacheMode = NavigationCacheMode.Disabled;
 
-            this.Loaded -= SearchPage_Loaded;
+            Loaded -= SearchPage_Loaded;
 
             PageHelpers.ResetPageCache();
         }
@@ -51,7 +51,7 @@ public sealed partial class SearchPage : Page
             DataContext = Ioc.Default.GetRequiredService<SearchViewModel>();
             memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
-            this.Loaded += SearchPage_Loaded;
+            Loaded += SearchPage_Loaded;
         }
     }
 

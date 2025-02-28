@@ -52,7 +52,7 @@ internal partial class MediaListViewModel : ObservableObject
     {
         this.apiClient = apiClient;
         this.mediaHelpers = mediaHelpers;
-        this.user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
     }
 
     public void FilterReset()

@@ -33,10 +33,10 @@
 
         <DataTemplate x:Key="UISeriesMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
             <StackPanel Width="220">
-                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                <uc:CountControl PositionLeft="195" PositionTop="10" Item="{x:Bind}" />
-                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                <uc:CountControl PositionLeft="195" PositionTop="10" Item="{x:Bind Mode=OneWay}" Canvas.ZIndex="2" />
+                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" Canvas.ZIndex="2" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" Canvas.ZIndex="2" />
 
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center"  Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
@@ -45,9 +45,9 @@
 
         <DataTemplate x:Key="UIMoviesMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
-                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" Canvas.ZIndex="2" />
+                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" Canvas.ZIndex="2" />
 
                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Stretch="Fill" />
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />

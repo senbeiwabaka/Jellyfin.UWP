@@ -12,9 +12,9 @@ internal sealed partial class LogsPage : Page
 {
     public LogsPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
-        this.Loaded += LogsPage_Loaded;
+        Loaded += LogsPage_Loaded;
     }
 
     public Type PageType { get; } = typeof(LogsPage);

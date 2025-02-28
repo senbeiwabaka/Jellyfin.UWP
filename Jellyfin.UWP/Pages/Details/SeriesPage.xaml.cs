@@ -14,7 +14,7 @@ internal sealed partial class SeriesPage : Page
 
     public SeriesPage()
     {
-        this.InitializeComponent();
+        InitializeComponent();
 
         DataContext = Ioc.Default.GetRequiredService<SeriesDetailViewModel>();
     }
