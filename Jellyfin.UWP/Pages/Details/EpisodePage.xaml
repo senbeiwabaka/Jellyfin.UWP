@@ -27,7 +27,7 @@
         <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
     </Page.Resources>
 
-    <Grid Background="#101010">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="90" />
             <RowDefinition Height="*" />

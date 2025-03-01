@@ -11,9 +11,6 @@
     <Canvas Background="Transparent">
         <Grid Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}" Canvas.ZIndex="2">
             <Button Click="MediaPlayButton_Click">
-                <Button.Background>
-                    <SolidColorBrush Color="#000000" />
-                </Button.Background>
                 <SymbolIcon Symbol="Play" />
             </Button>
         </Grid>

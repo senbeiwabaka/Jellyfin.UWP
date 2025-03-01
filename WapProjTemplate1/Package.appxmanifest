@@ -7,15 +7,15 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="85cb7208-939b-4c27-be63-d9663becacaf"
+    Name="Jellyfin.UWP"
     Publisher="CN=Micha"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="85cb7208-939b-4c27-be63-d9663becacaf" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="937c0b5e-fd4f-4059-bb35-5f17a6af72ea" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Jellyfin.UWP</DisplayName>
-    <PublisherDisplayName>Micha</PublisherDisplayName>
+    <DisplayName>Jellyfin</DisplayName>
+    <PublisherDisplayName>Jellyfin</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
@@ -32,20 +32,19 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="Jellyfin.UWP.App">
       <uap:VisualElements
-        DisplayName="Jellyfin.UWP"
+        DisplayName="MY Jellyfin UWP"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png"
-        Description="Jellyfin.UWP"
+        Description="This UWP Jellyfin client is not associated with Jellyfin group."
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" BackgroundColor="#101010" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
   <Capabilities>
     <Capability Name="internetClient" />
-    <Capability Name="internetClientServer"/>
     <Capability Name="privateNetworkClientServer"/>
   </Capabilities>
 </Package>

@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <StackPanel x:Name="TopRow" Background="#202020">
+    <StackPanel x:Name="TopRow">
         <StackPanel VerticalAlignment="Center" Margin="10">
             <Grid>
                 <Grid.ColumnDefinitions>

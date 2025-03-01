@@ -11,7 +11,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -19,7 +18,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Jellyfin.UWP;
 
-public sealed partial class MainPage : Page
+internal sealed partial class MainPage : Page
 {
     private readonly IMediaHelpers mediaHelpers;
 
@@ -76,7 +75,6 @@ public sealed partial class MainPage : Page
             stackPanel.Children.Add(new TextBlock
             {
                 Text = $"Latest {item.Key.Name}",
-                Foreground = new SolidColorBrush(Colors.White),
                 FontSize = 40.0d,
             });
 
@@ -90,7 +88,6 @@ public sealed partial class MainPage : Page
             {
                 Name = $"button_{item.Key.Name}",
                 Content = greaterThanFontIcon,
-                Background = new SolidColorBrush(Colors.Black),
             };
 
             if (string.Equals(item.Key.CollectionType, CollectionType.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
