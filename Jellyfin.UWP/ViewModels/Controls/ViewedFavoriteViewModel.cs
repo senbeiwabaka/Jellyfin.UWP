@@ -9,24 +9,15 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Controls;
 
-internal sealed partial class ViewedFavoriteViewModel : ObservableObject
+internal sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient, IMemoryCache memoryCache) : ObservableObject
 {
-    private readonly JellyfinApiClient apiClient;
-    private readonly IMemoryCache memoryCache;
-
-    [ObservableProperty]
-    private bool isFavorite;
-
-    [ObservableProperty]
-    private bool hasBeenWatched;
-
     private UIItem item;
 
-    public ViewedFavoriteViewModel(JellyfinApiClient apiClient, IMemoryCache memoryCache)
-    {
-        this.apiClient = apiClient;
-        this.memoryCache = memoryCache;
-    }
+    [ObservableProperty]
+    public partial bool HasBeenWatched { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFavorite { get; set; }
 
     public async Task FavoriteStateAsync()
     {

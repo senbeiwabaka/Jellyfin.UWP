@@ -23,22 +23,22 @@ internal partial class MediaListViewModel : ObservableObject
     private readonly UserDto user;
 
     [ObservableProperty]
-    private string countInformation;
+    public partial string CountInformation { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadPreviousCommand))]
-    private int currentIndex = 0;
+    public partial int CurrentIndex { get; set; } = 0;
 
     [ObservableProperty]
-    private ObservableCollection<FiltersModel> filteringFilters;
+    public partial ObservableCollection<FiltersModel> FilteringFilters { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<GenreFiltersModel> genresFilterList;
+    public partial ObservableCollection<GenreFiltersModel> GenresFilterList { get; set; }
 
     private BaseItemKind itemType;
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> mediaList;
+    public partial ObservableCollection<UIMediaListItem> MediaList { get; set; }
 
     private Guid? parentId;
 
@@ -46,7 +46,7 @@ internal partial class MediaListViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
-    private int totalRecords = 0;
+    public partial int TotalRecords { get; set; } = 0;
 
     public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
     {

@@ -18,22 +18,22 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
     private const int Limit = 24;
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> episodesMediaList;
+    public partial ObservableCollection<UIMediaListItem> EpisodesMediaList { get; set; }
 
     [ObservableProperty]
-    private bool hasEpisodesResult;
+    public partial bool HasEpisodesResult { get; set; }
 
     [ObservableProperty]
-    private bool hasMoviesResult;
+    public partial bool HasMoviesResult { get; set; }
 
     [ObservableProperty]
-    private bool hasSeriesResult;
+    public partial bool HasSeriesResult { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> movieMediaList;
+    public partial ObservableCollection<UIMediaListItem> MovieMediaList { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> seriesMediaList;
+    public partial ObservableCollection<UIMediaListItem> SeriesMediaList { get; set; }
 
     public async Task LoadSearchAsync(string query)
     {

@@ -17,7 +17,7 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
     private SeasonSeries seasonSeries;
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItemSeries> seriesMetadata;
+    public partial ObservableCollection<UIMediaListItemSeries> SeriesMetadata { get; set; }
 
     public async Task EpisodeFavoriteStateAsync(UIItem item)
     {

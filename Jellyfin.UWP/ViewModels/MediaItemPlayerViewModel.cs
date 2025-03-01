@@ -45,12 +45,12 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     private DetailsItemPlayRecord detailsItemPlayRecord;
 
     [ObservableProperty]
-    private bool isTranscoding;
+    public partial bool IsTranscoding { get; set; }
 
     private BaseItemDto item;
 
     [ObservableProperty]
-    private MediaPlayerPlayBackInfo mediaPlayerPlayBackInfo;
+    public partial MediaPlayerPlayBackInfo MediaPlayerPlayBackInfo { get; set; }
 
     private MediaSourceInfo mediaSourceInfo;
     private PlaybackInfoResponse playbackInfo;

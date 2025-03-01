@@ -12,38 +12,27 @@ using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.Latest;
 
-internal sealed partial class MoviesViewModel : ObservableObject
+internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : ObservableObject
 {
-    private readonly JellyfinApiClient apiClient;
-    private readonly IMediaHelpers mediaHelpers;
-    private readonly IMemoryCache memoryCache;
-
-    [ObservableProperty]
-    private bool hasEnoughDataForContinueScrolling;
-
-    [ObservableProperty]
-    private bool hasEnoughDataForLatestScrolling;
-
-    [ObservableProperty]
-    private bool hasResumeMedia;
-
     private Guid id;
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> latestMediaList;
+    public partial bool HasEnoughDataForContinueScrolling { get; set; }
 
     [ObservableProperty]
-    private ObservableGroupedCollection<Recommendation, UIMediaListItem> recommendationListGrouped;
+    public partial bool HasEnoughDataForLatestScrolling { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> resumeMediaList;
+    public partial bool HasResumeMedia { get; set; }
 
-    public MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
-    {
-        this.memoryCache = memoryCache;
-        this.apiClient = apiClient;
-        this.mediaHelpers = mediaHelpers;
-    }
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> LatestMediaList { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableGroupedCollection<Recommendation, UIMediaListItem> RecommendationListGrouped { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> ResumeMediaList { get; set; }
 
     public async Task LoadInitialAsync(Guid id)
     {
@@ -178,7 +167,7 @@ internal sealed partial class MoviesViewModel : ObservableObject
             });
 
         ResumeMediaList = [.. itemsResult
-                .Items
+            .Items
                 .Select(x => new UIMediaListItem
                 {
                     Id = x.Id.Value,

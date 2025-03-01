@@ -20,58 +20,58 @@ internal sealed partial class MainViewModel : ObservableObject
     private readonly IMemoryCache memoryCache;
 
     [ObservableProperty]
-    private ObservableCollection<UIMainPageListItem> favoriteEpisodesList;
+    public partial ObservableCollection<UIMainPageListItem> FavoriteEpisodesList { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> favoriteMoviesList;
+    public partial ObservableCollection<UIMediaListItem> FavoriteMoviesList { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIPersonItem> favoritePersonList;
+    public partial ObservableCollection<UIPersonItem> FavoritePersonList { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> favoriteSeriesList;
+    public partial ObservableCollection<UIMediaListItem> FavoriteSeriesList { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollContinueWatching;
+    public partial bool HasEnoughDataToScrollContinueWatching { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollEpisodesFavorites;
+    public partial bool HasEnoughDataToScrollEpisodesFavorites { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollMoviesFavorites;
+    public partial bool HasEnoughDataToScrollMoviesFavorites { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollNextUp;
+    public partial bool HasEnoughDataToScrollNextUp { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollPeopleFavorites;
+    public partial bool HasEnoughDataToScrollPeopleFavorites { get; set; }
 
     [ObservableProperty]
-    private bool hasEnoughDataToScrollShowsFavorites;
+    public partial bool HasEnoughDataToScrollShowsFavorites { get; set; }
 
     [ObservableProperty]
-    private bool hasResumeMedia;
+    public partial bool HasResumeMedia { get; set; }
 
     [ObservableProperty]
-    private bool isFavoriteSelected;
+    public partial bool IsFavoriteSelected { get; set; }
 
     [ObservableProperty]
-    private bool isHomeSelected;
+    public partial bool IsHomeSelected { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> mediaList;
+    public partial ObservableCollection<UIMediaListItem> MediaList { get; set; }
 
     [ObservableProperty]
-    private ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> mediaListGrouped;
+    public partial ObservableGroupedCollection<MediaGroupItem, UIMediaListItem> MediaListGrouped { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
+    public partial ObservableCollection<UIMediaListItemSeries> NextupMediaList { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMainPageListItem> resumeMediaList;
+    public partial ObservableCollection<UIMainPageListItem> ResumeMediaList { get; set; }
 
     [ObservableProperty]
-    private string userName;
+    public partial string UserName { get; set; }
 
     public MainViewModel(IHomeViewModel homeViewModel, IFavoritesViewModel favoritesViewModel, IMemoryCache memoryCache)
     {

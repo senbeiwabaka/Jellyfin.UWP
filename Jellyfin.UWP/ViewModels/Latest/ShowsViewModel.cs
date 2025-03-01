@@ -1,51 +1,40 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Latest;
 
-internal sealed partial class ShowsViewModel : ObservableObject
+internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : ObservableObject
 {
-    private readonly IMemoryCache memoryCache;
-    private readonly JellyfinApiClient apiClient;
-    private readonly IMediaHelpers mediaHelpers;
-
-    [ObservableProperty]
-    private bool hasEnoughDataForContinueScrolling;
-
-    [ObservableProperty]
-    private bool hasEnoughDataForLatestScrolling;
-
-    [ObservableProperty]
-    private bool hasEnoughDataForNextUpScrolling;
-
-    [ObservableProperty]
-    private bool hasResumeMedia;
-
     private Guid id;
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> latestMediaList;
+    public partial bool HasEnoughDataForContinueScrolling { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItemSeries> nextupMediaList;
+    public partial bool HasEnoughDataForLatestScrolling { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> resumeMediaList;
+    public partial bool HasEnoughDataForNextUpScrolling { get; set; }
 
-    public ShowsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
-    {
-        this.memoryCache = memoryCache;
-        this.apiClient = apiClient;
-        this.mediaHelpers = mediaHelpers;
-    }
+    [ObservableProperty]
+    public partial bool HasResumeMedia { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> LatestMediaList { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItemSeries> NextupMediaList { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> ResumeMediaList { get; set; }
 
     public async Task LoadInitialAsync(Guid id)
     {
@@ -139,7 +128,7 @@ internal sealed partial class ShowsViewModel : ObservableObject
             });
 
         NextupMediaList = [.. itemsResult
-                .Items
+            .Items
                 .Select(x =>
                     new UIMediaListItemSeries
                     {
@@ -170,7 +159,7 @@ internal sealed partial class ShowsViewModel : ObservableObject
             });
 
         ResumeMediaList = [.. itemsResult
-                .Items
+            .Items
                 .Select(x =>
                     new UIMediaListItem
                     {

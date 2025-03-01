@@ -15,31 +15,31 @@ namespace Jellyfin.UWP.ViewModels.Details;
 internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : MediaDetailsViewModel(memoryCache, apiClient, mediaHelpers)
 {
     [ObservableProperty]
-    private string director;
+    public partial string Director { get; set; }
 
     [ObservableProperty]
-    private string externalURLs;
+    public partial string ExternalURLs { get; set; }
 
     [ObservableProperty]
-    private bool isEpisode;
+    public partial bool IsEpisode { get; set; }
 
     [ObservableProperty]
-    private bool isMovie;
+    public partial bool IsMovie { get; set; }
 
     [ObservableProperty]
-    private bool isNotMovie;
+    public partial bool IsNotMovie { get; set; }
 
     [ObservableProperty]
-    private string mediaTagLines;
+    public partial string MediaTagLines { get; set; }
 
     [ObservableProperty]
-    private string mediaTags;
+    public partial string MediaTags { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaListItem> similiarMediaList;
+    public partial ObservableCollection<UIMediaListItem> SimiliarMediaList { get; set; }
 
     [ObservableProperty]
-    private string writer;
+    public partial string Writer { get; set; }
 
     protected override async Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default)
     {

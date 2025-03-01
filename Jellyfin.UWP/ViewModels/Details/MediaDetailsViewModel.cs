@@ -1,70 +1,86 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details;
 
 internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : MediaViewModel(memoryCache, apiClient, mediaHelpers)
 {
     [ObservableProperty]
-    private bool hasMultipleAudioStreams;
+    public partial ObservableCollection<UIMediaStream> AudioStreams { get; set; }
 
     [ObservableProperty]
-    private bool hasMultipleSubtitleStreams;
+    public partial string AudioType { get; set; }
 
     [ObservableProperty]
-    private bool hasMultipleVideoStreams;
+    public partial ObservableCollection<UIPersonItem> CastAndCrew { get; set; }
 
     [ObservableProperty]
-    private bool hasSubtitle;
+    public partial string Genres { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaStream> audioStreams;
+    public partial bool HasMultipleAudioStreams { get; set; }
 
     [ObservableProperty]
-    private string audioType;
+    public partial bool HasMultipleSubtitleStreams { get; set; }
 
     [ObservableProperty]
-    private UIMediaStream selectedAudioStream;
+    public partial bool HasMultipleVideoStreams { get; set; }
 
     [ObservableProperty]
-    private UIMediaStream selectedSubtitleStream;
+    public partial bool HasSubtitle { get; set; }
 
     [ObservableProperty]
-    private UIMediaStreamVideo selectedVideoStream;
+    public partial string MediaTagLines { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaStream> subtitleStreams;
+    public partial string RunTime { get; set; }
 
     [ObservableProperty]
-    private string subtitleType;
+    public partial UIMediaStream SelectedAudioStream { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIMediaStreamVideo> videoStreams;
+    public partial UIMediaStream SelectedSubtitleStream { get; set; }
 
     [ObservableProperty]
-    private string videoType;
+    public partial UIMediaStreamVideo SelectedVideoStream { get; set; }
 
     [ObservableProperty]
-    private string genres;
+    public partial ObservableCollection<UIMediaStream> SubtitleStreams { get; set; }
 
     [ObservableProperty]
-    private string mediaTagLines;
+    public partial string SubtitleType { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<UIPersonItem> castAndCrew;
+    public partial ObservableCollection<UIMediaStreamVideo> VideoStreams { get; set; }
 
     [ObservableProperty]
-    private string runTime;
+    public partial string VideoType { get; set; }
+
+    internal override async Task FavoriteStateAsync(CancellationToken cancellationToken)
+    {
+        await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
+
+        await LoadMediaInformationAsync(MediaItem.Id.Value);
+    }
+
+    internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
+    {
+        await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
+
+        await LoadMediaInformationAsync(MediaItem.Id.Value);
+    }
+
+    protected virtual Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
     protected override async Task ExtraExecuteAsync(CancellationToken cancellationToken = default)
     {
@@ -148,8 +164,6 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
         await DetailsExtraExecuteAsync(cancellationToken);
     }
 
-    protected virtual Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-
     [RelayCommand]
     private void ChangeVideoSelection()
     {
@@ -191,19 +205,5 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
         VideoStreams[0].IsSelected = true;
 
         SelectedVideoStream = VideoStreams.Single(x => x.IsSelected);
-    }
-
-    internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
-    {
-        await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
-
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
-    }
-
-    internal override async Task FavoriteStateAsync(CancellationToken cancellationToken)
-    {
-        await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
-
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
     }
 }

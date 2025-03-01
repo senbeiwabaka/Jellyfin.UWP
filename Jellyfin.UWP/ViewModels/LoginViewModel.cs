@@ -18,10 +18,10 @@ internal sealed partial class LoginViewModel(IMemoryCache memoryCache, JellyfinA
     private readonly ILogger Log = LoggerFactory.GetLogger(nameof(LoginViewModel));
 
     [ObservableProperty]
-    private string message;
+    public partial string Message { get; set; }
 
     [ObservableProperty]
-    private bool openPopup;
+    public partial bool OpenPopup { get; set; }
 
     public delegate void EventHandler();
 

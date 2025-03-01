@@ -64,7 +64,7 @@ public sealed partial class App : Application
     }
 
     /// <inheritdoc/>
-    protected override async void OnLaunched(LaunchActivatedEventArgs e)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         Ioc.Default.ConfigureServices(new ServiceCollection()
            .AddMemoryCache()
@@ -159,7 +159,7 @@ public sealed partial class App : Application
             rootFrame = new Frame();
             rootFrame.NavigationFailed += OnNavigationFailed;
 
-            if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
+            if (args.PreviousExecutionState == ApplicationExecutionState.Terminated)
             {
                 // TODO: Load state from previously suspended application
             }
@@ -168,7 +168,7 @@ public sealed partial class App : Application
             Window.Current.Content = rootFrame;
         }
 
-        if (!e.PrelaunchActivated)
+        if (!args.PrelaunchActivated)
         {
             if (rootFrame.Content == null)
             {
@@ -185,7 +185,7 @@ public sealed partial class App : Application
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    rootFrame.Navigate(typeof(MainPage), args.Arguments);
                 }
             }
 

@@ -12,31 +12,29 @@
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 		<EnableMsixTooling>true</EnableMsixTooling>
-		<SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
 		<LangVersion>preview</LangVersion>
 		<Nullable>enable</Nullable>
 		<CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
-		<PublishTrimmed>False</PublishTrimmed>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
-	  <IsAotCompatible>True</IsAotCompatible>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -48,23 +46,5 @@
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.1" />
 		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
-	</ItemGroup>
-	<ItemGroup>
-	  <None Update="nlog.config">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
-	<ItemGroup>
-		<Page Update="Controls\TopControl.xaml">
-		  <SubType>Designer</SubType>
-		</Page>
-		<Page Update="Pages\SetupPage.xaml">
-			<SubType>Designer</SubType>
-		</Page>
-	</ItemGroup>
-	<ItemGroup>
-		<Page Update="Pages\LoginPage.xaml">
-			<SubType>Designer</SubType>
-		</Page>
 	</ItemGroup>
 </Project>
