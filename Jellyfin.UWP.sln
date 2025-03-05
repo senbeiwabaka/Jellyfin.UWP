@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "WapProjTemplate1", "WapProjTemplate1\WapProjTemplate1.wapproj", "{4497E8E0-831E-49DD-8D11-895716595063}"
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "Jellyfin.UWP.Deployment", "WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj", "{4497E8E0-831E-49DD-8D11-895716595063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

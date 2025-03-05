@@ -87,7 +87,7 @@ jobs:
       #     .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.ref == 'refs/heads/dotnet9' }}
     needs: build
     runs-on: windows-2022
     
@@ -122,7 +122,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe Jellyfin.UWP\Jellyfin.UWP.csproj /p:configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:AppxBundlePlatforms="x64" /p:UapAppxPackageBuildMode=SideloadOnly -v:m
+          msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:AppxBundlePlatforms="x64" /p:UapAppxPackageBuildMode=SideloadOnly -v:m
         env:
           AppxBundle: Always
           BuildMode: CI
@@ -131,7 +131,7 @@ jobs:
       - name: Zip Package
         uses: vimtor/action-zip@v1.1
         with:
-          files: .\Jellyfin.UWP\AppPackages\Jellyfin.UWP_${{ env.NBGV_SimpleVersion }}.0_Test
+          files: .\WapProjTemplate1\AppPackages\Jellyfin.UWP.Deployment_${{ env.NBGV_SimpleVersion }}.0_Test
           dest: Jellyfin.UWP.zip
           
       - name: Creates a release in GitHub and uploads attachments

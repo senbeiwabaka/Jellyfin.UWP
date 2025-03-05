@@ -8,7 +8,7 @@
     "setAllVariables": true
   },
   "publicReleaseRefSpec": [
-    "^refs/heads/master$", // we release out of master
+    "^refs/heads/dotnet9", // DotNet 9 release since the tech is still in preview for UWP
     "^refs/tags/v\\d+\\.\\d+" // we also release tags starting with vN.N
   ]
 }

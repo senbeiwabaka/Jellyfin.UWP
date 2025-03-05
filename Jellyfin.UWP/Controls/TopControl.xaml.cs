@@ -32,9 +32,9 @@ internal sealed partial class TopControl : UserControl
 
         memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
-        userName = memoryCache.Get<UserDto>(JellyfinConstants.UserName).Name;
-        jellyfinVersion = memoryCache.Get<string>(JellyfinConstants.ServerVersionName);
-        appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        userName = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!.Name!;
+        jellyfinVersion = memoryCache.Get<string>(JellyfinConstants.ServerVersionName)!;
+        appVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version;
 
         Loaded += TopControl_Loaded;
     }
@@ -67,10 +67,7 @@ internal sealed partial class TopControl : UserControl
         set { SetValue(PageTypeProperty, value); }
     }
 
-    private void BackClick(object sender, RoutedEventArgs e)
-    {
-        ((Frame)Window.Current.Content).GoBack();
-    }
+    private void BackClick(object sender, RoutedEventArgs e) => ((Frame)Window.Current.Content).GoBack();
 
     private void HomeClick(object sender, RoutedEventArgs e)
     {
