@@ -1,81 +1,63 @@
-﻿using System;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Helpers;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
-using Windows.UI.ViewManagement;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages.Details;
+
+internal sealed partial class SeriesPage : Page
 {
-    public sealed partial class SeriesPage : Page
+    private Guid id;
+
+    public SeriesPage()
     {
-        private Guid id;
+        InitializeComponent();
 
-        public SeriesPage()
+        DataContext = Ioc.Default.GetRequiredService<SeriesDetailViewModel>();
+    }
+
+    internal SeriesDetailViewModel ViewModel => (SeriesDetailViewModel)DataContext;
+
+    public async void PlayClick(object sender, RoutedEventArgs e)
+    {
+        var playId = await ViewModel.GetPlayIdAsync();
+        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        id = (Guid)e.Parameter;
+
+        if (Frame.CanGoForward)
         {
-            this.InitializeComponent();
-
-            DataContext = Ioc.Default.GetRequiredService<SeriesDetailViewModel>();
-
-            Loaded += SeriesPage_Loaded;
+            Frame.ForwardStack.Clear();
         }
 
-        public async void PlayClick(object sender, RoutedEventArgs e)
-        {
-            var context = (SeriesDetailViewModel)DataContext;
-            var playId = await context.GetPlayIdAsync();
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+        base.OnNavigatedTo(e);
+    }
 
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
+    private void NextUpButton_Click(object sender, RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(EpisodePage), ViewModel.NextUpItem?.Id);
+    }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            id = (Guid)e.Parameter;
+    private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ViewModel.MediaItem.Id.Value, });
+    }
 
-            if (Frame.CanGoForward)
-            {
-                Frame.ForwardStack.Clear();
-            }
+    private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
+    }
 
-            base.OnNavigatedTo(e);
-        }
-
-        private void NextUpButton_Click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(EpisodePage), ((SeriesDetailViewModel)DataContext).NextUpItem?.Id);
-        }
-
-        private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ((SeriesDetailViewModel)DataContext).MediaItem.Id.Value, });
-        }
-
-        private async void SeriesPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DebugHelpers.IsDebugRelease)
-            {
-                tbDebugPageBlock.Visibility = Visibility.Visible;
-            }
-
-            var context = (SeriesDetailViewModel)DataContext;
-
-            await context.LoadMediaInformationAsync(id);
-
-            ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
-        }
-
-        private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
-        }
-
-        private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-        {
-            await ((SeriesDetailViewModel)DataContext).LoadMediaInformationAsync(id);
-        }
+    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadMediaInformationAsync(id);
     }
 }

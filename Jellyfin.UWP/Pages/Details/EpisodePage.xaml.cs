@@ -1,92 +1,68 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Helpers;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
-using Windows.UI.ViewManagement;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
-namespace Jellyfin.UWP.Pages
+namespace Jellyfin.UWP.Pages.Details;
+
+public sealed partial class EpisodePage : Page
 {
-    [ExcludeFromCodeCoverage]
-    public sealed partial class EpisodePage : Page
+    private Guid id;
+
+    public EpisodePage()
     {
-        private Guid id;
+        InitializeComponent();
 
-        public EpisodePage()
+        DataContext = Ioc.Default.GetRequiredService<EpisodeViewModel>();
+    }
+
+    internal EpisodeViewModel ViewModel => (EpisodeViewModel)DataContext;
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        id = (Guid)e.Parameter;
+
+        if (Frame.CanGoForward)
         {
-            this.InitializeComponent();
-
-            this.DataContext = Ioc.Default.GetRequiredService<EpisodeViewModel>();
-
-            this.Loaded += EpisodePage_Loaded;
+            Frame.ForwardStack.Clear();
         }
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
+        base.OnNavigatedTo(e);
+    }
+
+    private void MediaClickItemList(object sender, ItemClickEventArgs e)
+    {
+        var mediaItem = ((UIMediaListItem)e.ClickedItem);
+
+        Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
+    }
+
+    private async void Play_Click(object sender, RoutedEventArgs e)
+    {
+        var playId = await ViewModel.GetPlayIdAsync();
+        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+
+        if (ViewModel.HasMultipleAudioStreams)
         {
-            id = (Guid)e.Parameter;
+            var selectedAudio = ViewModel.SelectedAudioStream;
 
-            if (this.Frame.CanGoForward)
-            {
-                this.Frame.ForwardStack.Clear();
-            }
-
-            base.OnNavigatedTo(e);
+            detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
+            detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
         }
 
-        private async void EpisodePage_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DebugHelpers.IsDebugRelease)
-            {
-                tbDebugPageBlock.Visibility = Visibility.Visible;
-            }
+        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+    }
 
-            var context = (EpisodeViewModel)DataContext;
+    private void SeriesName_Click(object sender, RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(SeriesPage), ViewModel.MediaItem.SeriesId);
+    }
 
-            await context.LoadMediaInformationAsync(id);
-
-            ApplicationView.GetForCurrentView().Title = context.MediaItem.Name;
-        }
-
-        private void MediaClickItemList(object sender, ItemClickEventArgs e)
-        {
-            var mediaItem = ((UIMediaListItem)e.ClickedItem);
-
-            Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
-        }
-
-        private async void Play_Click(object sender, RoutedEventArgs e)
-        {
-            var context = (EpisodeViewModel)DataContext;
-            var playId = await context.GetPlayIdAsync();
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-            if (context.HasMultipleAudioStreams)
-            {
-                var selectedAudio = context.SelectedAudioStream;
-
-                detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
-                detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
-            }
-
-            Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
-        }
-
-        private void SeriesName_Click(object sender, RoutedEventArgs e)
-        {
-            var context = (EpisodeViewModel)DataContext;
-
-            Frame.Navigate(typeof(SeriesPage), context.MediaItem.SeriesId);
-        }
-
-        private async void ViewedFavoriteButtonControl_Click(object sender, RoutedEventArgs e)
-        {
-            var context = (EpisodeViewModel)DataContext;
-
-            await context.LoadMediaInformationAsync(id);
-        }
+    private async void ViewedFavoriteButtonControl_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadMediaInformationAsync(id);
     }
 }

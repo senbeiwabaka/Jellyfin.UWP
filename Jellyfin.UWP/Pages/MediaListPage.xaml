@@ -35,10 +35,10 @@
         <c:TopControl Grid.Row="0" />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock Text="{Binding CountInformation}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+            <TextBlock Text="{x:Bind ViewModel.CountInformation, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
 
-            <Button Content="Previous" Margin="0, 0, 10, 0" Command="{Binding LoadPreviousCommand}"></Button>
-            <Button Content="Next" Command="{Binding LoadNextCommand}" Margin="10, 0, 10, 0"></Button>
+            <Button Content="Previous" Margin="0, 0, 10, 0" Command="{x:Bind ViewModel.LoadPreviousCommand}"></Button>
+            <Button Content="Next" Command="{x:Bind ViewModel.LoadNextCommand}" Margin="10, 0, 10, 0"></Button>
             <Button Content="Filter" Name="FiltersButton" Click="FiltersButton_Click" Margin="10, 0, 10, 0"></Button>
 
             <Popup x:Name="Filters" IsOpen="False" IsLightDismissEnabled="True">
@@ -50,7 +50,7 @@
                         <DropDownButton.Flyout>
                             <Flyout>
                                 <ListView
-                                    ItemsSource="{Binding FilteringFilters}"
+                                    ItemsSource="{x:Bind ViewModel.FilteringFilters, Mode=OneWay}"
                                     SelectionMode="Multiple"
                                     IsItemClickEnabled="True"
                                     IsTapEnabled="True"
@@ -59,9 +59,9 @@
                                     x:Name="FiltersFiltering">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:FiltersModel">
-                                            <ListViewItem IsSelected="{Binding IsSelected, Mode=TwoWay}">
+                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding DisplayName}" FontSize="25" />
+                                                    <TextBlock Text="{x:Bind DisplayName}" FontSize="25" />
                                                 </StackPanel>
                                             </ListViewItem>
                                         </DataTemplate>
@@ -77,11 +77,17 @@
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
                             <Flyout>
-                                <ListView
-                                    ItemsSource="{Binding GenresFilterList, Mode=OneWay}" SelectionMode="Multiple" IsItemClickEnabled="True" IsTapEnabled="True" ItemClick="GenreFiltering_ItemClick" SelectionChanged="GenreFiltering_SelectionChanged" x:Name="GenreFiltering">
+                                <ListView 
+                                    ItemsSource="{x:Bind ViewModel.GenresFilterList, Mode=OneWay}" 
+                                    SelectionMode="Multiple" 
+                                    IsItemClickEnabled="True" 
+                                    IsTapEnabled="True" 
+                                    ItemClick="GenreFiltering_ItemClick" 
+                                    SelectionChanged="GenreFiltering_SelectionChanged" 
+                                    x:Name="GenreFiltering">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:GenreFiltersModel">
-                                            <ListViewItem IsSelected="{Binding IsSelected, Mode=TwoWay}">
+                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
                                                 <StackPanel>
                                                     <TextBlock Text="{x:Bind Name}" FontSize="25" />
                                                 </StackPanel>
@@ -98,7 +104,7 @@
 
         <GridView
             x:Name="GridMediaList"
-            ItemsSource="{Binding MediaList, Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.MediaList, Mode=OneWay}"
             Grid.Row="2"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             ScrollViewer.HorizontalScrollMode="Disabled"
@@ -114,14 +120,14 @@
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="m:UIMediaListItem">
                     <StackPanel Width="210">
-                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
                             <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
                                 <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
-                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount}" Margin="6" />
+                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount, Mode=OneWay}" Margin="6" />
                             </Grid>
                         </Canvas>
 
-                        <Canvas Background="Transparent" Visibility="{Binding UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
                                 <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
@@ -136,14 +142,17 @@
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon Foreground="{x:Bind UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                                    <FontIcon Foreground="{x:Bind UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                                 </Button>
 
                                 <Button x:Name="btn_Favorite" Margin="5,0,0,0" Click="btn_Favorite_Click">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
+                                    <FontIcon 
+                                        Foreground="{x:Bind UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" 
+                                        FontFamily="Segoe MDL2 Assets" 
+                                        Glyph="{x:Bind UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
                                 </Button>
                             </StackPanel>
                         </Canvas>

@@ -1,109 +1,141 @@
-﻿using CommunityToolkit.Mvvm.Collections;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Jellyfin.UWP.ViewModels.Latest
+namespace Jellyfin.UWP.ViewModels.Latest;
+
+internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : ObservableObject
 {
-    internal sealed partial class MoviesViewModel : ObservableObject
+    private Guid id;
+
+    [ObservableProperty]
+    public partial bool HasEnoughDataForContinueScrolling { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasEnoughDataForLatestScrolling { get; set; }
+
+    [ObservableProperty]
+    public partial bool HasResumeMedia { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> LatestMediaList { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableGroupedCollection<Recommendation, UIMediaListItem> RecommendationListGrouped { get; set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> ResumeMediaList { get; set; }
+
+    public async Task LoadInitialAsync(Guid id)
     {
-        private readonly IMemoryCache memoryCache;
-        private readonly JellyfinApiClient apiClient;
-        private readonly IMediaHelpers mediaHelpers;
+        this.id = id;
 
-        [ObservableProperty]
-        private bool hasEnoughDataForContinueScrolling;
+        await LoadResumeItemsAsync();
+        await LoadLatestAsync();
+        await LoadRecommendationsAsync();
+    }
 
-        [ObservableProperty]
-        private bool hasEnoughDataForLatestScrolling;
-
-        [ObservableProperty]
-        private bool hasResumeMedia;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> latestMediaList;
-
-        [ObservableProperty]
-        private ObservableCollection<UIMediaListItem> resumeMediaList;
-
-        [ObservableProperty]
-        private ObservableGroupedCollection<Recommendation, UIMediaListItem> recommendationListGrouped;
-
-        private Guid id;
-
-        public MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+    private string GetContinueItemImage(BaseItemDto item)
+    {
+        var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
+        if (item.BackdropImageTags.Count > 0)
         {
-            this.memoryCache = memoryCache;
-            this.apiClient = apiClient;
-            this.mediaHelpers = mediaHelpers;
+            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
         }
 
-        public async Task LoadInitialAsync(Guid id)
-        {
-            this.id = id;
+        return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
+    }
 
-            await LoadResumeItemsAsync();
-            await LoadLatestAsync();
-            await LoadRecommendationsAsync();
-        }
+    private async Task LoadLatestAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Items.Latest
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.Limit = 18;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.ImageTypeLimit = 1;
+                options.QueryParameters.EnableImageTypes = [ImageType.Primary, ImageType.Backdrop, ImageType.Thumb,];
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Movie,];
+            });
 
-        private async Task LoadResumeItemsAsync()
-        {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.UserItems.Resume
-                .GetAsync(options =>
+        LatestMediaList = [.. itemsResult.Select(x => new UIMediaListItem
+            {
+                Id = x.Id.Value,
+                Name = x.Name,
+                Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
+                Type = x.Type.Value,
+                UserData = new UIUserData
                 {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.EnableTotalRecordCount = false;
-                    options.QueryParameters.Limit = 5;
-                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Movie, };
-                });
+                    IsFavorite = x.UserData.IsFavorite.Value,
+                    HasBeenWatched = x.UserData.Played.Value,
+                    UnplayedItemCount = 0,
+                },
+            })];
+    }
 
-            ResumeMediaList = new ObservableCollection<UIMediaListItem>(
-                itemsResult
-                    .Items
-                    .Select(x => new UIMediaListItem
-                    {
-                        Id = x.Id.Value,
-                        Name = x.Name,
-                        Url = GetContinueItemImage(x),
-                        Type = x.Type.Value,
-                        UserData = new UIUserData
-                        {
-                            IsFavorite = x.UserData.IsFavorite.Value,
-                            HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = 0,
-                        },
-                    }));
+    private async Task LoadRecommendationsAsync()
+    {
+        RecommendationListGrouped = [];
 
-            HasResumeMedia = ResumeMediaList.Count > 0;
-        }
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Movies.Recommendations
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.CategoryLimit = 6;
+                options.QueryParameters.ItemLimit = 8;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio, ItemFields.MediaSourceCount,];
+            });
 
-        private async Task LoadLatestAsync()
+        foreach (var item in itemsResult)
         {
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.Items.Latest
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.Limit = 18;
-                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
-                    options.QueryParameters.ImageTypeLimit = 1;
-                    options.QueryParameters.EnableImageTypes = new[] { ImageType.Primary, ImageType.Backdrop, ImageType.Thumb, };
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Movie, };
-                });
+            var recommendation = new Recommendation();
 
-            LatestMediaList = new ObservableCollection<UIMediaListItem>(
-                itemsResult.Select(x => new UIMediaListItem
+            switch (item.RecommendationType)
+            {
+                case RecommendationDto_RecommendationType.SimilarToRecentlyPlayed:
+                    recommendation.DisplayName = $"Because you watched {item.BaselineItemName}";
+                    break;
+
+                case RecommendationDto_RecommendationType.SimilarToLikedItem:
+                    recommendation.DisplayName = item.BaselineItemName;
+                    break;
+
+                case RecommendationDto_RecommendationType.HasDirectorFromRecentlyPlayed:
+                    recommendation.DisplayName = $"Directed by {item.BaselineItemName}";
+                    break;
+
+                case RecommendationDto_RecommendationType.HasActorFromRecentlyPlayed:
+                    recommendation.DisplayName = $"Starring {item.BaselineItemName}";
+                    break;
+
+                case RecommendationDto_RecommendationType.HasLikedDirector:
+                    recommendation.DisplayName = item.BaselineItemName;
+                    break;
+
+                case RecommendationDto_RecommendationType.HasLikedActor:
+                    recommendation.DisplayName = item.BaselineItemName;
+                    break;
+
+                default:
+                    recommendation.DisplayName = $"Uh Oh, issue! {item.BaselineItemName}";
+                    break;
+            }
+
+            var items = item.Items
+                .Select(x => new UIMediaListItem
                 {
                     Id = x.Id.Value,
                     Name = x.Name,
@@ -115,87 +147,41 @@ namespace Jellyfin.UWP.ViewModels.Latest
                         HasBeenWatched = x.UserData.Played.Value,
                         UnplayedItemCount = 0,
                     },
-                }));
-        }
-
-        private async Task LoadRecommendationsAsync()
-        {
-            RecommendationListGrouped = new ObservableGroupedCollection<Recommendation, UIMediaListItem>();
-
-            var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-            var itemsResult = await apiClient.Movies.Recommendations
-                .GetAsync(options =>
-                {
-                    options.QueryParameters.UserId = user.Id;
-                    options.QueryParameters.ParentId = id;
-                    options.QueryParameters.CategoryLimit = 6;
-                    options.QueryParameters.ItemLimit = 8;
-                    options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, ItemFields.MediaSourceCount, };
                 });
 
-            foreach (var item in itemsResult)
-            {
-                var recommendation = new Recommendation();
+            RecommendationListGrouped.Add(new ObservableGroup<Recommendation, UIMediaListItem>(recommendation, items));
+        }
+    }
 
-                switch (item.RecommendationType)
+    private async Task LoadResumeItemsAsync()
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.UserItems.Resume
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.ParentId = id;
+                options.QueryParameters.EnableTotalRecordCount = false;
+                options.QueryParameters.Limit = 5;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Movie,];
+            });
+
+        ResumeMediaList = [.. itemsResult
+            .Items
+                .Select(x => new UIMediaListItem
                 {
-                    case RecommendationDto_RecommendationType.SimilarToRecentlyPlayed:
-                        recommendation.DisplayName = $"Because you watched {item.BaselineItemName}";
-                        break;
-
-                    case RecommendationDto_RecommendationType.SimilarToLikedItem:
-                        recommendation.DisplayName = item.BaselineItemName;
-                        break;
-
-                    case RecommendationDto_RecommendationType.HasDirectorFromRecentlyPlayed:
-                        recommendation.DisplayName = $"Directed by {item.BaselineItemName}";
-                        break;
-
-                    case RecommendationDto_RecommendationType.HasActorFromRecentlyPlayed:
-                        recommendation.DisplayName = $"Starring {item.BaselineItemName}";
-                        break;
-
-                    case RecommendationDto_RecommendationType.HasLikedDirector:
-                        recommendation.DisplayName = item.BaselineItemName;
-                        break;
-
-                    case RecommendationDto_RecommendationType.HasLikedActor:
-                        recommendation.DisplayName = item.BaselineItemName;
-                        break;
-
-                    default:
-                        recommendation.DisplayName = $"Uh Oh, issue! {item.BaselineItemName}";
-                        break;
-                }
-
-                var items = item.Items
-                    .Select(x => new UIMediaListItem
+                    Id = x.Id.Value,
+                    Name = x.Name,
+                    Url = GetContinueItemImage(x),
+                    Type = x.Type.Value,
+                    UserData = new UIUserData
                     {
-                        Id = x.Id.Value,
-                        Name = x.Name,
-                        Url = mediaHelpers.SetImageUrl(x, "239", "425", JellyfinConstants.PrimaryName),
-                        Type = x.Type.Value,
-                        UserData = new UIUserData
-                        {
-                            IsFavorite = x.UserData.IsFavorite.Value,
-                            HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = 0,
-                        },
-                    });
+                        IsFavorite = x.UserData.IsFavorite.Value,
+                        HasBeenWatched = x.UserData.Played.Value,
+                        UnplayedItemCount = 0,
+                    },
+                })];
 
-                RecommendationListGrouped.Add(new ObservableGroup<Recommendation, UIMediaListItem>(recommendation, items));
-            }
-        }
-
-        private string GetContinueItemImage(BaseItemDto item)
-        {
-            var baseUrl = memoryCache.Get<string>(JellyfinConstants.HostUrlName);
-            if (item.BackdropImageTags.Count > 0)
-            {
-                return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.BackdropName}?fillHeight=239&fillWidth=425&quality=96&tag={item.BackdropImageTags[0]}";
-            }
-
-            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
-        }
+        HasResumeMedia = ResumeMediaList.Count > 0;
     }
 }

@@ -1,15 +1,15 @@
 ﻿<Page
-  x:Class="Jellyfin.UWP.Pages.MediaItemPlayer"
+    x:Class="Jellyfin.UWP.Pages.MediaItemPlayer"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:app1="using:Jellyfin.UWP"
+    xmlns:uwp="using:Jellyfin.UWP.Models"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    d:DataContext="{d:DesignInstance Type=app1:MediaItemPlayerViewModel}"
-  mc:Ignorable="d"
-  Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    d:DataContext="{d:DesignInstance Type=uwp:MediaItemPlayerViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -68,58 +68,58 @@
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Play method:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.PlayMethod}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.PlayMethod, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Protocol:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.Protocol}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.Protocol, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Stream type:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.Stream}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.Stream, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
 
                     <TextBlock Text="Video Info" FontSize="20" Foreground="White" />
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Player dimensions:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.PlayerDimensions}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.PlayerDimensions, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Video resolution:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.VideoResolution}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.VideoResolution, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
 
-                    <StackPanel Visibility="{Binding IsTranscoding, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Visibility="{x:Bind ViewModel.IsTranscoding, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="Transcoding Info" FontSize="20" Foreground="White" />
 
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Video codec:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingVideoCodec}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingVideoCodec, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Audio codec:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingAudioCodec}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingAudioCodec, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Audio channels:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingAudioChannels}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingAudioChannels, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Bitrate:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingBitrate}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingBitrate, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Transcoding progress:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingCompletion}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingCompletion, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Transcoding framerate:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingFramerate}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingFramerate, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                         <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                             <TextBlock Text="Reason for transcoding:" Margin="0,0,5,0" />
-                            <TextBlock Text="{Binding MediaPlayerPlayBackInfo.TranscodingReason}" FontSize="15" Foreground="White" />
+                            <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.TranscodingReason, Mode=OneWay}" FontSize="15" Foreground="White" />
                         </StackPanel>
                     </StackPanel>
 
@@ -127,76 +127,76 @@
 
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Container:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.Container}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.Container, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Size:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.Size}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.Size, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Bitrate:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.Bitrate}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.Bitrate, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Video codec:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.VideoCodec}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.VideoCodec, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Video bitrate:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.VideoBitrate}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.VideoBitrate, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Video range type:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.VideoRangeType}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.VideoRangeType, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Audio codec:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.AudioCodec}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.AudioCodec, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Audio bitrate:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.AudioBitrate}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.AudioBitrate, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Audio channels:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.AudioChannels}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.AudioChannels, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                     <StackPanel Margin="10,0,0,0" Orientation="Horizontal">
                         <TextBlock Text="Audio sample rate:" Margin="0,0,5,0" />
-                        <TextBlock Text="{Binding MediaPlayerPlayBackInfo.AudioSampleRate}" FontSize="15" Foreground="White" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaPlayerPlayBackInfo.AudioSampleRate, Mode=OneWay}" FontSize="15" Foreground="White" />
                     </StackPanel>
                 </StackPanel>
             </Grid>
         </Popup>
 
         <MediaPlayerElement
-      x:Name="_mediaPlayerElement"
-      AreTransportControlsEnabled="True"
-      HorizontalAlignment="Stretch"
-      Grid.Row="1"
-      AutoPlay="True"
-      Canvas.ZIndex="1"
-      IsEnabled="True"
-      Stretch="UniformToFill">
+            x:Name="_mediaPlayerElement"
+            AreTransportControlsEnabled="True"
+            HorizontalAlignment="Stretch"
+            Grid.Row="1"
+            AutoPlay="True"
+            Canvas.ZIndex="1"
+            IsEnabled="True"
+            Stretch="UniformToFill">
             <MediaPlayerElement.TransportControls>
                 <MediaTransportControls
-          IsFastForwardButtonVisible="True"
-          IsFastForwardEnabled="True"
-          IsFastRewindButtonVisible="True"
-          IsFastRewindEnabled="True"
-          IsPlaybackRateButtonVisible="False"
-          IsPlaybackRateEnabled="False"
-          IsCompact="False"
-          IsSeekBarVisible="True"
-          IsSeekEnabled="True"
-          IsSkipForwardButtonVisible="True"
-          IsSkipForwardEnabled="True"
-          IsSkipBackwardButtonVisible="True"
-          IsSkipBackwardEnabled="True"
-          IsStopButtonVisible="False"
-          IsStopEnabled="False"
-          RequiresPointer="WhenEngaged"
-          x:Name="mediaControls" />
+                    IsFastForwardButtonVisible="True"
+                    IsFastForwardEnabled="True"
+                    IsFastRewindButtonVisible="True"
+                    IsFastRewindEnabled="True"
+                    IsPlaybackRateButtonVisible="False"
+                    IsPlaybackRateEnabled="False"
+                    IsCompact="False"
+                    IsSeekBarVisible="True"
+                    IsSeekEnabled="True"
+                    IsSkipForwardButtonVisible="True"
+                    IsSkipForwardEnabled="True"
+                    IsSkipBackwardButtonVisible="True"
+                    IsSkipBackwardEnabled="True"
+                    IsStopButtonVisible="False"
+                    IsStopEnabled="False"
+                    RequiresPointer="WhenEngaged"
+                    x:Name="mediaControls" />
             </MediaPlayerElement.TransportControls>
         </MediaPlayerElement>
     </Grid>

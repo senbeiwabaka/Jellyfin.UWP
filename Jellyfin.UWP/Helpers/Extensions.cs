@@ -1,33 +1,32 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 
-namespace Jellyfin.UWP.Helpers
+namespace Jellyfin.UWP.Helpers;
+
+internal static class Extensions
 {
-    internal static class Extensions
+    public static T? FindVisualChild<T>(this DependencyObject element)
+        where T : DependencyObject
     {
-        public static T FindVisualChild<T>(this DependencyObject element)
-            where T : DependencyObject
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
         {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+            DependencyObject child = VisualTreeHelper.GetChild(element, i);
+
+            if (child is T t)
             {
-                DependencyObject child = VisualTreeHelper.GetChild(element, i);
+                return t;
+            }
+            else
+            {
+                T? childOfChild = FindVisualChild<T>(child);
 
-                if (child is T)
+                if (childOfChild != null)
                 {
-                    return (T)child;
-                }
-                else
-                {
-                    T childOfChild = FindVisualChild<T>(child);
-
-                    if (childOfChild != null)
-                    {
-                        return childOfChild;
-                    }
+                    return childOfChild;
                 }
             }
-
-            return null;
         }
+
+        return null;
     }
 }

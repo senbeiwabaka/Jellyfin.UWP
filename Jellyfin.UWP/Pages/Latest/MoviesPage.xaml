@@ -1,12 +1,11 @@
 ﻿<Page
     x:Class="Jellyfin.UWP.Pages.Latest.MoviesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Jellyfin.UWP.Pages.Latest"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
     d:DataContext="{d:DesignInstance Type=uwp:MoviesViewModel}"
@@ -15,6 +14,7 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         <DataTemplate x:Key="UIContinueMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
                 <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
@@ -25,6 +25,7 @@
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
+
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
                 <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
@@ -47,7 +48,7 @@
 
         <ScrollViewer Grid.Row="1" Margin="10" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <StackPanel Margin="0,0,0,10"  Visibility="{Binding HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Margin="0,0,0,10"  Visibility="{x:Bind ViewModel.HasResumeMedia, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
@@ -56,8 +57,8 @@
 
                         <TextBlock Text="Continue Watching" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForContinueScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{x:Bind ViewModel.HasEnoughDataForContinueScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
                             <Button Background="Black" Click="ScrollRight_Click">
@@ -72,7 +73,7 @@
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.HorizontalScrollMode="Disabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{Binding ResumeMediaList, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.ResumeMediaList, Mode=OneWay}"
                         ItemClick="{x:Bind MediaClickItemList}"
                         IsItemClickEnabled="True"
                         ItemTemplate="{StaticResource UIContinueMediaListItemDataTemplate}">
@@ -93,11 +94,11 @@
 
                         <TextBlock Text="Latest Movies" FontSize="40" Grid.Column="0" />
 
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{Binding HasEnoughDataForLatestScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Button Margin="0,0,10,0" Background="Black" Click="ScrollLeft_Click" IsEnabled="False">
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Margin="0,0,20,0" Visibility="{x:Bind ViewModel.HasEnoughDataForLatestScrolling, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Button Margin="0,0,10,0" Click="ScrollLeft_Click" IsEnabled="False">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
                             </Button>
-                            <Button Background="Black" Click="ScrollRight_Click">
+                            <Button Click="ScrollRight_Click">
                                 <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
                             </Button>
                         </StackPanel>
@@ -109,7 +110,7 @@
                         ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                         ScrollViewer.HorizontalScrollMode="Disabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{Binding LatestMediaList, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.LatestMediaList, Mode=OneWay}"
                         ItemClick="{x:Bind MediaClickItemList}"
                         IsItemClickEnabled="True"
                         ItemTemplate="{StaticResource UIMediaListItemDataTemplate}">

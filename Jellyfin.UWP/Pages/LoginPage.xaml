@@ -1,31 +1,34 @@
 ﻿<Page
     x:Class="Jellyfin.UWP.Pages.LoginPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Jellyfin.UWP.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     d:DataContext="{d:DesignInstance Type=uwp:LoginViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Padding="10" x:Name="MainCenterStack">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <TextBlock Text="Username: " Padding="10" />
-                <TextBox x:Name="tb_UserName" Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="150" Padding="10" />
+                <TextBox x:Name="tb_UserName" Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="150" Padding="10" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,10,0,10">
                 <TextBlock Text="Password: " Padding="10" Margin="0,0,4,0" />
-                <PasswordBox x:Name="p_Password" Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyUp="PasswordBox_KeyUp" Width="150" Padding="10" />
+                <PasswordBox x:Name="p_Password" Password="{x:Bind ViewModel.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyUp="PasswordBox_KeyUp" Width="150" Padding="10" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="btn_Cancel" Content="Cancel" Command="{Binding LoginCancelCommand}" Margin="0,0,10,0" />
+                <Button x:Name="btn_Cancel" Content="Cancel" Command="{x:Bind ViewModel.CancelCommand}" Margin="0,0,10,0" IsEnabled="{x:Bind ViewModel.LoginCommand.CanBeCanceled, Mode=OneWay}" />
 
-                <Button x:Name="btn_Login" Content="Login" Command="{Binding LoginCommand}" Background="#00a4dc" Margin="10,0,0,0" />
+                <Button x:Name="btn_Login" Content="Login" Command="{x:Bind ViewModel.LoginCommand}" Background="#00a4dc" Margin="10,0,0,0" />
+
+                <muxc:ProgressRing HorizontalAlignment="Left" IsActive="{x:Bind ViewModel.LoginCommand.IsRunning, Mode=OneWay}" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
@@ -33,9 +36,9 @@
             </StackPanel>
         </StackPanel>
 
-        <Popup IsOpen="{Binding OpenPopup}" x:Name="MessagePopup" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Popup IsOpen="{x:Bind ViewModel.OpenPopup, Mode=OneWay}" x:Name="MessagePopup" HorizontalAlignment="Center" VerticalAlignment="Center">
             <StackPanel Background="Black">
-                <TextBlock FontSize="36" Foreground="White" Text="{Binding Message}"></TextBlock>
+                <TextBlock FontSize="36" Foreground="White" Text="{x:Bind ViewModel.Message, Mode=OneWay}"></TextBlock>
                 <Button x:Name="CloseButton" Content="Close" Click="CloseButton_Click"></Button>
             </StackPanel>
         </Popup>

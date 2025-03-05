@@ -8,10 +8,8 @@
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    d:DataContext="{d:DesignInstance Type=uwp:SearchViewModel}"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-    NavigationCacheMode="Enabled">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -34,7 +32,7 @@
 
         <ScrollViewer Grid.Row="2">
             <StackPanel>
-                <StackPanel Visibility="{Binding HasMoviesResult, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Visibility="{x:Bind ViewModel.HasMoviesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Movies" FontSize="22" FontWeight="Bold" />
 
                     <ListView
@@ -43,7 +41,7 @@
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
                         ItemClick="ListView_ItemClick"
-                        ItemsSource="{Binding MovieMediaList, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.MovieMediaList, Mode=OneWay}"
                         IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -65,7 +63,7 @@
                     </ListView>
                 </StackPanel>
 
-                <StackPanel Visibility="{Binding HasSeriesResult, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Visibility="{x:Bind ViewModel.HasSeriesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
 
                     <ListView
@@ -74,7 +72,7 @@
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
                         ItemClick="ListView_ItemClick"
-                        ItemsSource="{Binding SeriesMediaList, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.SeriesMediaList, Mode=OneWay}"
                         IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -97,7 +95,7 @@
                     </ListView>
                 </StackPanel>
 
-                <StackPanel Visibility="{Binding HasEpisodesResult, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Visibility="{x:Bind ViewModel.HasEpisodesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock Text="Episodes" FontSize="22" FontWeight="Bold" />
 
                     <ListView
@@ -106,7 +104,7 @@
                         ScrollViewer.HorizontalScrollMode="Enabled"
                         ScrollViewer.VerticalScrollMode="Disabled"
                         ItemClick="ListView_ItemClick"
-                        ItemsSource="{Binding EpisodesMediaList, Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.EpisodesMediaList, Mode=OneWay}"
                         IsItemClickEnabled="True">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>

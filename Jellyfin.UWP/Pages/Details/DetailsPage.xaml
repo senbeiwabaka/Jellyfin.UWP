@@ -1,0 +1,280 @@
+﻿<Page
+    x:Class="Jellyfin.UWP.Pages.Details.DetailsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    d:DataContext="{d:DesignInstance Type=uwp:DetailsViewModel}"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <interactivity:Interaction.Behaviors>
+        <interactivity:EventTriggerBehavior EventName="Loaded">
+            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadMediaInformationCommand}" CommandParameter="{x:Bind id}" />
+        </interactivity:EventTriggerBehavior>
+    </interactivity:Interaction.Behaviors>
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
+        <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
+        <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="90" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <uc:TopControl Grid.Row="0" />
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid 
+                Grid.ColumnSpan="2" 
+                Canvas.ZIndex="5" 
+                Background="Gray" 
+                Opacity=".8" 
+                Visibility="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <muxc:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" IsActive="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay}" />
+            </Grid>
+
+            <Image Source="{x:Bind ViewModel.ImageUrl, Mode=OneWay}" Grid.Column="0" />
+
+            <ScrollViewer Grid.Column="1">
+                <StackPanel>
+                    <TextBlock Text="DETAILS" Visibility="{x:Bind ViewModel.IsInDebug, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+                    <StackPanel Orientation="Horizontal" Height="115.2"  Padding="30,0,0,0">
+                        <StackPanel.Background>
+                            <SolidColorBrush Color="#202020" Opacity=".8" />
+                        </StackPanel.Background>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel
+                                Grid.Column="0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="0,0,15,0">
+                                <TextBlock Text="{x:Bind ViewModel.MediaItem.Name, Mode=OneWay}" FontSize="26" FontWeight="Bold" />
+
+                                <StackPanel Orientation="Horizontal"
+>
+                                    <TextBlock Text="{x:Bind ViewModel.MediaItem.ProductionYear, Mode=OneWay}" Padding="0,0,20,0" />
+
+                                    <TextBlock Text="{x:Bind ViewModel.RunTime, Mode=OneWay}" Padding="0,0,20,0" />
+
+                                    <Border BorderBrush="White" BorderThickness="2" Padding="5,0,5,0" Margin="0,0,20,0">
+                                        <TextBlock Text="{x:Bind ViewModel.MediaItem.OfficialRating, Mode=OneWay}" />
+                                    </Border>
+
+                                    <TextBlock Text="{x:Bind ViewModel.MediaItem.CommunityRating, Mode=OneWay}" Padding="0,0,20,0" />
+
+                                    <TextBlock Text="{x:Bind ViewModel.MediaItem.CriticRating, Mode=OneWay}" Padding="0,0,20,0" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <SymbolIcon x:Name="play" Symbol="Play" />
+                                    </Button>
+
+                                    <Button Content="Trailer" ToolTipService.ToolTip="Trailer">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                    </Button>
+
+                                    <Button Margin="10" ToolTipService.ToolTip="Shuffle">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
+                                    </Button>
+
+                                    <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{x:Bind ViewModel.PlayedStateCommand}">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind ViewModel.MediaItem.UserData.Played, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" />
+                                    </Button>
+
+                                    <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{x:Bind ViewModel.FavoriteStateCommand}">
+                                        <Button.Background>
+                                            <SolidColorBrush Color="#000000" Opacity="0" />
+                                        </Button.Background>
+                                        <FontIcon
+                                            FontFamily="Segoe MDL2 Assets"
+                                            Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}"
+                                            Glyph="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Padding="30,0,0,0">
+                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.HasMultipleVideoStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" Height="30" Margin="0,5,0,4">
+                            <TextBlock Text="Version:" Width="93" />
+                            <ComboBox
+                                ItemsSource="{x:Bind ViewModel.VideoStreams, Mode=OneWay}"
+                                DisplayMemberPath="Title"
+                                SelectedValuePath="IsSelected"
+                                SelectedItem="{x:Bind ViewModel.SelectedVideoStream, Mode=TwoWay}">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                        <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.ChangeVideoSelectionCommand}" />
+                                    </interactivity:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Height="30" Margin="0,0,0,4">
+                            <TextBlock Text="Video" Width="93" />
+                            <TextBlock Text="{x:Bind ViewModel.VideoType, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Height="30">
+                            <TextBlock Text="Audio" Width="93" />
+                            <TextBlock
+                                Visibility="{x:Bind ViewModel.HasMultipleAudioStreams, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                Text="{x:Bind ViewModel.AudioType, Mode=OneWay}" />
+                            <ComboBox
+                                Visibility="{x:Bind ViewModel.HasMultipleAudioStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
+                                DisplayMemberPath="Title"
+                                SelectedValuePath="IsSelected"
+                                SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.HasSubtitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Text="Subtitle" Width="93" />
+                            <TextBlock Visibility="{x:Bind ViewModel.HasMultipleSubtitleStreams, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" Text="{x:Bind ViewModel.SubtitleType, Mode=OneWay}" />
+                            <ComboBox
+                                Visibility="{x:Bind ViewModel.HasMultipleSubtitleStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                ItemsSource="{x:Bind ViewModel.SubtitleStreams, Mode=OneWay}"
+                                DisplayMemberPath="Title"
+                                SelectedValuePath="IsSelected"
+                                SelectedItem="{x:Bind ViewModel.SelectedSubtitleStream, Mode=TwoWay}">
+                            </ComboBox>
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind ViewModel.MediaTagLines, Mode=OneWay}" Margin="0,17,0,17" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaItem.Overview, Mode=OneWay}" TextWrapping="WrapWholeWords" Margin="0,15,0,15" />
+
+                        <TextBlock Text="{x:Bind ViewModel.MediaTags, Mode=OneWay}" Margin="0,9,0,9" />
+
+                        <StackPanel Margin="0,22,0,0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
+                                <TextBlock Text="Genres" Width="93" />
+                                <TextBlock Text="{x:Bind ViewModel.Genres, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{x:Bind ViewModel.IsMovie, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="Director" Width="93" />
+                                <TextBlock Text="{x:Bind ViewModel.Director, Mode=OneWay}" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{x:Bind ViewModel.IsMovie, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="Writor" Width="93" />
+                                <TextBlock Text="{x:Bind ViewModel.Writer, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Cast &amp; Crew" />
+
+                            <ListView
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{x:Bind ViewModel.CastAndCrew, Mode=OneWay}"
+                                IsItemClickEnabled="False">
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Background="Transparent" Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:UIPersonItem">
+                                        <StackPanel Width="204" Height="360">
+                                            <Image Source="{x:Bind ImageUrl}" Width="186" />
+                                            <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                            <TextBlock Text="{x:Bind Role}" FontSize="12" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="More Like This" />
+
+                            <ListView
+                                x:Name="SimiliarItems"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                                ScrollViewer.HorizontalScrollMode="Enabled"
+                                ScrollViewer.VerticalScrollMode="Disabled"
+                                ItemsSource="{x:Bind ViewModel.SimiliarMediaList, Mode=OneWay}"
+                                IsItemClickEnabled="True"
+                                ItemClick="SimiliarItems_ItemClick">
+                                <ListView.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Background="Transparent" Orientation="Horizontal" />
+                                    </ItemsPanelTemplate>
+                                </ListView.ItemsPanel>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:UIMediaListItem">
+                                        <StackPanel Width="220" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                            <uc:CountControl PositionLeft="195" PositionTop="5" Item="{x:Bind}" />
+
+                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+
+                                            <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Page>
