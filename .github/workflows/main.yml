@@ -8,7 +8,6 @@ on:
     
 env:
   Platform: x64
-  Wap_Project_Directory: Jellyfin.UWP
   Configuration: Release
   AppxBundle: Always
   
@@ -111,9 +110,9 @@ jobs:
       - name: Update manifest version
         shell: powershell
         run: |
-          [xml]$manifest = get-content ".\$env:Wap_Project_Directory\Package.appxmanifest"
+          [xml]$manifest = get-content ".\WapProjTemplate1\Package.appxmanifest"
           $manifest.Package.Identity.Version = "${{ env.NBGV_SimpleVersion }}.0"
-          $manifest.save(".\$env:Wap_Project_Directory\Package.appxmanifest")
+          $manifest.save(".\WapProjTemplate1\Package.appxmanifest")
 
       - name: Restore Packages
         run: nuget restore Jellyfin.UWP.sln -Verbosity quiet
