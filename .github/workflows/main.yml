@@ -85,7 +85,7 @@ jobs:
       #     .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
-    if: ${{ github.ref == 'refs/dotnet9' }}
+    if: ${{ github.ref == 'refs/head/dotnet9' }}
     needs: build
     runs-on: windows-2022
     
