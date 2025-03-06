@@ -9,6 +9,8 @@ on:
 env:
   Platform: x64
   Wap_Project_Directory: Jellyfin.UWP
+  Configuration: Release
+  AppxBundle: Always
   
 permissions:
   contents: write
@@ -39,11 +41,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=$env:Configuration /p:Platform=x64 /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms="x64" -v:m
-        env:
-          AppxBundle: Always
-          BuildMode: CI
-          Configuration: Release
+          msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=$env:Configuration /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms=$env:Platform -v:m
         
       # These are broken right now for dotnet 9
       # - name: Run Tests
@@ -87,7 +85,7 @@ jobs:
       #     .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
   deploy:
-    if: ${{ github.ref == 'refs/heads/dotnet9' }}
+    if: ${{ github.ref == 'refs/dotnet9' }}
     needs: build
     runs-on: windows-2022
     
@@ -122,11 +120,7 @@ jobs:
 
       - name: Build Solution
         run: |
-          msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=Release /p:Platform=x64 /p:AppxBundle=Always /p:AppxBundlePlatforms="x64" /p:UapAppxPackageBuildMode=SideloadOnly -v:m
-        env:
-          AppxBundle: Always
-          BuildMode: CI
-          Configuration: Release
+          msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=$env:Configuration /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms=$env:Platform /p:UapAppxPackageBuildMode=SideloadOnly -v:m
           
       - name: Zip Package
         uses: vimtor/action-zip@v1.2
