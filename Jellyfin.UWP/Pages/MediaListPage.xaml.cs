@@ -90,7 +90,7 @@ internal sealed partial class MediaListPage : Page
     {
         var button = (Button)sender;
         var item = (UIMediaListItem)button.DataContext;
-        
+
         var items = ViewModel.MediaList;
         var index = items.IndexOf(item);
 
@@ -149,5 +149,12 @@ internal sealed partial class MediaListPage : Page
         await ViewModel.InitialLoadAsync(id);
 
         ApplicationView.GetForCurrentView().Title = ViewModel.GetTitle();
+    }
+
+    private async void SortButton_Click(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadFiltersAsync();
+
+        Sorting.IsOpen = true;
     }
 }

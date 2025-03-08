@@ -207,28 +207,26 @@ internal partial class MediaListViewModel : ObservableObject
             CountInformation = $"{CurrentIndex}-{(CurrentIndex - 1) + Limit} of {itemsResult.TotalRecordCount}";
         }
 
-        MediaList = new ObservableCollection<UIMediaListItem>(
-            itemsResult
-                .Items
-                .Select(x =>
-                {
-                    var item = new UIMediaListItem
+        MediaList = [.. itemsResult.Items
+                    .Select(x =>
                     {
-                        Id = x.Id.Value,
-                        Name = x.Name,
-                        Url = mediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
-                        Type = x.Type.Value,
-                        CollectionType = x.CollectionType,
-                        UserData = new UIUserData
+                        var item = new UIMediaListItem
                         {
-                            IsFavorite = x.UserData.IsFavorite.Value,
-                            UnplayedItemCount = x.UserData.UnplayedItemCount,
-                            HasBeenWatched = x.UserData.Played.Value,
-                        },
-                    };
+                            Id = x.Id.Value,
+                            Name = x.Name,
+                            Url = mediaHelpers.SetImageUrl(x, "384", "210", JellyfinConstants.PrimaryName),
+                            Type = x.Type.Value,
+                            CollectionType = x.CollectionType,
+                            UserData = new UIUserData
+                            {
+                                IsFavorite = x.UserData.IsFavorite.Value,
+                                UnplayedItemCount = x.UserData.UnplayedItemCount,
+                                HasBeenWatched = x.UserData.Played.Value,
+                            },
+                        };
 
-                    return item;
-                }));
+                        return item;
+                    })];
     }
 
     [RelayCommand(CanExecute = nameof(CanLoadNext))]

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Text.Json;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -127,10 +128,12 @@ public sealed partial class App : Application
                     settings.SetAccessToken(accessToken);
 
                     var user = await apiClient.Users.Me.GetAsync();
-                    var session = System.Text.Json.JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession);
+                    var session = JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession);
 
                     memoryCache.Set(JellyfinConstants.UserName, user);
                     memoryCache.Set(JellyfinConstants.SessionName, session);
+
+                    Log.Debug("user: {0}", JsonSerializer.Serialize(user));
                 }
                 catch (Exception exception)
                 {

@@ -40,6 +40,7 @@
             <Button Content="Previous" Margin="0, 0, 10, 0" Command="{x:Bind ViewModel.LoadPreviousCommand}"></Button>
             <Button Content="Next" Command="{x:Bind ViewModel.LoadNextCommand}" Margin="10, 0, 10, 0"></Button>
             <Button Content="Filter" Name="FiltersButton" Click="FiltersButton_Click" Margin="10, 0, 10, 0"></Button>
+            <Button Content="Sort" Name="SortButton" Click="SortButton_Click" Margin="10, 0, 10, 0"></Button>
 
             <Popup x:Name="Filters" IsOpen="False" IsLightDismissEnabled="True">
                 <StackPanel>
@@ -90,6 +91,37 @@
                                             <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
                                                 <StackPanel>
                                                     <TextBlock Text="{x:Bind Name}" FontSize="25" />
+                                                </StackPanel>
+                                            </ListViewItem>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Flyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </Popup>
+
+            <Popup x:Name="Sorting" IsOpen="False" IsLightDismissEnabled="True">
+                <StackPanel>
+                    <DropDownButton>
+                        <DropDownButton.Content>
+                            Sorting
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <Flyout>
+                                <ListView
+                                     ItemsSource="{x:Bind ViewModel.FilteringFilters, Mode=OneWay}"
+                                     SelectionMode="Multiple"
+                                     IsItemClickEnabled="True"
+                                     IsTapEnabled="True"
+                                     ItemClick="FiltersFiltering_ItemClick"
+                                     SelectionChanged="FiltersFiltering_SelectionChanged">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="mf:FiltersModel">
+                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{x:Bind DisplayName}" FontSize="25" />
                                                 </StackPanel>
                                             </ListViewItem>
                                         </DataTemplate>

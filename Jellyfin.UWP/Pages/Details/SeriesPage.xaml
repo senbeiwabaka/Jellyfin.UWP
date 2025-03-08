@@ -62,7 +62,7 @@
 
             <ScrollViewer Grid.Column="1">
                 <StackPanel>
-                    <TextBlock x:Name="tbDebugPageBlock" Text="SERIES" Visibility="Collapsed" />
+                    <TextBlock Text="SERIES" Visibility="{x:Bind ViewModel.IsInDebug, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
                     <StackPanel Orientation="Horizontal" Height="115.2"  Padding="30,0,0,0">
                         <StackPanel.Background>
@@ -93,9 +93,9 @@
                             </StackPanel>
 
                             <StackPanel
-                             Grid.Column="1"
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Center">
+                                 Grid.Column="1"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
                                         <Button.Background>
@@ -146,8 +146,8 @@
                         <!--<TextBlock Text="{x:Bind ViewModel.MediaTags}" Margin="0,9,0,9" Visibility="{x:Bind ViewModel.MediaTags, Converter={StaticResource StringVisibilityConverter}}" />-->
 
                         <ItemsControl
-                         ItemsSource="{x:Bind ViewModel.MediaItem.ExternalUrls}"
-                         Visibility="{x:Bind ViewModel.MediaItem.ExternalUrls.Count, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                             ItemsSource="{x:Bind ViewModel.MediaItem.ExternalUrls}"
+                             Visibility="{x:Bind ViewModel.MediaItem.ExternalUrls.Count, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" />
@@ -168,27 +168,30 @@
                         </StackPanel>
 
                         <StackPanel
-                         Visibility="{x:Bind ViewModel.NextUpItem, Converter={StaticResource ObjectVisibilityConverter}}"
-                         Width="380"
-                         HorizontalAlignment="Left">
+                             Visibility="{x:Bind ViewModel.NextUpItem, Mode=OneWay, Converter={StaticResource ObjectVisibilityConverter}}"
+                             Width="380"
+                             HorizontalAlignment="Left">
                             <TextBlock Text="Next Up" FontSize="22" FontWeight="Bold" />
 
                             <StackPanel>
-                                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" DataContext="{x:Bind ViewModel.NextUpItem}" />
+                                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" DataContext="{x:Bind ViewModel.NextUpItem, Mode=OneWay}" />
                                 <Canvas Background="Transparent">
                                     <StackPanel Canvas.Left="285" Canvas.Top="180" Canvas.ZIndex="2" Orientation="Horizontal">
                                         <Button Margin="0,0,5,0" Command="{x:Bind ViewModel.NextUpPlayedStateCommand}" ToolTipService.ToolTip="Next Up Mark Played" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>
-                                            <FontIcon Foreground="{x:Bind ViewModel.NextUpItem.UserData.HasBeenWatched, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+                                            <FontIcon Foreground="{x:Bind ViewModel.NextUpItem.UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
                                         </Button>
 
                                         <Button Margin="5,0,0,0" Command="{x:Bind ViewModel.NextUpFavoriteStateCommand}" ToolTipService.ToolTip="Next Up Mark Favorite" ToolTipService.Placement="Bottom">
                                             <Button.Background>
                                                 <SolidColorBrush Color="#000000" Opacity="0" />
                                             </Button.Background>
-                                            <FontIcon Foreground="{x:Bind ViewModel.NextUpItem.UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind ViewModel.NextUpItem.UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
+                                            <FontIcon 
+                                                Foreground="{x:Bind ViewModel.NextUpItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" 
+                                                FontFamily="Segoe MDL2 Assets" 
+                                                Glyph="{x:Bind ViewModel.NextUpItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
                                         </Button>
                                     </StackPanel>
                                 </Canvas>
@@ -197,21 +200,21 @@
                                         <ResourceDictionary>
                                             <ResourceDictionary.ThemeDictionaries>
                                                 <ResourceDictionary x:Key="Dark">
-                                                    <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{x:Bind ViewModel.NextUpItem.Url}" />
+                                                    <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{x:Bind ViewModel.NextUpItem.Url, Mode=OneWay}" />
                                                 </ResourceDictionary>
                                                 <ResourceDictionary x:Key="Light">
-                                                    <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{x:Bind ViewModel.NextUpItem.Url}" />
+                                                    <ImageBrush x:Key="ButtonBackgroundPointerOver" ImageSource="{x:Bind ViewModel.NextUpItem.Url, Mode=OneWay}" />
                                                 </ResourceDictionary>
                                             </ResourceDictionary.ThemeDictionaries>
                                         </ResourceDictionary>
                                     </Button.Resources>
                                     <Button.Background>
-                                        <ImageBrush ImageSource="{x:Bind ViewModel.NextUpItem.Url}" />
+                                        <ImageBrush ImageSource="{x:Bind ViewModel.NextUpItem.Url, Mode=OneWay}" />
                                     </Button.Background>
                                 </Button>
                             </StackPanel>
 
-                            <TextBlock Text="{x:Bind ViewModel.NextUpItem.Name}" HorizontalTextAlignment="Center" />
+                            <TextBlock Text="{x:Bind ViewModel.NextUpItem.Name, Mode=OneWay}" HorizontalTextAlignment="Center" />
                         </StackPanel>
 
                         <StackPanel>

@@ -1,14 +1,12 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details;
 
@@ -49,8 +47,6 @@ internal abstract partial class MediaViewModel(IMemoryCache memoryCache, Jellyfi
         ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
 
         await ExtraExecuteAsync(cancellationToken);
-
-        WeakReferenceMessenger.Default.Send(new WeakRefMessage("Weak Reference Messenger"));
     }
 
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
