@@ -40,15 +40,15 @@
             </StackPanel>
         </Popup>
 
-        <Popup x:Name="SettingsPopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True" Grid.Row="1" VerticalOffset="-150" HorizontalOffset="-215" HorizontalAlignment="Right">
+        <Popup x:Name="SettingsPopup" IsOpen="{x:Bind ViewModel.IsSettingsOpen, Mode=TwoWay}" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True" Grid.Row="1" VerticalOffset="-150" HorizontalOffset="-215" HorizontalAlignment="Right">
             <StackPanel Background="Black" Margin="10" Padding="20">
-                <Button x:Name="btn_PlaybackInfo" Click="btn_PlaybackInfo_Click">Playback Info</Button>
+                <Button Command="{x:Bind ViewModel.OpenPlaybackInfoCommand}">Playback Info</Button>
             </StackPanel>
         </Popup>
 
         <Popup
             x:Name="PlaybackInfoPopup"
-            IsOpen="False"
+            IsOpen="{x:Bind ViewModel.IsPlaybackOpen, Mode=TwoWay}"
             VerticalAlignment="Center"
             Canvas.ZIndex="2"
             IsLightDismissEnabled="True"
@@ -63,7 +63,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="1">
-                    <Button x:Name="btn_PlaybackInfoPopupClose" Click="btn_PlaybackInfoPopupClose_Click">
+                    <Button Command="{x:Bind ViewModel.ClosePlaybackInfoCommand}">
                         <Button.Background>
                             <SolidColorBrush Color="#000000" />
                         </Button.Background>
