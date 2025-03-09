@@ -1,4 +1,11 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk;
@@ -7,13 +14,6 @@ using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using MetroLog;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 
@@ -79,6 +79,9 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
 
     [ObservableProperty]
     public partial IMediaPlaybackSource Source { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsNextItemOpen { get; set; }
 
     internal BaseItemDto Item { get; private set; }
 
@@ -607,6 +610,8 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         }
 
         Source = mediaPlaybackItem;
+
+        await SessionPlayingAsync(cancellationToken).ConfigureAwait(true);
 
         WeakReferenceMessenger.Default.Send(new WeakRefMessage("Weak Reference Messenger"));
     }

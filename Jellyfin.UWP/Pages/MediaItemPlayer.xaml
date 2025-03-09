@@ -30,7 +30,7 @@
 
         <uc:TopControl Grid.Row="0" />
 
-        <Popup x:Name="NextEpisodePopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True">
+        <Popup IsOpen="{x:Bind ViewModel.IsNextItemOpen, Mode=TwoWay}" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True">
             <StackPanel Background="Black" Margin="10" Padding="20">
                 <TextBlock FontSize="20" Foreground="White">Play next episode?</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -40,14 +40,21 @@
             </StackPanel>
         </Popup>
 
-        <Popup x:Name="SettingsPopup" IsOpen="{x:Bind ViewModel.IsSettingsOpen, Mode=TwoWay}" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True" Grid.Row="1" VerticalOffset="-150" HorizontalOffset="-215" HorizontalAlignment="Right">
+        <Popup
+            IsOpen="{x:Bind ViewModel.IsSettingsOpen, Mode=TwoWay}" 
+            VerticalAlignment="Bottom" 
+            Canvas.ZIndex="2" 
+            IsLightDismissEnabled="True" 
+            Grid.Row="1" 
+            VerticalOffset="-150" 
+            HorizontalOffset="-215" 
+            HorizontalAlignment="Right">
             <StackPanel Background="Black" Margin="10" Padding="20">
                 <Button Command="{x:Bind ViewModel.OpenPlaybackInfoCommand}">Playback Info</Button>
             </StackPanel>
         </Popup>
 
         <Popup
-            x:Name="PlaybackInfoPopup"
             IsOpen="{x:Bind ViewModel.IsPlaybackOpen, Mode=TwoWay}"
             VerticalAlignment="Center"
             Canvas.ZIndex="2"

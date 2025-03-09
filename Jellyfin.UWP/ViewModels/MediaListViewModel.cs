@@ -22,6 +22,19 @@ internal partial class MediaListViewModel : ObservableObject
     private readonly IMediaHelpers mediaHelpers;
     private readonly UserDto user;
 
+    private BaseItemKind itemType;
+
+    private Guid? parentId;
+
+    private BaseItemDto parentItem;
+
+    public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
+    {
+        this.apiClient = apiClient;
+        this.mediaHelpers = mediaHelpers;
+        user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+    }
+
     [ObservableProperty]
     public partial string CountInformation { get; set; }
 
@@ -33,27 +46,23 @@ internal partial class MediaListViewModel : ObservableObject
     public partial ObservableCollection<FiltersModel> FilteringFilters { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<GenreFiltersModel> GenresFilterList { get; set; }
+    public partial ObservableCollection<SortModel> SortingList { get; set; }
 
-    private BaseItemKind itemType;
+    [ObservableProperty]
+    public partial ObservableCollection<GenreFiltersModel> GenresFilterList { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> MediaList { get; set; }
-
-    private Guid? parentId;
-
-    private BaseItemDto parentItem;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadNextCommand))]
     public partial int TotalRecords { get; set; } = 0;
 
-    public MediaListViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
-    {
-        this.apiClient = apiClient;
-        this.mediaHelpers = mediaHelpers;
-        user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-    }
+    [ObservableProperty]
+    public partial bool IsSortingOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFilteringOpen { get; set; }
 
     public void FilterReset()
     {
@@ -89,7 +98,7 @@ internal partial class MediaListViewModel : ObservableObject
         return parentItem?.Name ?? "No Title";
     }
 
-    public async Task InitialLoadAsync(Guid id)
+    public async Task InitialLoadAsync(Guid id, CancellationToken cancellationToken = default)
     {
         if (parentId is not null && parentItem is not null)
         {
@@ -104,10 +113,10 @@ internal partial class MediaListViewModel : ObservableObject
                 options.QueryParameters.UserId = user.Id;
                 options.QueryParameters.StartIndex = 0;
                 options.QueryParameters.Limit = 1;
-                options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
-                options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
-                options.QueryParameters.Ids = new[] { parentId, };
-            });
+                options.QueryParameters.SortBy = [ItemSortBy.SortName,];
+                options.QueryParameters.SortOrder = [SortOrder.Ascending,];
+                options.QueryParameters.Ids = [parentId,];
+            }, cancellationToken);
 
         itemType = BaseItemKind.BoxSet;
 
@@ -123,7 +132,7 @@ internal partial class MediaListViewModel : ObservableObject
             itemType = BaseItemKind.Series;
         }
 
-        await LoadMediaAsync();
+        await LoadMediaAsync([], null, cancellationToken);
     }
 
     public async Task IsFavoriteStateAsync(bool isFavorite, Guid id)
@@ -146,7 +155,7 @@ internal partial class MediaListViewModel : ObservableObject
         }
     }
 
-    public async Task LoadFiltersAsync()
+    public async Task LoadFiltersAsync(CancellationToken cancellationToken = default)
     {
         if (GenresFilterList is not null && GenresFilterList.Count > 0)
         {
@@ -158,26 +167,25 @@ internal partial class MediaListViewModel : ObservableObject
             {
                 options.QueryParameters.UserId = user.Id;
                 options.QueryParameters.ParentId = parentId;
-                options.QueryParameters.IncludeItemTypes = new[] { itemType };
-            });
+                options.QueryParameters.IncludeItemTypes = [itemType];
+            }, cancellationToken);
 
-        GenresFilterList = new ObservableCollection<GenreFiltersModel>(
-            filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id.Value, Name = x.Name }));
+        GenresFilterList = [.. filtersResult.Genres.Select(x => new GenreFiltersModel { Id = x.Id.Value, Name = x.Name })];
 
-        FilteringFilters = new ObservableCollection<FiltersModel>
-            {
-                new() { DisplayName = "Played", Filter = ItemFilter.IsPlayed },
-                new() { DisplayName = "UnPlayed",Filter = ItemFilter.IsUnplayed },
-                new() { DisplayName = "Resumable", Filter = ItemFilter.IsResumable },
-                new() { DisplayName = "Favorites", Filter = ItemFilter.IsFavorite },
-                new() { DisplayName = "Likes", Filter = ItemFilter.Likes },
-                new() { DisplayName = "Dislikes", Filter = ItemFilter.Dislikes },
-            };
+        FilteringFilters =
+        [
+            new() { DisplayName = "Played", Filter = ItemFilter.IsPlayed },
+            new() { DisplayName = "UnPlayed",Filter = ItemFilter.IsUnplayed },
+            new() { DisplayName = "Resumable", Filter = ItemFilter.IsResumable },
+            new() { DisplayName = "Favorites", Filter = ItemFilter.IsFavorite },
+            new() { DisplayName = "Likes", Filter = ItemFilter.Likes },
+            new() { DisplayName = "Dislikes", Filter = ItemFilter.Dislikes },
+        ];
     }
 
     public async Task LoadMediaAsync(
-        Guid?[] genreIds = null,
-        ItemFilter[] itemFilters = null,
+        Guid?[] genreIds,
+        ItemFilter[]? itemFilters = null,
         CancellationToken cancellationToken = default)
     {
         var itemsResult = await apiClient.Items
@@ -187,12 +195,12 @@ internal partial class MediaListViewModel : ObservableObject
                 options.QueryParameters.ParentId = parentId;
                 options.QueryParameters.StartIndex = CurrentIndex;
                 options.QueryParameters.Limit = Limit;
-                options.QueryParameters.SortBy = new[] { ItemSortBy.SortName, };
-                options.QueryParameters.SortOrder = new[] { SortOrder.Ascending, };
+                options.QueryParameters.SortBy = [ItemSortBy.SortName,];
+                options.QueryParameters.SortOrder = [SortOrder.Ascending,];
                 options.QueryParameters.GenreIds = genreIds;
                 options.QueryParameters.Filters = itemFilters;
-                options.QueryParameters.IncludeItemTypes = new[] { itemType };
-                options.QueryParameters.Fields = new[] { ItemFields.PrimaryImageAspectRatio, };
+                options.QueryParameters.IncludeItemTypes = [itemType];
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
             },
             cancellationToken: cancellationToken);
 
@@ -229,7 +237,7 @@ internal partial class MediaListViewModel : ObservableObject
                     })];
     }
 
-    [RelayCommand(CanExecute = nameof(CanLoadNext))]
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false, CanExecute = nameof(CanLoadNext))]
     public async Task LoadNextAsync(CancellationToken cancellationToken)
     {
         if (CurrentIndex == 0)
@@ -247,7 +255,7 @@ internal partial class MediaListViewModel : ObservableObject
             cancellationToken);
     }
 
-    [RelayCommand(CanExecute = nameof(CanLoadPrevious))]
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false, CanExecute = nameof(CanLoadPrevious))]
     public async Task LoadPreviousAsync(CancellationToken cancellationToken)
     {
         if (CurrentIndex < 0)
@@ -299,5 +307,25 @@ internal partial class MediaListViewModel : ObservableObject
     private bool CanLoadPrevious()
     {
         return (CurrentIndex - Limit) > 0;
+    }
+
+    [RelayCommand]
+    private void LoadSort()
+    {
+        SortingList =
+        [
+            new(){ Name = "Name", Sort = ItemSortBy.Name, },
+            new(){ Name = "Date Added", Sort = ItemSortBy.DateCreated, },
+        ];
+
+        IsSortingOpen = true;
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task LoadFiltering(CancellationToken cancellationToken)
+    {
+        await LoadFiltersAsync(cancellationToken);
+
+        IsFilteringOpen = true;
     }
 }

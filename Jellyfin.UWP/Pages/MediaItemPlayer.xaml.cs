@@ -54,43 +54,10 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
     public void Receive(WeakRefMessage message)
     {
-        //await ViewModel.LoadMediaItemAsync(detailsItemPlayRecord);
-
-        //var source = LoadSourceAsync();
-        //var mediaPlaybackItem = new MediaPlaybackItem(source);
-
-        //var props = mediaPlaybackItem.GetDisplayProperties();
-        //props.Type = Windows.Media.MediaPlaybackType.Video;
-
-        //foreach (var genre in ViewModel.Item.Genres)
-        //{
-        //    props.VideoProperties.Genres.Add(genre);
-        //}
-
-        //props.VideoProperties.Title = ViewModel.Item.Name;
-
-        //mediaPlaybackItem.ApplyDisplayProperties(props);
-
-        //var mediaPlayer = new MediaPlayer
-        //{
-        //    Source = mediaPlaybackItem,
-        //    AudioCategory = MediaPlayerAudioCategory.Media,
-        //    RealTimePlayback = true,
-        //};
-
-        //_mediaPlayerElement.SetMediaPlayer(mediaPlayer);
-
         if (ViewModel.Item.UserData.PlayedPercentage > 0 && ViewModel.Item.UserData.PlaybackPositionTicks.HasValue)
         {
             _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(ViewModel.Item.UserData.PlaybackPositionTicks.Value);
         }
-
-        //if (!ViewModel.IsTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
-        //{
-        //    mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
-        //}
-
-        ViewModel.SessionPlayingAsync();
 
         dispatcherTimer.Start();
     }
@@ -197,14 +164,9 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
         if (_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.TotalSeconds + 30 >= _mediaPlayerElement.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds
             && ViewModel.Item.Type == BaseItemDto_Type.Episode
-            && !NextEpisodePopup.IsOpen)
+            && !ViewModel.IsNextItemOpen)
         {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                      CoreDispatcherPriority.Normal,
-                      () =>
-                      {
-                          NextEpisodePopup.IsOpen = true;
-                      });
+            ViewModel.IsNextItemOpen = true;
         }
     }
 
@@ -244,27 +206,24 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
     }
 
-    private async void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+    private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
     {
         Log.Debug("Media has ended playback");
 
-        await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                  CoreDispatcherPriority.Normal,
-                      () =>
-                      {
-                          dispatcherTimer.Stop();
-                      });
+        //await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+        //          CoreDispatcherPriority.Normal,
+        //              () =>
+        //              {
+        //                  dispatcherTimer.Stop();
+        //              });
 
-        await ViewModel.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
+        dispatcherTimer.Stop();
 
-        if (ViewModel.Item.Type == BaseItemDto_Type.Episode && !NextEpisodePopup.IsOpen)
+        ViewModel.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
+
+        if (ViewModel.Item.Type == BaseItemDto_Type.Episode && !ViewModel.IsNextItemOpen)
         {
-            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-                      CoreDispatcherPriority.Normal,
-                      () =>
-                      {
-                          NextEpisodePopup.IsOpen = true;
-                      });
+            ViewModel.IsNextItemOpen = true;
         }
         else
         {

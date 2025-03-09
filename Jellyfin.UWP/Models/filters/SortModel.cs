@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Jellyfin.Sdk.Generated.Models;
 
-namespace Jellyfin.UWP.Models.filters
+namespace Jellyfin.UWP.Models.Filters;
+
+internal sealed class SortModel
 {
-    class SortModel
-    {
-    }
+    public required string Name { get; init; } = default!;
+
+    public required ItemSortBy Sort { get; init; }
+
+    public bool IsSelected { get; set; }
 }
