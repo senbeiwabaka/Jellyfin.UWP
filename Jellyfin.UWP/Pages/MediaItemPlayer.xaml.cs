@@ -1,9 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -11,7 +6,10 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
-using Windows.ApplicationModel.Core;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.Media.Playback;
 using Windows.System.Display;
 using Windows.UI.Core;
@@ -24,12 +22,11 @@ namespace Jellyfin.UWP.Pages;
 internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 {
     private readonly DispatcherTimer dispatcherTimer;
+    private readonly DisplayRequest displayRequest;
     private readonly ILogger Log;
-    private readonly IMemoryCache memoryCache;
     private readonly Stopwatch stopwatch = new();
 
     private DetailsItemPlayRecord detailsItemPlayRecord;
-    private DisplayRequest? displayRequest;
 
     public MediaItemPlayer()
     {
@@ -47,6 +44,7 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
         Log = LogManagerFactory.DefaultLogManager.GetLogger<MediaItemPlayer>();
 
+        displayRequest = new DisplayRequest();
         detailsItemPlayRecord = new DetailsItemPlayRecord();
     }
 
@@ -58,6 +56,8 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         {
             _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(ViewModel.Item.UserData.PlaybackPositionTicks.Value);
         }
+
+        dispatcherTimer.Start();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -243,23 +243,11 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         {
             if (playbackSession.PlaybackState == MediaPlaybackState.Playing)
             {
-                if (displayRequest is null)
-                {
-                    // This call creates an instance of the DisplayRequest object
-                    displayRequest = new DisplayRequest();
-                    displayRequest.RequestActive();
-                }
-
-                dispatcherTimer.Start();
+                displayRequest.RequestActive();
             }
             else // PlaybackState is Buffering, None, Opening, or Paused.
             {
-                if (displayRequest is not null)
-                {
-                    // Deactivate the display request and set the var to null.
-                    displayRequest.RequestRelease();
-                    displayRequest = null;
-                }
+                displayRequest.RequestRelease();
             }
         }
     }
