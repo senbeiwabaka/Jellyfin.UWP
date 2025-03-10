@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -6,11 +11,6 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
@@ -58,8 +58,6 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         {
             _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(ViewModel.Item.UserData.PlaybackPositionTicks.Value);
         }
-
-        dispatcherTimer.Start();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -245,62 +243,24 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         {
             if (playbackSession.PlaybackState == MediaPlaybackState.Playing)
             {
-                if (displayRequest == null)
+                if (displayRequest is null)
                 {
                     // This call creates an instance of the DisplayRequest object
                     displayRequest = new DisplayRequest();
                     displayRequest.RequestActive();
                 }
+
+                dispatcherTimer.Start();
             }
             else // PlaybackState is Buffering, None, Opening, or Paused.
             {
-                if (displayRequest != null)
+                if (displayRequest is not null)
                 {
                     // Deactivate the display request and set the var to null.
                     displayRequest.RequestRelease();
                     displayRequest = null;
                 }
             }
-        }
-    }
-
-    private async void YesButton_Click(object sender, RoutedEventArgs e)
-    {
-        var episodes = await ViewModel.GetSeriesAsync(ViewModel.Item.SeriesId.Value, ViewModel.Item.SeasonId.Value);
-
-        if (episodes is not null)
-        {
-            var nextIndex = ViewModel.Item.IndexNumber + 1;
-
-            if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
-            {
-                detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber.Value == nextIndex).Id.Value;
-            }
-            else
-            {
-                var nextSeasonEpisodes = await ViewModel.GetNextSeasonEpisodes(ViewModel.Item.SeriesId.Value, ViewModel.Item.SeasonId.Value);
-
-                if (nextSeasonEpisodes is null || nextSeasonEpisodes.TotalRecordCount == 0 || nextSeasonEpisodes.Items is null)
-                {
-                    return;
-                }
-
-                detailsItemPlayRecord.Id = nextSeasonEpisodes.Items[0].Id!.Value;
-            }
-
-            //await ViewModel.LoadMediaItemAsync(detailsItemPlayRecord);
-
-            //var source = LoadSourceAsync();
-
-            //var mediaPlaybackItem = new MediaPlaybackItem(source);
-
-            //_mediaPlayerElement.Source = mediaPlaybackItem;
-
-            //await ViewModel.SessionPlayingAsync();
-
-            //dispatcherTimer.Start();
-
-            //NextEpisodePopup.IsOpen = false;
         }
     }
 }

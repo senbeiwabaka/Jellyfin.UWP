@@ -66,6 +66,9 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     }
 
     [ObservableProperty]
+    public partial bool IsNextItemOpen { get; set; }
+
+    [ObservableProperty]
     public partial bool IsPlaybackOpen { get; set; }
 
     [ObservableProperty]
@@ -80,107 +83,11 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     [ObservableProperty]
     public partial IMediaPlaybackSource Source { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsNextItemOpen { get; set; }
-
     internal BaseItemDto Item { get; private set; }
 
     internal MediaPlayerModel MediaPlayerModel { get; set; }
 
     internal MediaSourceInfo MediaSourceInfo { get; private set; }
-
-    public async Task<BaseItemDtoQueryResult?> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
-    {
-        var seasons = await apiClient.Shows[seriesId].Seasons
-            .GetAsync(options =>
-            {
-                options.QueryParameters.UserId = user.Id;
-                options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.MediaSourceCount,];
-            }, cancellationToken);
-        var index = 0;
-        foreach (var season in seasons.Items)
-        {
-            if (season.Id == seasonId)
-            {
-                if (seasons.TotalRecordCount - 1 <= ++index)
-                {
-                    return null;
-                }
-
-                return await apiClient.Shows[seriesId].Episodes
-                    .GetAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                        options.QueryParameters.SeasonId = seasons.Items[index].SeasonId;
-                        options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio,];
-                    }, cancellationToken);
-            }
-
-            ++index;
-        }
-
-        return null;
-    }
-
-    public Task<BaseItemDtoQueryResult?> GetSeriesAsync(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
-    {
-        return apiClient.Shows[seriesId].Episodes
-                   .GetAsync(options =>
-                    {
-                        options.QueryParameters.UserId = user.Id;
-                        options.QueryParameters.SeasonId = seasonId;
-                        options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio,];
-                    }, cancellationToken);
-    }
-
-    public Uri GetSubtitleUrl(int index, string routeFormat)
-    {
-        var routeId = Item.Id.ToString().Replace("-", string.Empty);
-        var subtitleRequest = apiClient.Videos[Item.Id.Value][routeId].Subtitles[index][0]
-            .StreamWithRouteFormat(routeFormat)
-            .ToGetRequestInformation();
-
-        return apiClient.BuildUri(subtitleRequest);
-        //return subtitleClient.GetSubtitleWithTicksUrl(Item.Id, routeId, index, 0, routeFormat);
-    }
-
-    public Uri GetVideoUrl(string? videoId = default)
-    {
-        var container = Item.MediaSources[0].Container;
-        var video = apiClient.Videos[Item.Id.Value]
-            .StreamWithContainer(container)
-            .ToGetRequestInformation(options =>
-            {
-                options.QueryParameters.Static = true;
-                options.QueryParameters.MediaSourceId = videoId;
-            });
-        //var videoUrl = videosClient.GetVideoStreamByContainerUrl(
-        //    Item.Id,
-        //    container,
-        //    @static: true,
-        //    mediaSourceId: videoId);
-
-        //return new Uri(videoUrl);
-
-        return apiClient.BuildUri(video);
-    }
-
-    public async Task SessionPlayingAsync(CancellationToken cancellationToken = default)
-    {
-        var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
-        var playbackStartInfo = new PlaybackStartInfo
-        {
-            ItemId = Item.Id,
-            SessionId = session.Id,
-            PlayMethod = IsTranscoding ? PlaybackStartInfo_PlayMethod.Transcode : PlaybackStartInfo_PlayMethod.DirectPlay,
-            CanSeek = true,
-            IsMuted = false,
-            IsPaused = false,
-            PlaySessionId = playbackSessionId,
-        };
-
-        await apiClient.Sessions.Playing.PostAsync(playbackStartInfo, cancellationToken: cancellationToken);
-    }
 
     public async Task SessionProgressAsync(long position, bool isPaused, CancellationToken cancellationToken = default)
     {
@@ -399,6 +306,39 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     [RelayCommand]
     private void ClosePlaybackInfo() => IsPlaybackOpen = false;
 
+    private async Task<BaseItemDtoQueryResult?> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
+    {
+        var seasons = await apiClient.Shows[seriesId].Seasons
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.MediaSourceCount,];
+            }, cancellationToken);
+        var index = 0;
+        foreach (var season in seasons.Items)
+        {
+            if (season.Id == seasonId)
+            {
+                if (seasons.TotalRecordCount - 1 <= ++index)
+                {
+                    return null;
+                }
+
+                return await apiClient.Shows[seriesId].Episodes
+                    .GetAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                        options.QueryParameters.SeasonId = seasons.Items[index].SeasonId;
+                        options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio,];
+                    }, cancellationToken);
+            }
+
+            ++index;
+        }
+
+        return null;
+    }
+
     private async Task GetPlaybackInfo(double playerWidth, double playerHeight, CancellationToken cancellationToken = default)
     {
         var session = (await apiClient.Sessions.GetAsync(options => options.QueryParameters.DeviceId = JellyfinConstants.DeviceId, cancellationToken))
@@ -465,6 +405,49 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             AudioChannels = audioMediaStream.Channels.HasValue ? audioMediaStream.Channels.ToString() : "N/A",
             AudioSampleRate = audioMediaStream.SampleRate.HasValue ? $"{audioMediaStream.SampleRate} Hz" : "N/A",
         };
+    }
+
+    private Task<BaseItemDtoQueryResult?> GetSeriesAsync(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
+    {
+        return apiClient.Shows[seriesId].Episodes
+                   .GetAsync(options =>
+                    {
+                        options.QueryParameters.UserId = user.Id;
+                        options.QueryParameters.SeasonId = seasonId;
+                        options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio,];
+                    }, cancellationToken);
+    }
+
+    private Uri GetSubtitleUrl(int index, string routeFormat)
+    {
+        var routeId = Item.Id.ToString().Replace("-", string.Empty);
+        var subtitleRequest = apiClient.Videos[Item.Id.Value][routeId].Subtitles[index][0]
+            .StreamWithRouteFormat(routeFormat)
+            .ToGetRequestInformation();
+
+        return apiClient.BuildUri(subtitleRequest);
+        //return subtitleClient.GetSubtitleWithTicksUrl(Item.Id, routeId, index, 0, routeFormat);
+    }
+
+    private Uri GetVideoUrl(string? videoId = default)
+    {
+        var container = Item.MediaSources[0].Container;
+        var video = apiClient.Videos[Item.Id.Value]
+            .StreamWithContainer(container)
+            .ToGetRequestInformation(options =>
+            {
+                options.QueryParameters.Static = true;
+                options.QueryParameters.MediaSourceId = videoId;
+            });
+        //var videoUrl = videosClient.GetVideoStreamByContainerUrl(
+        //    Item.Id,
+        //    container,
+        //    @static: true,
+        //    mediaSourceId: videoId);
+
+        //return new Uri(videoUrl);
+
+        return apiClient.BuildUri(video);
     }
 
     private async Task<bool> IsTranscodingNeededBecauseOfAudio(IReadOnlyList<MediaStream> mediaStreams)
@@ -597,13 +580,6 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
 
         mediaPlaybackItem.ApplyDisplayProperties(props);
 
-        //var mediaPlayer = new MediaPlayer
-        //{
-        //    Source = mediaPlaybackItem,
-        //    AudioCategory = MediaPlayerAudioCategory.Media,
-        //    RealTimePlayback = true,
-        //};
-
         if (!IsTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
         {
             mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
@@ -705,6 +681,9 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         return source;
     }
 
+    [RelayCommand]
+    private void NoNextEpisode() => IsNextItemOpen = false;
+
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task OpenPlaybackInfo(CancellationToken cancellationToken)
     {
@@ -713,5 +692,55 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         IsSettingsOpen = false;
 
         await GetPlaybackInfo(MediaPlayerModel.Width, MediaPlayerModel.Height, cancellationToken);
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task PlayNextEpisode(CancellationToken cancellationToken)
+    {
+        var episodes = await GetSeriesAsync(Item.SeriesId.Value, Item.SeasonId.Value, cancellationToken);
+
+        if (episodes is not null)
+        {
+            var nextIndex = Item.IndexNumber + 1;
+
+            if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
+            {
+                detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber.Value == nextIndex).Id.Value;
+            }
+            else
+            {
+                var nextSeasonEpisodes = await GetNextSeasonEpisodes(Item.SeriesId.Value, Item.SeasonId.Value, cancellationToken);
+
+                if (nextSeasonEpisodes is null || nextSeasonEpisodes.TotalRecordCount == 0 || nextSeasonEpisodes.Items is null)
+                {
+                    return;
+                }
+
+                detailsItemPlayRecord.Id = nextSeasonEpisodes.Items[0].Id!.Value;
+            }
+
+            await LoadMediaItemAsync(detailsItemPlayRecord, cancellationToken);
+
+            IsNextItemOpen = false;
+
+            await SessionPlayingAsync(cancellationToken);
+        }
+    }
+
+    private async Task SessionPlayingAsync(CancellationToken cancellationToken = default)
+    {
+        var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
+        var playbackStartInfo = new PlaybackStartInfo
+        {
+            ItemId = Item.Id,
+            SessionId = session.Id,
+            PlayMethod = IsTranscoding ? PlaybackStartInfo_PlayMethod.Transcode : PlaybackStartInfo_PlayMethod.DirectPlay,
+            CanSeek = true,
+            IsMuted = false,
+            IsPaused = false,
+            PlaySessionId = playbackSessionId,
+        };
+
+        await apiClient.Sessions.Playing.PostAsync(playbackStartInfo, cancellationToken: cancellationToken);
     }
 }
