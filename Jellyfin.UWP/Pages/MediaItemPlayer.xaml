@@ -30,11 +30,24 @@
 
         <uc:TopControl Grid.Row="0" />
 
-        <Popup IsOpen="{x:Bind ViewModel.IsNextItemOpen, Mode=TwoWay}" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True">
-            <StackPanel Background="Black" Margin="10" Padding="20">
-                <TextBlock FontSize="20" Foreground="White">Play next episode?</TextBlock>
+        <Popup IsOpen="{x:Bind ViewModel.IsNextItemOpen, Mode=TwoWay}" Grid.Row="1" IsLightDismissEnabled="True">
+            <StackPanel Margin="10" Padding="20" Background="Black">
+                <TextBlock FontSize="20" Foreground="White" Margin="0,0,0,5">Play next episode?</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Yes" Margin="0,0,5,0" Foreground="Green" Command="{x:Bind ViewModel.PlayNextEpisodeCommand}" />
+                    <Button Content="Yes" Margin="0,0,5,0" Foreground="Green" Command="{x:Bind ViewModel.PlayNextEpisodeCommand}">
+                        <Button.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Dark">
+                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="DarkOliveGreen"/>
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Light">
+                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="DarkOliveGreen"/>
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </Button.Resources>
+                    </Button>
                     <Button Content="No" Margin="5,0,0,0" Command="{x:Bind ViewModel.NoNextEpisodeCommand}" />
                 </StackPanel>
             </StackPanel>

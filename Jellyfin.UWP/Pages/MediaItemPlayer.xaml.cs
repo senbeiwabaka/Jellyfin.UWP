@@ -6,7 +6,6 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
-using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -33,7 +32,6 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
         InitializeComponent();
 
         DataContext = Ioc.Default.GetRequiredService<MediaItemPlayerViewModel>();
-        memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
         Loaded += MediaItemPlayer_Loaded;
         Unloaded += MediaItemPlayer_Unloaded;
