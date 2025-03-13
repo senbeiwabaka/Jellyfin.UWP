@@ -4,12 +4,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:uwp="using:Jellyfin.UWP.Models"
-    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
+    xmlns:uwp="using:Jellyfin.UWP.ViewModels"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     d:DataContext="{d:DesignInstance Type=uwp:MediaItemPlayerViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <interactivity:Interaction.Behaviors>
+        <interactivity:EventTriggerBehavior EventName="Loaded">
+            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadMediaItemCommand}" CommandParameter="{x:Bind detailsItemPlayRecord}" x:DefaultBindMode="OneTime" />
+        </interactivity:EventTriggerBehavior>
+    </interactivity:Interaction.Behaviors>
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -23,25 +30,45 @@
 
         <uc:TopControl Grid.Row="0" />
 
-        <Popup x:Name="NextEpisodePopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True">
-            <StackPanel Background="Black" Margin="10" Padding="20">
-                <TextBlock FontSize="20" Foreground="White">Play next episode?</TextBlock>
+        <Popup IsOpen="{x:Bind ViewModel.IsNextItemOpen, Mode=TwoWay}" Grid.Row="1" IsLightDismissEnabled="True">
+            <StackPanel Margin="10" Padding="20" Background="Black">
+                <TextBlock FontSize="20" Foreground="White" Margin="0,0,0,5">Play next episode?</TextBlock>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="Yes" Margin="0,0,5,0" Foreground="Green" x:Name="YesButton" Click="YesButton_Click" />
-                    <Button Content="No" Margin="5,0,0,0" x:Name="NoButton" />
+                    <Button Content="Yes" Margin="0,0,5,0" Foreground="Green" Command="{x:Bind ViewModel.PlayNextEpisodeCommand}">
+                        <Button.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Dark">
+                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="DarkOliveGreen"/>
+                                    </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Light">
+                                        <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="DarkOliveGreen"/>
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </Button.Resources>
+                    </Button>
+                    <Button Content="No" Margin="5,0,0,0" Command="{x:Bind ViewModel.NoNextEpisodeCommand}" />
                 </StackPanel>
             </StackPanel>
         </Popup>
 
-        <Popup x:Name="SettingsPopup" IsOpen="False" VerticalAlignment="Bottom" Canvas.ZIndex="2" IsLightDismissEnabled="True" Grid.Row="1" VerticalOffset="-150" HorizontalOffset="-215" HorizontalAlignment="Right">
+        <Popup
+            IsOpen="{x:Bind ViewModel.IsSettingsOpen, Mode=TwoWay}" 
+            VerticalAlignment="Bottom" 
+            Canvas.ZIndex="2" 
+            IsLightDismissEnabled="True" 
+            Grid.Row="1" 
+            VerticalOffset="-150" 
+            HorizontalOffset="-215" 
+            HorizontalAlignment="Right">
             <StackPanel Background="Black" Margin="10" Padding="20">
-                <Button x:Name="btn_PlaybackInfo" Click="btn_PlaybackInfo_Click">Playback Info</Button>
+                <Button Command="{x:Bind ViewModel.OpenPlaybackInfoCommand}">Playback Info</Button>
             </StackPanel>
         </Popup>
 
         <Popup
-            x:Name="PlaybackInfoPopup"
-            IsOpen="False"
+            IsOpen="{x:Bind ViewModel.IsPlaybackOpen, Mode=TwoWay}"
             VerticalAlignment="Center"
             Canvas.ZIndex="2"
             IsLightDismissEnabled="True"
@@ -56,7 +83,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="1">
-                    <Button x:Name="btn_PlaybackInfoPopupClose" Click="btn_PlaybackInfoPopupClose_Click">
+                    <Button Command="{x:Bind ViewModel.ClosePlaybackInfoCommand}">
                         <Button.Background>
                             <SolidColorBrush Color="#000000" />
                         </Button.Background>
@@ -177,7 +204,8 @@
             AutoPlay="True"
             Canvas.ZIndex="1"
             IsEnabled="True"
-            Stretch="UniformToFill">
+            Stretch="UniformToFill"
+            Source="{x:Bind ViewModel.Source, Mode=TwoWay}">
             <MediaPlayerElement.TransportControls>
                 <MediaTransportControls
                     IsFastForwardButtonVisible="True"

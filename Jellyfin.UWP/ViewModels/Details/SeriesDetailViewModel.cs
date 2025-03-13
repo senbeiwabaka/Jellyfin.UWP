@@ -16,14 +16,14 @@ namespace Jellyfin.UWP.ViewModels.Details;
 internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : MediaDetailsViewModel(memoryCache, apiClient, mediaHelpers)
 {
     [ObservableProperty]
-    public partial UIMediaListItem NextUpItem { get; set; }
+    public partial UIMediaListItem? NextUpItem { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<UIMediaListItem> SeriesMetadata { get; set; }
+    public partial ObservableCollection<UIMediaListItem>? SeriesMetadata { get; set; }
 
     public override Task<Guid> GetPlayIdAsync()
     {
-        return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray(), NextUpItem?.Id);
+        return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray() ?? [], NextUpItem?.Id);
     }
 
     protected override async Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default)

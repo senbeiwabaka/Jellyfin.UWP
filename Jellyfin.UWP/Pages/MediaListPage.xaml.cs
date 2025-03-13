@@ -8,7 +8,6 @@ using Jellyfin.UWP.ViewModels;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -90,7 +89,7 @@ internal sealed partial class MediaListPage : Page
     {
         var button = (Button)sender;
         var item = (UIMediaListItem)button.DataContext;
-        
+
         var items = ViewModel.MediaList;
         var index = items.IndexOf(item);
 
@@ -99,13 +98,6 @@ internal sealed partial class MediaListPage : Page
         var updateItem = await ViewModel.GetLatestOnItemAsync(item.Id);
 
         items[index] = updateItem;
-    }
-
-    private async void FiltersButton_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.LoadFiltersAsync();
-
-        Filters.IsOpen = true;
     }
 
     private void FiltersFiltering_ItemClick(object sender, ItemClickEventArgs e)
@@ -122,8 +114,8 @@ internal sealed partial class MediaListPage : Page
         var genresSelectedItems = GenreFiltering.SelectedItems.Cast<GenreFiltersModel>();
 
         await ViewModel.LoadMediaAsync(
-            genresSelectedItems.Any() ? genresSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
-            currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Filter).ToArray() : null);
+            genresSelectedItems.Any() ? [.. genresSelectedItems.Select(x => x.Id).Cast<Guid?>()] : null,
+            currentListViewSelectedItems.Any() ? [.. currentListViewSelectedItems.Select(x => x.Filter)] : null);
     }
 
     private void GenreFiltering_ItemClick(object sender, ItemClickEventArgs e)
@@ -147,7 +139,5 @@ internal sealed partial class MediaListPage : Page
     private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
     {
         await ViewModel.InitialLoadAsync(id);
-
-        ApplicationView.GetForCurrentView().Title = ViewModel.GetTitle();
     }
 }

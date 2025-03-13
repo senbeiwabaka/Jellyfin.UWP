@@ -39,9 +39,10 @@
 
             <Button Content="Previous" Margin="0, 0, 10, 0" Command="{x:Bind ViewModel.LoadPreviousCommand}"></Button>
             <Button Content="Next" Command="{x:Bind ViewModel.LoadNextCommand}" Margin="10, 0, 10, 0"></Button>
-            <Button Content="Filter" Name="FiltersButton" Click="FiltersButton_Click" Margin="10, 0, 10, 0"></Button>
+            <Button Content="Filter" Name="FiltersButton" Command="{x:Bind ViewModel.LoadFilteringCommand}" Margin="10, 0, 10, 0"></Button>
+            <Button Content="Sort" Name="SortButton" Command="{x:Bind ViewModel.LoadSortCommand}" Margin="10, 0, 10, 0"></Button>
 
-            <Popup x:Name="Filters" IsOpen="False" IsLightDismissEnabled="True">
+            <Popup x:Name="Filters" IsOpen="{x:Bind ViewModel.IsFilteringOpen, Mode=TwoWay}" IsLightDismissEnabled="True">
                 <StackPanel>
                     <DropDownButton>
                         <DropDownButton.Content>
@@ -95,6 +96,38 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
+                            </Flyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
+            </Popup>
+
+            <Popup x:Name="Sorting" IsOpen="{x:Bind ViewModel.IsSortingOpen, Mode=TwoWay}" IsLightDismissEnabled="True">
+                <StackPanel>
+                    <DropDownButton>
+                        <DropDownButton.Content>
+                            Sorting
+                        </DropDownButton.Content>
+                        <DropDownButton.Flyout>
+                            <Flyout>
+                                <StackPanel>
+                                    <ListView
+                                          ItemsSource="{x:Bind ViewModel.SortingList, Mode=OneWay}"
+                                          SelectionMode="Multiple"
+                                          IsItemClickEnabled="True"
+                                          IsTapEnabled="True">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="mf:SortModel">
+                                                <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{x:Bind Name}" FontSize="25" />
+                                                    </StackPanel>
+                                                </ListViewItem>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    
+                                </StackPanel>
                             </Flyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>

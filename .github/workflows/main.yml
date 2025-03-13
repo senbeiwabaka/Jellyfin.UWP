@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master, dotnet9 ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dotnet9 ]
     
 env:
   Platform: x64

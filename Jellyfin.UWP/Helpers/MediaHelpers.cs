@@ -42,12 +42,7 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
             mediaItem.Id,
             mediaItem.Type == BaseItemDto_Type.Movie,
             mediaItem.Type == BaseItemDto_Type.Episode,
-            [.. seasons.Items
-            .Select(x => new UIMediaListItem
-            {
-                Id = x.Id ?? Guid.Empty,
-                Name = x.Name,
-            })],
+            [.. seasons.Items.Select(x => new UIMediaListItem { Id = x.Id ?? Guid.Empty, Name = x.Name, })],
             nextUpItem?.Id);
     }
 

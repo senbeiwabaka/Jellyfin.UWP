@@ -1,13 +1,12 @@
 ﻿using Jellyfin.Sdk.Generated.Models;
 
-namespace Jellyfin.UWP.Models.Filters
+namespace Jellyfin.UWP.Models.Filters;
+
+public sealed class FiltersModel
 {
-    public sealed class FiltersModel
-    {
-        public string DisplayName { get; set; }
+    public string DisplayName { get; init; } = default!;
 
-        public ItemFilter Filter { get; set; }
+    public ItemFilter Filter { get; init; }
 
-        public bool IsSelected { get; set; }
-    }
+    public bool IsSelected { get; set; }
 }
