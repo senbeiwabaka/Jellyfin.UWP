@@ -51,6 +51,8 @@ internal sealed partial class MainPage : Page
 
         ViewModel.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
         ViewModel.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+
+        await ViewModel.GetUserDisplay();
     }
 
     private void SetupLatest()
@@ -74,7 +76,7 @@ internal sealed partial class MainPage : Page
 
             stackPanel.Children.Add(new TextBlock
             {
-                Text = $"Latest {item.Key.Name}",
+                Text = $"Recently Added in {item.Key.Name}",
                 FontSize = 40.0d,
             });
 
@@ -88,6 +90,7 @@ internal sealed partial class MainPage : Page
             {
                 Name = $"button_{item.Key.Name}",
                 Content = greaterThanFontIcon,
+                Margin = new Thickness(10.0d, 0d, 0d, 0d)
             };
 
             if (string.Equals(item.Key.CollectionType, CollectionType.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))

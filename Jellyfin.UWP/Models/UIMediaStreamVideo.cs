@@ -1,7 +1,7 @@
 ﻿namespace Jellyfin.UWP.Models
 {
-    public sealed class UIMediaStreamVideo : UIMediaStream
+    public partial class UIMediaStreamVideo : UIMediaStream
     {
-        public string VideoId { get; set; }
+        public string VideoId { get; set; } = default!;
     }
 }

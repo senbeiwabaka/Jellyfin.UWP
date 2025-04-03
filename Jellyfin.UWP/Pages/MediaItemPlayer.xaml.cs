@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.MessagingModels;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
@@ -18,7 +19,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages;
 
-internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
+internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItemUserDataChanged>
 {
     private readonly DispatcherTimer dispatcherTimer;
     private readonly DisplayRequest displayRequest;
@@ -48,11 +49,11 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
     internal MediaItemPlayerViewModel ViewModel => (MediaItemPlayerViewModel)DataContext;
 
-    public void Receive(WeakRefMessage message)
+    public void Receive(MediaPlayerItemUserDataChanged message)
     {
-        if (ViewModel.Item.UserData.PlayedPercentage > 0 && ViewModel.Item.UserData.PlaybackPositionTicks.HasValue)
+        if (message.Value.PlayedPercentage > 0 && message.Value.PlaybackPositionTicks.HasValue)
         {
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(ViewModel.Item.UserData.PlaybackPositionTicks.Value);
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(message.Value.PlaybackPositionTicks.Value);
         }
 
         dispatcherTimer.Start();
@@ -168,7 +169,7 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
     private void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Register<WeakRefMessage>(this);
+        WeakReferenceMessenger.Default.Register<MediaPlayerItemUserDataChanged>(this);
 
         if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
         {
@@ -193,7 +194,7 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Unregister<WeakRefMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<MediaPlayerItemUserDataChanged>(this);
 
         stopwatch.Stop();
 
@@ -249,4 +250,6 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<WeakRefMessage>
             }
         }
     }
+
+    private void btnErrorClose_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
 }

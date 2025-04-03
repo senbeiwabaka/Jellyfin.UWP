@@ -48,7 +48,7 @@ internal sealed partial class SeriesPage : Page
 
     private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
     {
-        Frame.Navigate(typeof(SeasonPage), new SeasonSeries { SeasonId = ((UIMediaListItem)e.ClickedItem).Id, SeriesId = ViewModel.MediaItem.Id.Value, });
+        Frame.Navigate(typeof(SeasonPage), ((UIMediaListItem)e.ClickedItem).Id);
     }
 
     private void SimiliarItems_ItemClick(object sender, ItemClickEventArgs e)

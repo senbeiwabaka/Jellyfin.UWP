@@ -33,7 +33,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="90" />
+            <RowDefinition Height="100" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -64,18 +64,18 @@
                 <StackPanel>
                     <TextBlock Text="SERIES" Visibility="{x:Bind ViewModel.IsInDebug, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-                    <StackPanel Orientation="Horizontal" Height="115.2"  Padding="30,0,0,0">
-                        <StackPanel.Background>
-                            <SolidColorBrush Color="#202020" Opacity=".8" />
-                        </StackPanel.Background>
+                    <StackPanel Height="115" Padding="30,0,30,0" Background="{StaticResource SystemControlHighlightHeaderBrush}">
 
-                        <Grid HorizontalAlignment="Stretch">
+                        <Grid Height="115">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,15,0">
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
                                 <TextBlock Text="{x:Bind ViewModel.MediaItem.Name, Mode=OneWay}" FontSize="26" FontWeight="Bold" />
                                 <TextBlock Text="{x:Bind ViewModel.MediaItem.OriginalTitle, Mode=OneWay}" FontSize="15" FontWeight="Bold" />
 
@@ -92,62 +92,57 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <StackPanel
-                                 Grid.Column="1"
-                                 HorizontalAlignment="Stretch"
-                                 VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                    <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
-                                        <Button.Background>
-                                            <SolidColorBrush Color="#000000" Opacity="0" />
-                                        </Button.Background>
-                                        <SymbolIcon x:Name="play" Symbol="Play" />
-                                    </Button>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <SymbolIcon x:Name="play" Symbol="Play" />
+                                </Button>
 
-                                    <Button Content="Trailer" ToolTipService.ToolTip="Trailer">
-                                        <Button.Background>
-                                            <SolidColorBrush Color="#000000" Opacity="0" />
-                                        </Button.Background>
-                                    </Button>
+                                <Button Content="Trailer" ToolTipService.ToolTip="Trailer">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                </Button>
 
-                                    <Button Margin="10" ToolTipService.ToolTip="Shuffle">
-                                        <Button.Background>
-                                            <SolidColorBrush Color="#000000" Opacity="0" />
-                                        </Button.Background>
-                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
-                                    </Button>
+                                <Button Margin="10" ToolTipService.ToolTip="Shuffle">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE8B1;" />
+                                </Button>
 
-                                    <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{x:Bind ViewModel.PlayedStateCommand}">
-                                        <Button.Background>
-                                            <SolidColorBrush Color="#000000" Opacity="0" />
-                                        </Button.Background>
-                                        <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind ViewModel.MediaItem.UserData.Played, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" />
-                                    </Button>
+                                <Button ToolTipService.ToolTip="Mark played" Margin="10" Command="{x:Bind ViewModel.PlayedStateCommand}">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind ViewModel.MediaItem.UserData.Played, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" />
+                                </Button>
 
-                                    <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{x:Bind ViewModel.FavoriteStateCommand}">
-                                        <Button.Background>
-                                            <SolidColorBrush Color="#000000" Opacity="0" />
-                                        </Button.Background>
-                                        <FontIcon 
+                                <Button ToolTipService.ToolTip="Add to favorites" Margin="10" Command="{x:Bind ViewModel.FavoriteStateCommand}">
+                                    <Button.Background>
+                                        <SolidColorBrush Color="#000000" Opacity="0" />
+                                    </Button.Background>
+                                    <FontIcon 
                                             FontFamily="Segoe MDL2 Assets" 
                                             Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" 
                                             Glyph="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
-                                    </Button>
-                                </StackPanel>
+                                </Button>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
 
                     <StackPanel Padding="30,0,0,0">
-                        <TextBlock Text="{x:Bind ViewModel.MediaTagLines}" Margin="0,17,0,17" Visibility="{x:Bind ViewModel.MediaTagLines, Converter={StaticResource StringVisibilityConverter}}" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaTagLines, Mode=OneWay}" Margin="0,17,0,17" Visibility="{x:Bind ViewModel.MediaTagLines, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
 
-                        <TextBlock Text="{x:Bind ViewModel.MediaItem.Overview}" TextWrapping="WrapWholeWords" Margin="0,15,0,15" />
+                        <TextBlock Text="{x:Bind ViewModel.MediaItem.Overview, Mode=OneWay}" TextWrapping="WrapWholeWords" Margin="0,15,0,15" />
 
                         <!--<TextBlock Text="{x:Bind ViewModel.MediaTags}" Margin="0,9,0,9" Visibility="{x:Bind ViewModel.MediaTags, Converter={StaticResource StringVisibilityConverter}}" />-->
 
                         <ItemsControl
-                             ItemsSource="{x:Bind ViewModel.MediaItem.ExternalUrls}"
-                             Visibility="{x:Bind ViewModel.MediaItem.ExternalUrls.Count, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                             ItemsSource="{x:Bind ViewModel.MediaItem.ExternalUrls, Mode=OneWay}"
+                             Visibility="{x:Bind ViewModel.MediaItem.ExternalUrls.Count, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsWrapGrid Orientation="Horizontal" />

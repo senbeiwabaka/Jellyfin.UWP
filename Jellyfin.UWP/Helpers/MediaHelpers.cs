@@ -46,7 +46,7 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
             nextUpItem?.Id);
     }
 
-    public Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId)
+    public Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[]? seasonsData, Guid? seriesNextUpId)
     {
         return GetPlayIdAsync(
             mediaItem.Id ?? Guid.Empty,
@@ -105,7 +105,7 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
         Guid mediaId,
         bool isMovie,
         bool isEpisode,
-        UIMediaListItem[] seriesData,
+        UIMediaListItem[]? seriesData,
         Guid? seriesNextUpId)
     {
         if (isMovie || isEpisode)

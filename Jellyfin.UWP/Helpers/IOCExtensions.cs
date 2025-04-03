@@ -20,8 +20,9 @@ internal static class IOCExtensions
     /// Adds all of the needed Jellyfin SDK clients to the DI.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="uniqueDeviceId">The unique identifier of this runing device instance.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection SetupJellyfin(this IServiceCollection services)
+    public static IServiceCollection SetupJellyfin(this IServiceCollection services, string uniqueDeviceId)
     {
         var version = Assembly.GetEntryAssembly()!.GetName().Version!.ToString();
         var settings = new JellyfinSdkSettings();
@@ -30,7 +31,7 @@ internal static class IOCExtensions
             "Jellyfin.UWP",
             version,
             Environment.MachineName,
-            "Jellyfin.UWP");
+            $"Jellyfin.UWP-{uniqueDeviceId}");
 
         services
             .AddHttpClient("Default", c =>

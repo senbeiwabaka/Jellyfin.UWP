@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -10,8 +11,6 @@ namespace Jellyfin.UWP.Controls;
 
 internal sealed partial class PlayButtonControl : UserControl
 {
-    private readonly IMediaHelpers mediaHelpers;
-
     public static readonly DependencyProperty PositionLeftProperty =
         DependencyProperty.Register(
             nameof(PositionLeft),
@@ -26,11 +25,18 @@ internal sealed partial class PlayButtonControl : UserControl
             typeof(PlayButtonControl),
             new PropertyMetadata(null));
 
+    private readonly IMediaHelpers mediaHelpers;
+    private readonly bool isPlaybackEnabled;
+
     public PlayButtonControl()
     {
         InitializeComponent();
 
         mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
+
+        var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+
+        isPlaybackEnabled = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!.Policy?.EnableMediaPlayback ?? false;
     }
 
     public string PositionLeft

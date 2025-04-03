@@ -67,9 +67,18 @@ public sealed partial class App : Application
     /// <inheritdoc/>
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var uniqueDeviceId = ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]?.ToString();
+
+        if(string.IsNullOrWhiteSpace(uniqueDeviceId))
+        {
+            uniqueDeviceId = Guid.NewGuid().ToString();
+        }
+
+        ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"] = uniqueDeviceId;
+
         Ioc.Default.ConfigureServices(new ServiceCollection()
            .AddMemoryCache()
-           .SetupJellyfin()
+           .SetupJellyfin(uniqueDeviceId)
            .AddViewModels()
            .BuildServiceProvider());
 
@@ -134,6 +143,7 @@ public sealed partial class App : Application
                     memoryCache.Set(JellyfinConstants.SessionName, session);
 
                     Log.Debug("user: {0}", JsonSerializer.Serialize(user));
+                    Log.Debug("session: {0}", JsonSerializer.Serialize(session));
                 }
                 catch (Exception exception)
                 {

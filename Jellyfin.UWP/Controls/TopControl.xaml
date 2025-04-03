@@ -5,12 +5,14 @@
     xmlns:local="using:Jellyfin.UWP.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Jellyfin.UWP.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MediaItemPlayerViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
     <StackPanel x:Name="TopRow">
-        <StackPanel VerticalAlignment="Center" Margin="10">
+        <StackPanel VerticalAlignment="Center" Margin="10,10,10,2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -52,5 +54,6 @@
                 </StackPanel>
             </Grid>
         </StackPanel>
+        <Border BorderThickness="2" BorderBrush="{StaticResource SystemControlHighlightAccentBrush}" />
     </StackPanel>
 </UserControl>

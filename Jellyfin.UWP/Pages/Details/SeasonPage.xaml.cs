@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
@@ -11,22 +12,20 @@ namespace Jellyfin.UWP.Pages.Details;
 
 internal sealed partial class SeasonPage : Page
 {
-    private SeasonSeries seasonSeries;
+    private Guid id;
 
     public SeasonPage()
     {
         InitializeComponent();
 
         DataContext = Ioc.Default.GetRequiredService<SeasonViewModel>();
-
-        Loaded += SeasonPage_Loaded;
     }
 
     internal SeasonViewModel ViewModel => (SeasonViewModel)DataContext;
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        seasonSeries = (SeasonSeries)e.Parameter;
+        id = (Guid)e.Parameter;
 
         if (Frame.CanGoForward)
         {
@@ -64,18 +63,6 @@ internal sealed partial class SeasonPage : Page
     private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
     {
         Frame.Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
-    }
-
-    private async void SeasonPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        if (DebugHelpers.IsDebugRelease)
-        {
-            tbDebugPageBlock.Visibility = Visibility.Visible;
-        }
-
-        await ViewModel.LoadMediaInformationAsync(seasonSeries);
-
-        ApplicationView.GetForCurrentView().Title = $"{ViewModel.MediaItem.SeriesName} -- {ViewModel.MediaItem.Name}";
     }
 
     private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)

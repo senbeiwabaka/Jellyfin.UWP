@@ -30,9 +30,6 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
     public partial bool IsNotMovie { get; set; }
 
     [ObservableProperty]
-    public partial string MediaTagLines { get; set; }
-
-    [ObservableProperty]
     public partial string MediaTags { get; set; }
 
     [ObservableProperty]
