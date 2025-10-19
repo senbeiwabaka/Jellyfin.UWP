@@ -6,7 +6,6 @@ using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels.Latest;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,8 +26,6 @@ internal sealed partial class ShowsPage : Page
         DataContext = Ioc.Default.GetRequiredService<ShowsViewModel>();
 
         mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
-
-        Loaded += LatestShowsPage_Loaded;
     }
 
     internal ShowsViewModel ViewModel => (ShowsViewModel)DataContext;
@@ -43,11 +40,6 @@ internal sealed partial class ShowsPage : Page
         }
 
         base.OnNavigatedTo(e);
-    }
-
-    private async void LatestShowsPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        await Run();
     }
 
     private void MediaClickItemList(object sender, ItemClickEventArgs e)
@@ -85,13 +77,11 @@ internal sealed partial class ShowsPage : Page
         }
     }
 
-    private async Task Run()
+    private void Run()
     {
-        await ViewModel.LoadInitialAsync(id);
+        ViewModel.LoadInitialCommand.Execute(id);
 
         ViewModel.HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
-        ViewModel.HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
-        ViewModel.HasEnoughDataForNextUpScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
     }
 
     private void ScrollLeft_Click(object sender, RoutedEventArgs e)
@@ -199,11 +189,37 @@ internal sealed partial class ShowsPage : Page
         var mediaItem = (UIMediaListItemSeries)((HyperlinkButton)sender).DataContext;
         var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
-        //Frame.Navigate(typeof(SeriesPage), seriesId);
+        Frame.Navigate(typeof(SeriesPage), seriesId);
     }
 
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
     {
-        await Run();
+        Run();
+    }
+
+    private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, -10);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Visible;
+    }
+
+    private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, 5);
+
+        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+
+        child.Visibility = Visibility.Collapsed;
     }
 }

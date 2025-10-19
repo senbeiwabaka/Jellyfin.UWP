@@ -235,7 +235,7 @@
                                             <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
                                             <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
                                             <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
-                                            <uc:CountControl PositionLeft="195" PositionTop="5" Item="{x:Bind}" />
+                                            <uc:CountControl PositionLeft="195" PositionTop="5" UserData="{x:Bind UserData, Mode=OneWay}" />
 
                                             <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />

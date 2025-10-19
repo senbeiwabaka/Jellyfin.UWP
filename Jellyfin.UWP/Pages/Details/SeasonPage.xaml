@@ -106,7 +106,7 @@
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon FontFamily="Segoe MDL2 Assets" Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" Glyph="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" />
+                                    <FontIcon FontFamily="Segoe MDL2 Assets" Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" Glyph="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
                                 </Button>
                             </StackPanel>
                         </Grid>

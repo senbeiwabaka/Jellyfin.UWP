@@ -16,7 +16,7 @@
 
     <interactivity:Interaction.Behaviors>
         <interactivity:EventTriggerBehavior EventName="Loaded">
-            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadMediaInformationCommand}" CommandParameter="{x:Bind id}" />
+            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadMediaInformationCommand}" CommandParameter="{x:Bind id}" x:DefaultBindMode="OneTime" />
         </interactivity:EventTriggerBehavior>
     </interactivity:Interaction.Behaviors>
 

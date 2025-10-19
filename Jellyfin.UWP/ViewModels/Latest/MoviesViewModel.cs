@@ -14,16 +14,15 @@ namespace Jellyfin.UWP.ViewModels.Latest;
 
 internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : ObservableObject
 {
+    private readonly UserDto user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
+
     private Guid id;
 
     [ObservableProperty]
-    public partial bool HasEnoughDataForContinueScrolling { get; set; }
+    public partial bool HasResumeMedia { get; private set; }
 
     [ObservableProperty]
-    public partial bool HasEnoughDataForLatestScrolling { get; set; }
-
-    [ObservableProperty]
-    public partial bool HasResumeMedia { get; set; }
+    public partial bool HasRecommendationMedia { get; private set; }
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> LatestMediaList { get; set; }
@@ -56,7 +55,6 @@ internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, Jellyfin
 
     private async Task LoadLatestAsync()
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.Items.Latest
             .GetAsync(options =>
             {
@@ -88,7 +86,6 @@ internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, Jellyfin
     {
         RecommendationListGrouped = [];
 
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.Movies.Recommendations
             .GetAsync(options =>
             {
@@ -151,11 +148,12 @@ internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, Jellyfin
 
             RecommendationListGrouped.Add(new ObservableGroup<Recommendation, UIMediaListItem>(recommendation, items));
         }
+
+        HasRecommendationMedia = itemsResult.Count > 0;
     }
 
     private async Task LoadResumeItemsAsync()
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.UserItems.Resume
             .GetAsync(options =>
             {
@@ -166,9 +164,8 @@ internal sealed partial class MoviesViewModel(IMemoryCache memoryCache, Jellyfin
                 options.QueryParameters.IncludeItemTypes = [BaseItemKind.Movie,];
             });
 
-        ResumeMediaList = [.. itemsResult
-            .Items
-                .Select(x => new UIMediaListItem
+        ResumeMediaList = [.. itemsResult.Items
+            .Select(x => new UIMediaListItem
                 {
                     Id = x.Id.Value,
                     Name = x.Name,

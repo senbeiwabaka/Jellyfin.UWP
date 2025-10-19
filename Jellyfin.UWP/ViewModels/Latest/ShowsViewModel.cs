@@ -1,13 +1,15 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Latest;
 
@@ -17,12 +19,6 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
 
     [ObservableProperty]
     public partial bool HasEnoughDataForContinueScrolling { get; set; }
-
-    [ObservableProperty]
-    public partial bool HasEnoughDataForLatestScrolling { get; set; }
-
-    [ObservableProperty]
-    public partial bool HasEnoughDataForNextUpScrolling { get; set; }
 
     [ObservableProperty]
     public partial bool HasResumeMedia { get; set; }
@@ -36,13 +32,14 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> ResumeMediaList { get; set; }
 
-    public async Task LoadInitialAsync(Guid id)
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task LoadInitialAsync(Guid id, CancellationToken cancellationToken)
     {
         this.id = id;
 
-        await LoadResumeItemsAsync();
-        await LoadLatestAsync();
-        await LoadNextUpAsync();
+        await LoadResumeItemsAsync(cancellationToken);
+        await LoadLatestAsync(cancellationToken);
+        await LoadNextUpAsync(cancellationToken);
     }
 
     private string GetContinueItemImage(BaseItemDto item)
@@ -77,7 +74,7 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
         return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=239&fillWidth=425&quality=96&tag={item.ImageTags.AdditionalData[JellyfinConstants.PrimaryName]}";
     }
 
-    private async Task LoadLatestAsync()
+    private async Task LoadLatestAsync(CancellationToken cancellationToken)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.Items.Latest
@@ -85,14 +82,16 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
             {
                 options.QueryParameters.UserId = user.Id;
                 options.QueryParameters.Limit = 30;
-                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.Fields = [ItemFields.ItemCounts,
+                        ItemFields.PrimaryImageAspectRatio,
+                        ItemFields.MediaSourceCount,];
                 options.QueryParameters.ImageTypeLimit = 1;
                 options.QueryParameters.EnableImageTypes = [ImageType.Primary, ImageType.Backdrop, ImageType.Thumb,];
                 options.QueryParameters.ParentId = id;
                 options.QueryParameters.IncludeItemTypes = [BaseItemKind.Episode,];
-            });
+            }, cancellationToken);
 
-        LatestMediaList = [.. itemsResult
+        LatestMediaList = new ObservableCollection<UIMediaListItem>(itemsResult
         .Select(x =>
         {
             var item = new UIMediaListItemSeries
@@ -101,17 +100,20 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
                 Name = x.Name,
                 Url = GetItemImage(x),
                 CollectionType = x.CollectionType,
+                Type = x.Type.Value,
+                UserData = new UIUserData
+                {
+                    IsFavorite = x.UserData.IsFavorite.Value,
+                    UnplayedItemCount = x.UserData.UnplayedItemCount,
+                    HasBeenWatched = x.UserData.Played.Value,
+                },
             };
 
-            item.UserData.IsFavorite = x.UserData.IsFavorite.Value;
-            item.UserData.HasBeenWatched = x.UserData.Played.Value;
-            item.UserData.UnplayedItemCount = x.UserData.UnplayedItemCount;
-
             return item;
-        })];
+        }));
     }
 
-    private async Task LoadNextUpAsync()
+    private async Task LoadNextUpAsync(CancellationToken cancellationToken)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.Shows.NextUp
@@ -125,7 +127,7 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
                 options.QueryParameters.ImageTypeLimit = 1;
                 options.QueryParameters.EnableImageTypes = [ImageType.Primary, ImageType.Backdrop, ImageType.Thumb,];
                 options.QueryParameters.EnableTotalRecordCount = false;
-            });
+            }, cancellationToken);
 
         NextupMediaList = [.. itemsResult
             .Items
@@ -146,7 +148,7 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
                     })];
     }
 
-    private async Task LoadResumeItemsAsync()
+    private async Task LoadResumeItemsAsync(CancellationToken cancellationToken)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var itemsResult = await apiClient.UserItems.Resume
@@ -156,7 +158,7 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
                 options.QueryParameters.Limit = 24;
                 options.QueryParameters.ParentId = id;
                 options.QueryParameters.EnableTotalRecordCount = false;
-            });
+            }, cancellationToken);
 
         ResumeMediaList = [.. itemsResult
             .Items

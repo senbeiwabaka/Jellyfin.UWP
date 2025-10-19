@@ -92,9 +92,6 @@ internal sealed partial class MoviesPage : Page
     {
         await ViewModel.LoadInitialAsync(id);
 
-        ViewModel.HasEnoughDataForContinueScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Continue);
-        ViewModel.HasEnoughDataForLatestScrolling = PageHelpers.IsThereEnoughDataForScrolling(lv_Latest);
-
         SetupRecommendation();
     }
 
@@ -250,5 +247,31 @@ internal sealed partial class MoviesPage : Page
     private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
     {
         await Run();
+    }
+
+    private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, -10);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Visible;
+    }
+
+    private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, 5);
+
+        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+
+        child.Visibility = Visibility.Collapsed;
     }
 }
