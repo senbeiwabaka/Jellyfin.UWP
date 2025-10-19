@@ -5,6 +5,7 @@ using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,17 +16,15 @@ namespace Jellyfin.UWP.Pages;
 public sealed partial class SearchPage : Page
 {
     private IMemoryCache memoryCache;
-
-    private string searchText;
+    private string? searchText = string.Empty;
 
     public SearchPage()
     {
         InitializeComponent();
-
-        Loaded += SearchPage_Loaded;
     }
 
     internal Type PageType { get; } = typeof(SearchPage);
+
     internal SearchViewModel ViewModel => (SearchViewModel)DataContext;
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -46,57 +45,69 @@ public sealed partial class SearchPage : Page
     {
         base.OnNavigatedTo(e);
 
-        if (e.NavigationMode == NavigationMode.New)
-        {
-            DataContext = Ioc.Default.GetRequiredService<SearchViewModel>();
-            memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
+        DataContext = DataContext ?? Ioc.Default.GetRequiredService<SearchViewModel>();
+        memoryCache = memoryCache ?? Ioc.Default.GetRequiredService<IMemoryCache>();
 
-            Loaded += SearchPage_Loaded;
-        }
-    }
+        searchText = memoryCache.Get<string>("Searched-Text");
 
-    private async void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-    {
-        await ViewModel.LoadSearchAsync(args.QueryText);
-
-        searchText = args.QueryText;
+        Loaded += SearchPage_Loaded;
     }
 
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         var text = memoryCache.GetOrCreate<string>("Searched-Text", entry =>
         {
-            entry.SetValue(searchText);
+            entry.SetValue(asbSearch.Text);
 
-            return searchText;
+            return asbSearch.Text;
         });
 
         if (!string.IsNullOrWhiteSpace(text))
         {
-            memoryCache.Set<string>("Searched-Text", searchText);
+            memoryCache.Set<string>("Searched-Text", text);
         }
 
         Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
     }
 
-    private async void SearchPage_Loaded(object sender, RoutedEventArgs e)
+    private void SearchPage_Loaded(object sender, RoutedEventArgs e)
     {
-        searchText = memoryCache.Get<string>("Searched-Text");
-
-        asbSearch.Text = string.Empty;
-
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             asbSearch.Text = searchText;
-
-            await ViewModel.LoadSearchAsync(searchText);
         }
 
         ApplicationView.GetForCurrentView().Title = "Search";
     }
 
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
     {
-        await ViewModel.LoadSearchAsync(asbSearch.Text);
+        ViewModel.LoadSearchCommand.Execute(asbSearch.Text);
+    }
+
+    private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, -10);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Visible;
+    }
+
+    private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, 5);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Collapsed;
     }
 }
