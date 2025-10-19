@@ -7,7 +7,7 @@ namespace Jellyfin.UWP.Models
     {
         public Guid Id { get; internal set; }
 
-        public BaseItemDto_Type Type { get; internal set; }
+        public required BaseItemDto_Type Type { get; set; }
 
         public UIUserData UserData { get; internal set; } = new UIUserData();
 
