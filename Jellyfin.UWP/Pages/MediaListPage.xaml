@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:c="using:Jellyfin.UWP.Controls"
+    xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
@@ -32,7 +32,7 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <c:TopControl Grid.Row="0" />
+        <uc:TopControl Grid.Row="0" />
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="{x:Bind ViewModel.CountInformation, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
@@ -42,9 +42,12 @@
             <Button Content="Filter" Name="FiltersButton" Command="{x:Bind ViewModel.LoadFilteringCommand}" Margin="10, 0, 10, 0"></Button>
             <Button Content="Sort" Name="SortButton" Command="{x:Bind ViewModel.LoadSortCommand}" Margin="10, 0, 10, 0"></Button>
 
-            <Popup x:Name="Filters" IsOpen="{x:Bind ViewModel.IsFilteringOpen, Mode=TwoWay}" IsLightDismissEnabled="True">
-                <StackPanel>
-                    <DropDownButton>
+            <Popup
+                x:Name="Filters"
+                IsOpen="{x:Bind ViewModel.IsFilteringOpen, Mode=TwoWay}"
+                IsLightDismissEnabled="True">
+                <StackPanel Background="Black" MinWidth="100">
+                    <DropDownButton MinWidth="100">
                         <DropDownButton.Content>
                             Filters
                         </DropDownButton.Content>
@@ -72,19 +75,19 @@
                         </DropDownButton.Flyout>
                     </DropDownButton>
 
-                    <DropDownButton>
+                    <DropDownButton MinWidth="100">
                         <DropDownButton.Content>
                             Genres
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
                             <Flyout>
-                                <ListView 
-                                    ItemsSource="{x:Bind ViewModel.GenresFilterList, Mode=OneWay}" 
-                                    SelectionMode="Multiple" 
-                                    IsItemClickEnabled="True" 
-                                    IsTapEnabled="True" 
-                                    ItemClick="GenreFiltering_ItemClick" 
-                                    SelectionChanged="GenreFiltering_SelectionChanged" 
+                                <ListView
+                                    ItemsSource="{x:Bind ViewModel.GenresFilterList, Mode=OneWay}"
+                                    SelectionMode="Multiple"
+                                    IsItemClickEnabled="True"
+                                    IsTapEnabled="True"
+                                    ItemClick="GenreFiltering_ItemClick"
+                                    SelectionChanged="GenreFiltering_SelectionChanged"
                                     x:Name="GenreFiltering">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:GenreFiltersModel">
@@ -103,8 +106,8 @@
             </Popup>
 
             <Popup x:Name="Sorting" IsOpen="{x:Bind ViewModel.IsSortingOpen, Mode=TwoWay}" IsLightDismissEnabled="True">
-                <StackPanel>
-                    <DropDownButton>
+                <StackPanel Background="Black" MinWidth="100">
+                    <DropDownButton MinWidth="100">
                         <DropDownButton.Content>
                             Sorting
                         </DropDownButton.Content>
@@ -126,7 +129,6 @@
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
                                     </ListView>
-                                    
                                 </StackPanel>
                             </Flyout>
                         </DropDownButton.Flyout>
@@ -152,45 +154,26 @@
             </GridView.ItemsPanel>
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="m:UIMediaListItem">
-                    <StackPanel Width="210">
-                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
-                            <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
-                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
-                                <TextBlock Text="{x:Bind UserData.UnplayedItemCount, Mode=OneWay}" Margin="6" />
-                            </Grid>
-                        </Canvas>
+                    <StackPanel Width="220" Margin="0,10">
+                        <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                            <uc:ViewedIconControl PositionLeft="190" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                            <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+                                <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
+                                    <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" />
+                                    <TextBlock Text="{x:Bind UserData.UnplayedItemCount, Mode=OneWay}" Margin="6" />
+                                </Grid>
+                            </Canvas>
 
-                        <Canvas Background="Transparent" Visibility="{x:Bind UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Grid Canvas.Left="180" Canvas.Top="5" Canvas.ZIndex="2">
-                                <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                            </Grid>
-                        </Canvas>
+                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                            <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                        <c:PlayButtonControl PositionLeft="85" PositionTop="142" />
+                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 
-                        <Canvas Background="Transparent">
-                            <StackPanel Canvas.Left="110" Canvas.Top="280" Canvas.ZIndex="2" Orientation="Horizontal">
-                                <Button x:Name="btn_Viewed" Margin="0,0,5,0" Click="btn_Viewed_Click">
-                                    <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity="0" />
-                                    </Button.Background>
-                                    <FontIcon Foreground="{x:Bind UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                </Button>
+                            <Canvas Visibility="Collapsed">
+                                <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                            </Canvas>
+                        </StackPanel>
 
-                                <Button x:Name="btn_Favorite" Margin="5,0,0,0" Click="btn_Favorite_Click">
-                                    <Button.Background>
-                                        <SolidColorBrush Color="#000000" Opacity="0" />
-                                    </Button.Background>
-                                    <FontIcon 
-                                        Foreground="{x:Bind UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" 
-                                        FontFamily="Segoe MDL2 Assets" 
-                                        Glyph="{x:Bind UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
-                                </Button>
-                            </StackPanel>
-                        </Canvas>
-
-                        <Image Source="{x:Bind Url}" Height="315" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
                         <TextBlock Text="{x:Bind Name}" FontSize="25" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </DataTemplate>

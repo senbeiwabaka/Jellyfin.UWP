@@ -345,7 +345,7 @@ internal sealed partial class MainPage : Page
 
         Canvas.SetZIndex(image, 5);
 
-        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
     }
