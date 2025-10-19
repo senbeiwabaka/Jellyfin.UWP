@@ -8,8 +8,8 @@ internal sealed partial class CountControl : UserControl
 {
     public static readonly DependencyProperty ItemProperty =
         DependencyProperty.Register(
-            nameof(Item),
-            typeof(UIItem),
+            nameof(UserData),
+            typeof(UIUserData),
             typeof(CountControl),
             new PropertyMetadata(null));
 
@@ -32,9 +32,9 @@ internal sealed partial class CountControl : UserControl
         InitializeComponent();
     }
 
-    public UIItem Item
+    public UIUserData UserData
     {
-        get { return (UIItem)GetValue(ItemProperty); }
+        get { return (UIUserData)GetValue(ItemProperty); }
         set { SetValue(ItemProperty, value); }
     }
 

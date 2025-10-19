@@ -24,11 +24,11 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
-                    <Button x:Name="BtnBack" Content="Back" Click="{x:Bind BackClick}"></Button>
+                    <Button x:Name="BtnBack" Content="Back" Click="{x:Bind BackClick}" TabIndex="1"></Button>
 
-                    <Button x:Name="BtnHome" Content="Home" Margin="8" Click="{x:Bind HomeClick}"></Button>
+                    <Button x:Name="BtnHome" Content="Home" Margin="8" Click="{x:Bind HomeClick}" TabIndex="2"></Button>
 
-                    <Button x:Name="BtnLogs" Content="Open Logs" Click="{x:Bind OpenLogsClick}"></Button>
+                    <Button x:Name="BtnLogs" Content="Open Logs" Click="{x:Bind OpenLogsClick}" TabIndex="3"></Button>
                 </StackPanel>
 
                 <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">

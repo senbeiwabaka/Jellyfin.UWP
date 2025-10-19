@@ -57,7 +57,7 @@ internal sealed partial class PlayButtonControl : UserControl
         var item = (UIMediaListItem)button.DataContext;
         DetailsItemPlayRecord detailsItemPlayRecord;
 
-        if (item.Type == BaseItemDto_Type.Season)
+        if (item.Type == BaseItemDto_Type.Season || item.Type == BaseItemDto_Type.Series)
         {
             var playId = await mediaHelpers.GetPlayIdAsync(item);
             detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
