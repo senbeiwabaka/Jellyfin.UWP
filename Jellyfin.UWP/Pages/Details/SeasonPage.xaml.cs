@@ -1,9 +1,7 @@
 ﻿using System;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
-using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;

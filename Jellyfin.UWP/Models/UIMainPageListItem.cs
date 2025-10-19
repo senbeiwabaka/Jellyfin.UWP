@@ -1,4 +1,5 @@
-﻿using Jellyfin.Sdk.Generated.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk.Generated.Models;
 
 namespace Jellyfin.UWP.Models
 {
@@ -28,7 +29,7 @@ namespace Jellyfin.UWP.Models
                             if (ParentIndexNumber.HasValue || IndexNumber.HasValue)
                             {
                                 return $"S{ParentIndexNumber ?? 0}:E{IndexNumber ?? 0} - {Name}";
-                            } 
+                            }
 
                             return Name;
                         }
@@ -76,7 +77,8 @@ namespace Jellyfin.UWP.Models
             }
         }
 
-        public string SeriesName { get; internal set; }
+        public string SeriesName { get; internal set; } = default!;
+
         public int? ParentIndexNumber { get; internal set; }
     }
 }

@@ -69,7 +69,7 @@ public sealed partial class App : Application
     {
         var uniqueDeviceId = ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]?.ToString();
 
-        if(string.IsNullOrWhiteSpace(uniqueDeviceId))
+        if (string.IsNullOrWhiteSpace(uniqueDeviceId))
         {
             uniqueDeviceId = Guid.NewGuid().ToString();
         }
@@ -141,9 +141,6 @@ public sealed partial class App : Application
 
                     memoryCache.Set(JellyfinConstants.UserName, user);
                     memoryCache.Set(JellyfinConstants.SessionName, session);
-
-                    Log.Debug("user: {0}", JsonSerializer.Serialize(user));
-                    Log.Debug("session: {0}", JsonSerializer.Serialize(session));
                 }
                 catch (Exception exception)
                 {
@@ -234,7 +231,7 @@ public sealed partial class App : Application
     /// <param name="e">Details about the navigation failure.</param>
     private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
     {
-        Log.Error("Failed to navigate", e.Exception);
+        Log.Error("Failed to navigate: ", e.Exception);
 
         var frame = ((Frame)Window.Current.Content);
 
