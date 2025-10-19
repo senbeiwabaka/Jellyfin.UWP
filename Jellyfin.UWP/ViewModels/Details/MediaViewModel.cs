@@ -33,8 +33,6 @@ internal abstract partial class MediaViewModel(IMemoryCache memoryCache, Jellyfi
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     public async Task LoadMediaInformationAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(2000, cancellationToken);
-
         var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var userLibraryItem = await ApiClient.Items[id]
             .GetAsync(options =>

@@ -24,11 +24,19 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="90" />
+            <RowDefinition Height="100" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <uc:TopControl Grid.Row="0" />
+
+        <Popup IsOpen="{x:Bind ViewModel.IsErrorPopupOpen, Mode=OneWay}" Grid.Row="1" IsLightDismissEnabled="False" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel Margin="10" Padding="20" Background="Black">
+                <TextBlock FontSize="20" Foreground="White" Margin="0,0,0,5" Text="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+
+                <Button Content="Go Back" Margin="5,0,0,0" x:Name="btnErrorClose" Click="btnErrorClose_Click" />
+            </StackPanel>
+        </Popup>
 
         <Popup IsOpen="{x:Bind ViewModel.IsNextItemOpen, Mode=TwoWay}" Grid.Row="1" IsLightDismissEnabled="True">
             <StackPanel Margin="10" Padding="20" Background="Black">

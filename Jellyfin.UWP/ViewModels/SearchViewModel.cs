@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels;
 
@@ -35,7 +35,8 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> SeriesMediaList { get; set; }
 
-    public async Task LoadSearchAsync(string query)
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task LoadSearchAsync(string query, CancellationToken cancellationToken = default)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
         var movieItemsResult = await apiClient.Items
@@ -47,8 +48,8 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                 options.QueryParameters.Recursive = true;
                 options.QueryParameters.EnableTotalRecordCount = false;
                 options.QueryParameters.ImageTypeLimit = 1;
-                options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Movie };
-            });
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Movie];
+            }, cancellationToken);
 
         MovieMediaList = new ObservableCollection<UIMediaListItem>(
             movieItemsResult
@@ -81,8 +82,8 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                 options.QueryParameters.Recursive = true;
                 options.QueryParameters.EnableTotalRecordCount = false;
                 options.QueryParameters.ImageTypeLimit = 1;
-                options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Series };
-            });
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Series];
+            }, cancellationToken);
 
         SeriesMediaList = new ObservableCollection<UIMediaListItem>(
             seriesItemsResult
@@ -119,8 +120,8 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                 options.QueryParameters.Recursive = true;
                 options.QueryParameters.EnableTotalRecordCount = false;
                 options.QueryParameters.ImageTypeLimit = 1;
-                options.QueryParameters.IncludeItemTypes = new[] { BaseItemKind.Episode };
-            });
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Episode];
+            }, cancellationToken);
 
         EpisodesMediaList = new ObservableCollection<UIMediaListItem>(
             episodesItemsResult
@@ -142,5 +143,11 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                     }));
 
         HasEpisodesResult = EpisodesMediaList.Count > 0;
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task TypeTextSearch(string query, CancellationToken cancellationToken)
+    {
+        await LoadSearchAsync(query, cancellationToken);
     }
 }

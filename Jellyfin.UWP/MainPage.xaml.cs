@@ -1,4 +1,8 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -6,11 +10,8 @@ using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.UWP.ViewModels.MainPage;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -51,6 +52,8 @@ internal sealed partial class MainPage : Page
 
         ViewModel.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
         ViewModel.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
+
+        await ViewModel.GetUserDisplay();
     }
 
     private void SetupLatest()
@@ -74,7 +77,7 @@ internal sealed partial class MainPage : Page
 
             stackPanel.Children.Add(new TextBlock
             {
-                Text = $"Latest {item.Key.Name}",
+                Text = $"Recently Added in {item.Key.Name}",
                 FontSize = 40.0d,
             });
 
@@ -88,6 +91,7 @@ internal sealed partial class MainPage : Page
             {
                 Name = $"button_{item.Key.Name}",
                 Content = greaterThanFontIcon,
+                Margin = new Thickness(10.0d, 0d, 0d, 0d)
             };
 
             if (string.Equals(item.Key.CollectionType, CollectionType.Movies.ToString(), System.StringComparison.CurrentCultureIgnoreCase))
@@ -318,5 +322,31 @@ internal sealed partial class MainPage : Page
 
             previousButton.IsEnabled = true;
         }
+    }
+
+    private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, -10);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Visible;
+    }
+
+    private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, 5);
+
+        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+
+        child.Visibility = Visibility.Collapsed;
     }
 }

@@ -14,14 +14,22 @@
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolNegationConverter x:Key="InverseBoolConverter" />
 
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMainPageListItem">
-            <StackPanel Width="380">
-                <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+            <StackPanel Width="380" Margin="0,10">
 
-                <Image x:Name="im_ItemImage" Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214">
+                    <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                    <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="280" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
+                    <Image x:Name="im_ItemImage" Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Stretch="Fill" Canvas.ZIndex="5" />
+
+                    <Canvas Visibility="Collapsed">
+                        <StackPanel Height="214" Width="380" Canvas.Top="-214" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                    </Canvas>
+                </StackPanel>
 
                 <HyperlinkButton FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click">
                     <TextBlock Text="{x:Bind TextLine1}" FontSize="14" TextTrimming="CharacterEllipsis" TextDecorations="Underline" />
@@ -32,24 +40,38 @@
         </DataTemplate>
 
         <DataTemplate x:Key="UISeriesMediaListItemDataTemplate" x:DataType="m:UIMediaListItemSeries">
-            <StackPanel Width="220">
-                <uc:ViewedIconControl PositionLeft="190" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
-                <uc:CountControl PositionLeft="190" PositionTop="10" Item="{x:Bind Mode=OneWay}" Canvas.ZIndex="2" />
-                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" Canvas.ZIndex="2" />
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" Canvas.ZIndex="2" />
+            <StackPanel Width="220" Margin="0,10">
+                <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                    <uc:ViewedIconControl PositionLeft="190" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                    <uc:CountControl PositionLeft="190" PositionTop="10" UserData="{x:Bind UserData, Mode=OneWay}" />
+                    <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Stretch="Fill" />
+                    <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Stretch="Fill" Canvas.ZIndex="5" />
+
+                    <Canvas Visibility="Collapsed">
+                        <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                    </Canvas>
+                </StackPanel>
+
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate x:Key="UIMoviesMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
-                <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
-                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" Canvas.ZIndex="2" />
-                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" Canvas.ZIndex="2" />
+                <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                    <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                    <uc:PlayButtonControl PositionLeft="95" PositionTop="150" Canvas.ZIndex="2" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" Canvas.ZIndex="2" />
 
-                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Stretch="Fill" />
+                    <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Stretch="Fill" Canvas.ZIndex="5" />
+                    
+                    <Canvas Visibility="Collapsed">
+                        <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                    </Canvas>
+                </StackPanel>
+                
                 <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
             </StackPanel>
         </DataTemplate>
@@ -57,8 +79,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="90" />
-            <RowDefinition Height="50" />
+            <RowDefinition Height="88" />
+            <RowDefinition Height="70" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -68,29 +90,32 @@
 
         <uc:TopControl Grid.Row="0" PageType="{x:Bind PageType}" />
 
-        <StackPanel Grid.Row="1" Padding="10,10,10,10">
+        <StackPanel Grid.Row="1" Margin="0, 25, 0, 0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-
                 <Button
-                  x:Name="btn_Home"
-                  Content="Home"
-                  BorderThickness="0"
-                  Margin="0,0,10,0"
-                  Command="{x:Bind ViewModel.SwitchToHomeCommand}"
-                  Click="btn_Home_Click"
-                  ToolTipService.ToolTip="Home Button" />
+                    x:Name="btn_Home"
+                    Content="Home"
+                    BorderThickness="0"
+                    Margin="0,0,10,0"
+                    Command="{x:Bind ViewModel.SwitchToHomeCommand}"
+                    Click="btn_Home_Click"
+                    ToolTipService.ToolTip="Home Button"
+                    IsEnabled="{x:Bind ViewModel.IsHomeSelected, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}" />
                 <Button
-                  x:Name="btn_Favorites"
-                  Content="Favorites"
-                  BorderThickness="0"
-                  Margin="10,0,0,0"
-                  Command="{x:Bind ViewModel.SwitchToFavoriteCommand}"
-                  Click="btn_Favorites_Click" />
+                    x:Name="btn_Favorites"
+                    Content="Favorites"
+                    BorderThickness="0"
+                    Margin="10,0,0,0"
+                    Command="{x:Bind ViewModel.SwitchToFavoriteCommand}"
+                    Click="btn_Favorites_Click"
+                    IsEnabled="{x:Bind ViewModel.IsFavoriteSelected, Mode=OneWay, Converter={StaticResource InverseBoolConverter}}" />
             </StackPanel>
+            <Border BorderThickness="2" BorderBrush="{StaticResource SystemControlHighlightAccentBrush}" Margin="80, 10, 80, 0" />
         </StackPanel>
 
         <ScrollViewer Grid.Row="2" Margin="10" Visibility="{x:Bind ViewModel.IsHomeSelected, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" x:Name="sv_Home">
             <StackPanel>
+
                 <StackPanel Margin="0,0,0,10">
                     <TextBlock Text="My Media" FontSize="40" />
 
@@ -163,7 +188,14 @@
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="Next Up" FontSize="40" Grid.Column="0" />
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Text="Next Up" FontSize="40"  />
+
+                            <Button Margin="10, 0, 0, 0">
+                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
+                            </Button>
+                        </StackPanel>
+                        
 
                         <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{x:Bind ViewModel.HasEnoughDataToScrollNextUp, Converter={StaticResource BoolToVisibilityConverter}}">
                             <Button Margin="0,0,10,0" Click="ScrollLeft_Click" IsEnabled="False">
@@ -191,12 +223,18 @@
                         </ListView.ItemsPanel>
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="m:UIMediaListItemSeries">
-                                <StackPanel>
-                                    <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                <StackPanel Height="262">
+                                    <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214">
+                                        <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                        <uc:ViewedFavoriteButtonControl PositionLeft="280" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                        <Image Source="{x:Bind Url}" Width="380" Height="213" HorizontalAlignment="Center" Canvas.ZIndex="5" />
 
-                                    <Image Source="{x:Bind Url}" Width="380" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="-1" />
+                                        <Canvas Visibility="Collapsed">
+                                            <StackPanel Height="214" Width="380" Canvas.Top="-213" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                                        </Canvas>
+                                    </StackPanel>
+                                    
                                     <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click" />
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>

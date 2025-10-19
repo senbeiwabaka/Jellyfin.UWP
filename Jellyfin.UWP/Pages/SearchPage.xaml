@@ -8,16 +8,20 @@
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    NavigationCacheMode="Disabled">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolToObjectConverter x:Key="InverseBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible" />
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="90" />
+            <RowDefinition Height="100" />
             <RowDefinition Height="75" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -28,14 +32,33 @@
 
         <uc:TopControl Grid.Row="0" PageType="{x:Bind PageType}" />
 
-        <AutoSuggestBox Name="asbSearch" PlaceholderText="Search" QueryIcon="Find" Grid.Row="1" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <AutoSuggestBox
+            x:Name="asbSearch"
+            PlaceholderText="Search"
+            QueryIcon="Find"
+            Grid.Row="1"
+            TabIndex="0">
+            <interactivity:Interaction.Behaviors>
+                <interactivity:EventTriggerBehavior EventName="TextChanged">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadSearchCommand}" CommandParameter="{x:Bind asbSearch.Text, Mode=OneWay}" />
+                </interactivity:EventTriggerBehavior>
+                <interactivity:EventTriggerBehavior EventName="QuerySubmitted">
+                    <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.LoadSearchCommand}" CommandParameter="{x:Bind asbSearch.Text, Mode=OneWay}" />
+                </interactivity:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+        </AutoSuggestBox>
 
         <ScrollViewer Grid.Row="2">
-            <StackPanel>
-                <StackPanel Visibility="{x:Bind ViewModel.HasMoviesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Movies" FontSize="22" FontWeight="Bold" />
+            <StackPanel Margin="10,5">
+                <StackPanel Visibility="{x:Bind ViewModel.LoadSearchCommand.IsRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <muxc:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" IsActive="{x:Bind ViewModel.LoadSearchCommand.IsRunning, Mode=OneWay}" />
+                </StackPanel>
 
-                    <ListView
+                <StackPanel Visibility="{x:Bind ViewModel.LoadSearchCommand.IsRunning, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                    <StackPanel Visibility="{x:Bind ViewModel.HasMoviesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Movies" FontSize="22" FontWeight="Bold" />
+
+                        <ListView
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Visible"
                         ScrollViewer.HorizontalScrollMode="Enabled"
@@ -43,87 +66,109 @@
                         ItemClick="ListView_ItemClick"
                         ItemsSource="{x:Bind ViewModel.MovieMediaList, Mode=OneWay}"
                         IsItemClickEnabled="True">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent" Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel Width="220">
-                                    <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                                    <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
-                                    <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Background="Transparent" Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="m:UIMediaListItem">
+                                    <StackPanel Width="220" Margin="0,10">
+                                        <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                                            <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" Height="330" />
-                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
+                                            <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" Height="330" />
 
-                <StackPanel Visibility="{x:Bind ViewModel.HasSeriesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
+                                            <Canvas Visibility="Collapsed">
+                                                <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                                            </Canvas>
+                                        </StackPanel>
 
-                    <ListView
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                        ScrollViewer.HorizontalScrollMode="Enabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemClick="ListView_ItemClick"
-                        ItemsSource="{x:Bind ViewModel.SeriesMediaList, Mode=OneWay}"
-                        IsItemClickEnabled="True">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent" Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel Width="220">
-                                    <uc:ViewedIconControl PositionLeft="180" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                                    <uc:CountControl PositionLeft="180" PositionTop="5" Item="{x:Bind}" />
-                                    <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
-                                    <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                        <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
 
-                                    <Image Source="{x:Bind Url}" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
-                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
+                    <StackPanel Visibility="{x:Bind ViewModel.HasSeriesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Shows" FontSize="22" FontWeight="Bold" />
 
-                <StackPanel Visibility="{x:Bind ViewModel.HasEpisodesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <TextBlock Text="Episodes" FontSize="22" FontWeight="Bold" />
+                        <ListView
+                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                            ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                            ScrollViewer.HorizontalScrollMode="Enabled"
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            ItemClick="ListView_ItemClick"
+                            ItemsSource="{x:Bind ViewModel.SeriesMediaList, Mode=OneWay}"
+                            IsItemClickEnabled="True">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Background="Transparent" Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="m:UIMediaListItem">
+                                    <StackPanel Width="220" Margin="0,10">
+                                        <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                                            <uc:CountControl PositionLeft="180" PositionTop="5" UserData="{x:Bind UserData, Mode=OneWay}" />
+                                            <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                    <ListView
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                        ScrollViewer.HorizontalScrollMode="Enabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemClick="ListView_ItemClick"
-                        ItemsSource="{x:Bind ViewModel.EpisodesMediaList, Mode=OneWay}"
-                        IsItemClickEnabled="True">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent" Orientation="Horizontal" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIMediaListItem">
-                                <StackPanel Width="380">
-                                    <uc:ViewedIconControl PositionLeft="350" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                                    <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                                    <uc:ViewedFavoriteButtonControl PositionLeft="290" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                            <Image Source="{x:Bind Url, Mode=OneWay}" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" Height="330" />
 
-                                    <Image Source="{x:Bind Url}" Height="215" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
-                                    <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                                            <Canvas Visibility="Collapsed">
+                                                <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                                            </Canvas>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+
+                    <StackPanel Visibility="{x:Bind ViewModel.HasEpisodesResult, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Episodes" FontSize="22" FontWeight="Bold" />
+
+                        <ListView
+                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                            ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                            ScrollViewer.HorizontalScrollMode="Enabled"
+                            ScrollViewer.VerticalScrollMode="Disabled"
+                            ItemClick="ListView_ItemClick"
+                            ItemsSource="{x:Bind ViewModel.EpisodesMediaList, Mode=OneWay}"
+                            IsItemClickEnabled="True">
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid Background="Transparent" Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="m:UIMediaListItem">
+                                    <StackPanel Width="380" Margin="0,10">
+                                        <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214">
+                                            <uc:ViewedIconControl PositionLeft="350" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
+                                            <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="280" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+
+                                            <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
+
+                                            <Canvas Visibility="Collapsed">
+                                                <StackPanel Height="214" Width="380" Canvas.Top="-214" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                                            </Canvas>
+                                        </StackPanel>
+
+                                        <TextBlock Text="{x:Bind Name}" FontSize="14" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

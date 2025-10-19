@@ -4,6 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Application.Resources>
-        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Other app resources here -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="White" />
+                    <SolidColorBrush x:Key="SystemControlHighlightHeaderBrush" Color="#CC646464" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SystemControlHighlightAccentBrush" Color="Black" />
+                    <SolidColorBrush x:Key="SystemControlHighlightHeaderBrush" Color="#CC202020" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

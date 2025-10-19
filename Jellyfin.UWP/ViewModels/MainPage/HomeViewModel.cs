@@ -12,19 +12,8 @@ using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.MainPage;
 
-internal sealed class HomeViewModel : IHomeViewModel
+internal sealed class HomeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : IHomeViewModel
 {
-    private readonly IMemoryCache memoryCache;
-    private readonly JellyfinApiClient apiClient;
-    private readonly IMediaHelpers mediaHelpers;
-
-    public HomeViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers)
-    {
-        this.memoryCache = memoryCache;
-        this.apiClient = apiClient;
-        this.mediaHelpers = mediaHelpers;
-    }
-
     public async Task<ObservableGroupedCollection<MediaGroupItem, UIMediaListItem>> LoadLatestAsync(ObservableCollection<UIMediaListItem> mediaList, CancellationToken cancellationToken = default)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
@@ -32,6 +21,11 @@ internal sealed class HomeViewModel : IHomeViewModel
 
         foreach (var record in mediaList.Where(x => x.CollectionType != BaseItemDto_CollectionType.Boxsets))
         {
+            if(user.Configuration.LatestItemsExcludes.Contains(record.Id))
+            {
+                continue;
+            }
+
             var itemsResult = await apiClient.Items.Latest
                 .GetAsync(options =>
                 {
@@ -56,6 +50,7 @@ internal sealed class HomeViewModel : IHomeViewModel
                         Name = x.Name,
                         Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                         CollectionType = record.CollectionType,
+                        Type = x.Type.Value,
                         UserData = new UIUserData
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,

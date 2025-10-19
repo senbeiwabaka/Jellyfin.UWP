@@ -67,9 +67,18 @@ public sealed partial class App : Application
     /// <inheritdoc/>
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        var uniqueDeviceId = ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]?.ToString();
+
+        if (string.IsNullOrWhiteSpace(uniqueDeviceId))
+        {
+            uniqueDeviceId = Guid.NewGuid().ToString();
+        }
+
+        ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"] = uniqueDeviceId;
+
         Ioc.Default.ConfigureServices(new ServiceCollection()
            .AddMemoryCache()
-           .SetupJellyfin()
+           .SetupJellyfin(uniqueDeviceId)
            .AddViewModels()
            .BuildServiceProvider());
 
@@ -132,8 +141,6 @@ public sealed partial class App : Application
 
                     memoryCache.Set(JellyfinConstants.UserName, user);
                     memoryCache.Set(JellyfinConstants.SessionName, session);
-
-                    Log.Debug("user: {0}", JsonSerializer.Serialize(user));
                 }
                 catch (Exception exception)
                 {
@@ -224,7 +231,7 @@ public sealed partial class App : Application
     /// <param name="e">Details about the navigation failure.</param>
     private void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
     {
-        Log.Error("Failed to navigate", e.Exception);
+        Log.Error("Failed to navigate: ", e.Exception);
 
         var frame = ((Frame)Window.Current.Content);
 

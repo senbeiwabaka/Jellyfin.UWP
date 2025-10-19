@@ -49,7 +49,7 @@ public sealed partial class EpisodePage : Page
         {
             var selectedAudio = ViewModel.SelectedAudioStream;
 
-            detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.Index;
+            detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.MediaSourceIndex;
             detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
         }
 

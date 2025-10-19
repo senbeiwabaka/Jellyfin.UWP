@@ -1,24 +1,20 @@
-﻿using CommunityToolkit.Mvvm.Collections;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.MainPage;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.Collections;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage;
 
-internal sealed partial class MainViewModel : ObservableObject
+internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavoritesViewModel favoritesViewModel, IMemoryCache memoryCache, JellyfinApiClient apiClient) : ObservableObject
 {
-    private readonly IFavoritesViewModel favoritesViewModel;
-    private readonly IHomeViewModel homeViewModel;
-    private readonly IMemoryCache memoryCache;
-
     [ObservableProperty]
     public partial ObservableCollection<UIMainPageListItem> FavoriteEpisodesList { get; set; }
 
@@ -56,7 +52,7 @@ internal sealed partial class MainViewModel : ObservableObject
     public partial bool IsFavoriteSelected { get; set; }
 
     [ObservableProperty]
-    public partial bool IsHomeSelected { get; set; }
+    public partial bool IsHomeSelected { get; set; } = true;
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> MediaList { get; set; }
@@ -72,15 +68,6 @@ internal sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string UserName { get; set; }
-
-    public MainViewModel(IHomeViewModel homeViewModel, IFavoritesViewModel favoritesViewModel, IMemoryCache memoryCache)
-    {
-        this.homeViewModel = homeViewModel;
-        this.favoritesViewModel = favoritesViewModel;
-        this.memoryCache = memoryCache;
-
-        IsHomeSelected = true;
-    }
 
     public async Task FavoriteLoadAsync(CancellationToken cancellationToken = default)
     {
@@ -102,19 +89,29 @@ internal sealed partial class MainViewModel : ObservableObject
 
         MediaListGrouped?.Clear();
 
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+
         MediaList = await homeViewModel.LoadMediaListAsync(cancellationToken);
         (ResumeMediaList, HasResumeMedia) = await homeViewModel.LoadResumeItemsAsync(cancellationToken);
         NextupMediaList = await homeViewModel.LoadNextUpAsync(cancellationToken);
         MediaListGrouped = await homeViewModel.LoadLatestAsync(MediaList, cancellationToken);
     }
 
-    public async Task LoadInitialAsync()
+    public async Task LoadInitialAsync(CancellationToken cancellationToken = default)
     {
         var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
 
         UserName = $"User: {user.Name}";
 
-        await HomeLoadAsync();
+        await HomeLoadAsync(cancellationToken);
+    }
+
+    public Task GetUserDisplay(CancellationToken cancellationToken = default)
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        //var itemsResult = await apiClient.DisplayPreference[user.]
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand(IncludeCancelCommand = false, AllowConcurrentExecutions = false)]

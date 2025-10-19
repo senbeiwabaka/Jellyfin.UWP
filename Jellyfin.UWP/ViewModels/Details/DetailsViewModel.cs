@@ -30,9 +30,6 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
     public partial bool IsNotMovie { get; set; }
 
     [ObservableProperty]
-    public partial string MediaTagLines { get; set; }
-
-    [ObservableProperty]
     public partial string MediaTags { get; set; }
 
     [ObservableProperty]
@@ -50,8 +47,8 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
             MediaTags = $"Tags: {string.Join(", ", MediaItem.Tags)}";
         }
 
-        Director = string.Join(", ", MediaItem.People.Where(x => x.Role == "Director" && x.Type == BaseItemPerson_Type.Director).Select(x => x.Name));
-        Writer = string.Join(", ", MediaItem.People.Where(x => x.Role == "Writer" && x.Type == BaseItemPerson_Type.Writer).Select(x => x.Name));
+        Director = string.Join(", ", MediaItem.People.Where(x => x.Type == BaseItemPerson_Type.Director).Select(x => x.Name));
+        Writer = string.Join(", ", MediaItem.People.Where(x => x.Type == BaseItemPerson_Type.Writer).Select(x => x.Name));
 
         IsMovie = MediaItem.Type == BaseItemDto_Type.Movie;
         IsEpisode = MediaItem.Type == BaseItemDto_Type.Episode;
@@ -81,6 +78,7 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
                         UnplayedItemCount = x.UserData.UnplayedItemCount,
                         HasBeenWatched = x.UserData.Played.Value,
                     },
+                    Type = x.Type.Value,
                 };
 
                 return item;

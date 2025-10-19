@@ -122,12 +122,13 @@ internal sealed class FavoritesViewModel : IFavoritesViewModel
         var items = new ObservableCollection<UIPersonItem>(
             result.Items
                 .Select(x =>
-                new UIPersonItem
-                {
-                    Id = x.Id.Value,
-                    Name = x.Name,
-                    ImageUrl = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
-                }));
+                    new UIPersonItem
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        ImageUrl = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        Type = x.Type.Value
+                    }));
 
         return items;
     }

@@ -14,8 +14,6 @@ namespace Jellyfin.UWP.ViewModels.Details;
 
 internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : MediaViewModel(memoryCache, apiClient, mediaHelpers)
 {
-    private SeasonSeries seasonSeries;
-
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItemSeries> SeriesMetadata { get; set; }
 
@@ -49,6 +47,7 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
                 IsFavorite = item.UserData.IsFavorite.Value,
                 HasBeenWatched = item.UserData.Played.Value,
             },
+            Type = item.Type.Value,
         };
     }
 
@@ -62,32 +61,54 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
         return SeriesMetadata.Single(x => x.IsSelected).Id;
     }
 
-    public async Task LoadMediaInformationAsync(SeasonSeries seasonSeries)
+    internal override async Task FavoriteStateAsync(CancellationToken cancellationToken)
+    {
+        await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
+
+        await LoadMediaInformationAsync(MediaItem.Id.Value);
+    }
+
+    private async Task<Guid> GetSeriesEpisodeIdAsync()
     {
         var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var userLibraryItem = await ApiClient.Items[seasonSeries.SeasonId].
-            GetAsync(options =>
-            {
-                options.QueryParameters.UserId = user.Id;
-            });
-
-        MediaItem = userLibraryItem;
-
-        var episodes = await ApiClient.Shows[seasonSeries.SeriesId].Episodes
+        var episodes = await ApiClient.Shows[MediaItem.ParentId.Value].Episodes
             .GetAsync(options =>
             {
                 options.QueryParameters.UserId = user.Id;
-                options.QueryParameters.SeasonId = seasonSeries.SeasonId;
-                options.QueryParameters.Fields = new[]
-                {
+                options.QueryParameters.SeasonId = MediaItem.ParentId;
+                options.QueryParameters.Fields =
+                [
+                    ItemFields.ItemCounts,
+                ];
+            });
+
+        return episodes.Items.First(x => !x.UserData.Played.Value && (x.UserData.PlayedPercentage ?? 0) < 90).Id.Value;
+    }
+
+    internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
+    {
+        await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
+
+        await LoadMediaInformationAsync(MediaItem.Id.Value);
+    }
+
+    protected override async Task ExtraExecuteAsync(CancellationToken cancellationToken = default)
+    {
+        var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var episodes = await ApiClient.Shows[MediaItem.ParentId.Value].Episodes
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.SeasonId = MediaItem.Id.Value;
+                options.QueryParameters.Fields =
+                [
                     ItemFields.ItemCounts,
                     ItemFields.PrimaryImageAspectRatio,
                     ItemFields.Overview,
-                };
+                ];
             });
 
-        SeriesMetadata = new ObservableCollection<UIMediaListItemSeries>(
-            episodes.Items.Select(x =>
+        SeriesMetadata = [.. episodes.Items.Select(x =>
             {
                 var item = new UIMediaListItemSeries
                 {
@@ -100,44 +121,10 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
                         IsFavorite = x.UserData.IsFavorite.Value,
                         HasBeenWatched = x.UserData.Played.Value,
                     },
+                    Type = x.Type.Value,
                 };
 
                 return item;
-            }));
-
-        ImageUrl = MediaHelpers.SetImageUrl(MediaItem, "720", "480", JellyfinConstants.PrimaryName);
-
-        this.seasonSeries = seasonSeries;
-    }
-
-    internal override async Task FavoriteStateAsync(CancellationToken cancellationToken)
-    {
-        await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
-
-        await LoadMediaInformationAsync(seasonSeries);
-    }
-
-    private async Task<Guid> GetSeriesEpisodeIdAsync()
-    {
-        var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var episodes = await ApiClient.Shows[seasonSeries.SeriesId].Episodes
-            .GetAsync(options =>
-            {
-                options.QueryParameters.UserId = user.Id;
-                options.QueryParameters.SeasonId = seasonSeries.SeasonId;
-                options.QueryParameters.Fields = new[]
-                {
-                    ItemFields.ItemCounts,
-                };
-            });
-
-        return episodes.Items.First(x => !x.UserData.Played.Value && (x.UserData.PlayedPercentage ?? 0) < 90).Id.Value;
-    }
-
-    internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
-    {
-        await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
-
-        await LoadMediaInformationAsync(seasonSeries);
+            })];
     }
 }
