@@ -50,6 +50,7 @@ internal sealed class HomeViewModel(IMemoryCache memoryCache, JellyfinApiClient 
                         Name = x.Name,
                         Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
                         CollectionType = record.CollectionType,
+                        Type = x.Type.Value,
                         UserData = new UIUserData
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,

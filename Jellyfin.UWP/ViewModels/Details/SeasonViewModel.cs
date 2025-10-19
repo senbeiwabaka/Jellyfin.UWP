@@ -47,6 +47,7 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
                 IsFavorite = item.UserData.IsFavorite.Value,
                 HasBeenWatched = item.UserData.Played.Value,
             },
+            Type = item.Type.Value,
         };
     }
 
@@ -120,6 +121,7 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
                         IsFavorite = x.UserData.IsFavorite.Value,
                         HasBeenWatched = x.UserData.Played.Value,
                     },
+                    Type = x.Type.Value,
                 };
 
                 return item;
