@@ -16,6 +16,7 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using CommunityToolkit.WinUI;
 
 namespace Jellyfin.UWP;
 
@@ -345,7 +346,7 @@ internal sealed partial class MainPage : Page
 
         Canvas.SetZIndex(image, 5);
 
-        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
     }

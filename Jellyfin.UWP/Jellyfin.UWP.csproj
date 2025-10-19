@@ -39,6 +39,7 @@
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="CommunityToolkit.Uwp.Converters" Version="8.2.250402" />
+		<PackageReference Include="CommunityToolkit.Uwp.Extensions" Version="8.2.250402" />
 		<PackageReference Include="Jellyfin.Sdk" Version="2024.10.28" />
 		<PackageReference Include="MetroLog.Net6" Version="2.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.10" />

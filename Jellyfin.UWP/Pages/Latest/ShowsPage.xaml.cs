@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -218,7 +219,7 @@ internal sealed partial class ShowsPage : Page
 
         Canvas.SetZIndex(image, 5);
 
-        var child = panel.Children.Where(x => x.GetType() == typeof(Canvas)).Last();
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
     }

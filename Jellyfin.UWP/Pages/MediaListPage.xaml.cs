@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -137,6 +138,37 @@ internal sealed partial class MediaListPage : Page
     }
 
     private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.InitialLoadAsync(id);
+    }
+
+    private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, -10);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Visible;
+    }
+
+    private void StackPanel_PointerExited(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+    {
+        var panel = (StackPanel)sender;
+
+        var image = panel.FindChild<Image>()!;
+
+        Canvas.SetZIndex(image, 5);
+
+        var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
+
+        child.Visibility = Visibility.Collapsed;
+    }
+
+    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
     {
         await ViewModel.InitialLoadAsync(id);
     }
