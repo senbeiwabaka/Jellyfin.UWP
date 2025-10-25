@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk.Generated.Models;
+﻿using Jellyfin.Sdk.Generated.Models;
 
 namespace Jellyfin.UWP.Models
 {
