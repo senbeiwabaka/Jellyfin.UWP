@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.MessagingModels;
@@ -15,11 +16,12 @@ using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages;
 
-internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItemUserDataChanged>
+internal sealed partial class MediaItemPlayer : Page
 {
     private readonly DispatcherTimer dispatcherTimer;
     private readonly DisplayRequest displayRequest;
@@ -49,16 +51,6 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
 
     internal MediaItemPlayerViewModel ViewModel => (MediaItemPlayerViewModel)DataContext;
 
-    public void Receive(MediaPlayerItemUserDataChanged message)
-    {
-        if (message.Value.PlayedPercentage > 0 && message.Value.PlaybackPositionTicks.HasValue)
-        {
-            _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(message.Value.PlaybackPositionTicks.Value);
-        }
-
-        dispatcherTimer.Start();
-    }
-
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         detailsItemPlayRecord = (DetailsItemPlayRecord)e.Parameter;
@@ -79,6 +71,7 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
 
         ViewModel.SessionStopAsync(_mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks);
 
+        _mediaPlayerElement.SizeChanged -= _mediaPlayerElement_SizeChanged;
         _mediaPlayerElement.MediaPlayer.MediaFailed -= MediaPlayer_MediaFailed;
         _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged -= PlaybackSession_PlaybackStateChanged;
         _mediaPlayerElement.MediaPlayer.MediaEnded -= MediaPlayer_MediaEnded;
@@ -103,6 +96,8 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
             Height = e.NewSize.Height,
         };
     }
+
+    private void btnErrorClose_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
 
     private void CoreWindow_KeyDown(CoreWindow sender, KeyEventArgs args)
     {
@@ -169,8 +164,6 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
 
     private void MediaItemPlayer_Loaded(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Register<MediaPlayerItemUserDataChanged>(this);
-
         if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
         {
             _mediaPlayerElement.IsFullWindow = true;
@@ -181,15 +174,33 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
         var settingsAppBarButton = new AppBarButton
         {
             Icon = new SymbolIcon(Symbol.Setting),
-            Label = "Settings"
+            Label = "Settings",
         };
         settingsAppBarButton.Click += (_, _) => ViewModel.IsSettingsOpen = true;
 
         mediaControlsCommandBar.PrimaryCommands.Add(settingsAppBarButton);
 
+        var audioAppBarButton = new AppBarButton
+        {
+            Icon = new FontIcon { FontFamily = new FontFamily("Segoe MDL2 Assets"), Glyph = "\xED1F", },
+            Label = "Audio",
+            //Style = Resources["AppBarButtonStyle"] as Style
+            Name = "AudioAppBarButton",
+        };
+        var audioToolTip = new ToolTip { Content = "Show audio selection menu" };
+
+        audioAppBarButton.Click += (_, _) => ViewModel.IsAudioOpen = true;
+
+        ToolTipService.SetToolTip(audioAppBarButton, audioToolTip);
+
+        mediaControlsCommandBar.PrimaryCommands.Add(audioAppBarButton);
+
         Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
         Window.Current.CoreWindow.PointerCursor = null;
         Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
+
+        ViewModel.DataIsLoaded += ViewModel_DataIsLoaded;
+        ViewModel.PlayingStarted += ViewModel_PlayingStarted;
     }
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
@@ -201,6 +212,9 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
         Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;
         Window.Current.CoreWindow.KeyDown -= CoreWindow_KeyDown;
         Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+
+        ViewModel.DataIsLoaded -= ViewModel_DataIsLoaded;
+        ViewModel.PlayingStarted -= ViewModel_PlayingStarted;
     }
 
     private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
@@ -237,6 +251,7 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
     {
         Log.Debug("Playback state has changed");
 
+        // TODO: FIX
         MediaPlaybackSession playbackSession = sender as MediaPlaybackSession;
         if (playbackSession != null && playbackSession.NaturalVideoHeight != 0)
         {
@@ -251,5 +266,33 @@ internal sealed partial class MediaItemPlayer : Page, IRecipient<MediaPlayerItem
         }
     }
 
-    private void btnErrorClose_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
+    private void ViewModel_DataIsLoaded()
+    {
+        if (ViewModel.IsAdaptiveStream || ViewModel.IsTranscoding || ViewModel.HasMultipleAudio)
+        {
+            AudioSelectionPopup.VerticalOffset += ((ViewModel.AudioList.Count - 1) * 40) * -1;
+        }
+        else
+        {
+            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.FindName("AudioAppBarButton");
+
+            audioAppBarButton.IsEnabled = false;
+            audioAppBarButton.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private void ViewModel_PlayingStarted()
+    {
+        dispatcherTimer.Start();
+
+        if (!ViewModel.IsAdaptiveStream || !ViewModel.IsTranscoding || !ViewModel.HasMultipleAudio)
+        {
+            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
+
+            audioAppBarButton.IsEnabled = false;
+            audioAppBarButton.Visibility = Visibility.Collapsed;
+        }
+    }
 }
