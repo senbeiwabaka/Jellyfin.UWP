@@ -4,6 +4,7 @@
 		<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
 		<TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
 		<UseUwp>true</UseUwp>
+		<UseUwpTools>true</UseUwpTools>
 		<Platforms>x86;x64;arm64</Platforms>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 		<DefaultLanguage>en-US</DefaultLanguage>
@@ -49,8 +50,8 @@
 		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.8.118">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.10" />
 		<PackageReference Include="System.Text.Json" Version="9.0.10" />
