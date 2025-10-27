@@ -7,43 +7,24 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Exceptions;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.MessagingModels;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using MetroLog;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Media.Streaming.Adaptive;
+using Windows.Storage;
 
 namespace Jellyfin.UWP.ViewModels;
 
-internal sealed partial class MediaItemPlayerViewModel : ObservableObject
+internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, JellyfinSdkSettings settings) : ObservableObject
 {
-    private readonly JellyfinApiClient apiClient;
     private readonly ILogger Log = LoggerFactory.GetLogger(nameof(MediaItemPlayerViewModel));
-    private readonly IMemoryCache memoryCache;
 
-    private readonly ReadOnlyDictionary<string, string> supportedAudioCodecs = new(new Dictionary<string, string>
-    {
-        { "aac", CodecSubtypes.AudioFormatAac },
-        { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
-        { "alac", CodecSubtypes.AudioFormatAlac },
-        { "flac", CodecSubtypes.AudioFormatFlac },
-        { "eac3", CodecSubtypes.AudioFormatAac },
-        { "mp3", CodecSubtypes.AudioFormatMP3 },
-    });
-
-    private readonly ReadOnlyDictionary<string, string> supportedVideoCodecs = new(new Dictionary<string, string>
-    {
-        { "mp4v", CodecSubtypes.VideoFormatMP4V },
-        { "h264", CodecSubtypes.VideoFormatH264 },
-        { "hevc", CodecSubtypes.VideoFormatHevc },
-        { "h263", CodecSubtypes.VideoFormatH263 },
-    });
+    
 
     private readonly Dictionary<TimedTextSource, string> ttsMap = [];
 
@@ -52,20 +33,33 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         { "dts", CodecSubtypes.AudioFormatDts },
     });
 
-    private readonly UserDto user;
-
-    private DetailsItemPlayRecord? detailsItemPlayRecord;
+    private readonly UserDto user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
 
     private PlaybackInfoResponse? playbackInfo;
-
     private string playbackSessionId = string.Empty;
 
-    public MediaItemPlayerViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient)
-    {
-        this.memoryCache = memoryCache;
-        this.apiClient = apiClient;
-        user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
-    }
+    public delegate void EventHandler();
+
+    public event EventHandler? DataIsLoaded;
+    public event EventHandler? PlayingStarted;
+
+    [ObservableProperty]
+    public partial ObservableCollection<UIAudio> AudioList { get; set; }
+
+    [ObservableProperty]
+    public partial string ErrorMessage { get; set; } = default!;
+
+    [ObservableProperty]
+    public partial bool HasMultipleAudio { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsAdaptiveStream { get; private set; }
+
+    [ObservableProperty]
+    public partial bool IsAudioOpen { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsErrorPopupOpen { get; set; }
 
     [ObservableProperty]
     public partial bool IsNextItemOpen { get; set; }
@@ -77,19 +71,16 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     public partial bool IsSettingsOpen { get; set; }
 
     [ObservableProperty]
-    public partial bool IsTranscoding { get; set; }
+    public partial bool IsTranscoding { get; private set; }
 
     [ObservableProperty]
     public partial MediaPlayerPlayBackInfo MediaPlayerPlayBackInfo { get; set; }
 
     [ObservableProperty]
+    public partial UIAudio SelectedAudio { get; set; }
+
+    [ObservableProperty]
     public partial IMediaPlaybackSource Source { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsErrorPopupOpen { get; set; }
-
-    [ObservableProperty]
-    public partial string ErrorMessage { get; set; } = default!;
 
     internal BaseItemDto Item { get; private set; }
 
@@ -129,193 +120,37 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             }, cancellationToken: cancellationToken);
     }
 
-    private static PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks, DetailsItemPlayRecord? detailsItemPlayRecord)
-    {
-        const string mp4VideoFormats = "h264,vp8,vp9";
-        const string mkvVideoFormats = "h264,vc1,vp8,vp9,av1";
-        const string audioFormats = "aac,mp3,ac3";
-
-        return new PlaybackInfoDto
-        {
-            UserId = user.Id.Value,
-            AutoOpenLiveStream = true,
-            EnableTranscoding = user.Policy.EnableVideoPlaybackTranscoding,
-            EnableDirectPlay = true,
-            AllowVideoStreamCopy = user.Policy.EnablePlaybackRemuxing,
-            AllowAudioStreamCopy = user.Policy.EnablePlaybackRemuxing,
-            MaxStreamingBitrate = user.Policy.RemoteClientBitrateLimit,
-            MaxAudioChannels = 5,
-            StartTimeTicks = startTimeTicks,
-            EnableDirectStream = true,
-            AudioStreamIndex = detailsItemPlayRecord?.SelectedAudioMediaStreamIndex,
-            MediaSourceId = detailsItemPlayRecord?.SelectedVideoId,
-
-            DeviceProfile = new DeviceProfile
-            {
-                CodecProfiles =
-                    [
-                        new()
-                        {
-                            Codec = "aac",
-                            Conditions =
-                        [
-                            new()
-                            {
-                                Condition = ProfileCondition_Condition.Equals,
-                                Property = ProfileCondition_Property.IsSecondaryAudio,
-                                Value = "false",
-                            },
-                        ],
-                            Type = CodecProfile_Type.VideoAudio
-                        },
-                        new()
-                            {
-                                Codec = "h264",
-                                Conditions =
-                                [
-                                    new()
-                                    {
-                                        Condition = ProfileCondition_Condition.NotEquals,
-                                        Property = ProfileCondition_Property.IsAnamorphic,
-                                        Value = "true",
-                                        IsRequired = false,
-                                    },
-                                    new()
-                                    {
-                                        Condition = ProfileCondition_Condition.EqualsAny,
-                                        Property = ProfileCondition_Property.VideoProfile,
-                                        Value = "high|main|baseline|constrained baseline",
-                                        IsRequired = false,
-                                    },
-                                    new()
-                                    {
-                                        Condition = ProfileCondition_Condition.EqualsAny,
-                                        Property = ProfileCondition_Property.VideoRangeType,
-                                        Value = "SDR",
-                                        IsRequired = false,
-                                    },
-                                    new()
-                                    {
-                                        Condition = ProfileCondition_Condition.LessThanEqual,
-                                        Property = ProfileCondition_Property.VideoLevel,
-                                        Value = "52",
-                                        IsRequired = false,
-                                    },
-                                    new()
-                                    {
-                                        Condition = ProfileCondition_Condition.NotEquals,
-                                        Property = ProfileCondition_Property.IsInterlaced,
-                                        Value = "true",
-                                        IsRequired = false,
-                                    },
-                                ],
-                                Type = CodecProfile_Type.Video
-                            },
-                    ],
-                DirectPlayProfiles =
-                    [
-                        new()
-                        {
-                            Container = "mp4,m4v",
-                            Type = DirectPlayProfile_Type.Video,
-                            VideoCodec = mp4VideoFormats,
-                            AudioCodec = audioFormats,
-                        },
-                        new()
-                        {
-                            Container = "mkv",
-                            Type = DirectPlayProfile_Type.Video,
-                            VideoCodec = mp4VideoFormats,
-                            AudioCodec = audioFormats,
-                        },
-                        new()
-                        {
-                            Container = "m4a",
-                            AudioCodec = "aac",
-                            Type = DirectPlayProfile_Type.Audio,
-                        },
-                        new()
-                        {
-                            Container = "m4b",
-                            AudioCodec = "aac",
-                            Type = DirectPlayProfile_Type.Audio,
-                        },
-                        new()
-                            {
-                                Container = "mp3",
-                                Type = DirectPlayProfile_Type.Audio,
-                            },
-                    ],
-                TranscodingProfiles =
-                    [
-                        new()
-                        {
-                            Container = "ts",
-                            Type = TranscodingProfile_Type.Audio,
-                            AudioCodec = "aac",
-                            Context = TranscodingProfile_Context.Streaming,
-                            Protocol = TranscodingProfile_Protocol.Hls,
-                            MaxAudioChannels = "2",
-                            BreakOnNonKeyFrames = true,
-                            MinSegments = 1,
-                        },
-                        new()
-                        {
-                            Container = "aac",
-                            Type = TranscodingProfile_Type.Audio,
-                            AudioCodec = "aac",
-                            Context = TranscodingProfile_Context.Streaming,
-                            Protocol = TranscodingProfile_Protocol.Http,
-                            MaxAudioChannels = "2",
-                        },
-                        new()
-                        {
-                            Container = "mp3",
-                            Type = TranscodingProfile_Type.Audio,
-                            AudioCodec = "mp3",
-                            Context = TranscodingProfile_Context.Streaming,
-                            Protocol = TranscodingProfile_Protocol.Http,
-                            MaxAudioChannels = "2",
-                        },
-                        new()
-                        {
-                            Container = "ts",
-                            Type = TranscodingProfile_Type.Video,
-                            VideoCodec = "h264",
-                            Context = TranscodingProfile_Context.Streaming,
-                            MaxAudioChannels = "2",
-                            AudioCodec = "aac,mp3",
-                            BreakOnNonKeyFrames = true,
-                            MinSegments = 1,
-                            Protocol = TranscodingProfile_Protocol.Hls,
-                        },
-                        new()
-                        {
-                            Container = "mp4",
-                            Type = TranscodingProfile_Type.Video,
-                            VideoCodec = mp4VideoFormats,
-                            Context = TranscodingProfile_Context.Streaming,
-                            MaxAudioChannels = "2",
-                            CopyTimestamps = true,
-                            AudioCodec = "aac,mp3",
-                        },
-                        new()
-                            {
-                                Container = "mkv",
-                                Type = TranscodingProfile_Type.Video,
-                                VideoCodec = mkvVideoFormats,
-                                Context = TranscodingProfile_Context.Streaming,
-                                MaxAudioChannels = "2",
-                                CopyTimestamps = true,
-                                AudioCodec = "aac,mp3",
-                            },
-                    ],
-            },
-        };
-    }
-
     [RelayCommand]
     private void ClosePlaybackInfo() => IsPlaybackOpen = false;
+
+    private Uri GetHLS()
+    {
+        var uniqueId = $"Jellyfin.UWP-{ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]}";
+        var video = apiClient.Videos[Item.Id.Value].MasterM3u8
+            .ToGetRequestInformation(options =>
+            {
+                options.QueryParameters.DeviceId = uniqueId;
+                options.QueryParameters.MediaSourceId = MediaSourceInfo.Id;
+                options.QueryParameters.VideoCodec = "h264,hevc";
+                options.QueryParameters.AudioCodec = "aac";
+                options.QueryParameters.AudioStreamIndex = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).Index;
+                options.QueryParameters.AudioBitRate = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).BitRate;
+                options.QueryParameters.PlaySessionId = playbackSessionId;
+                options.QueryParameters.EnableAudioVbrEncoding = true;
+                options.QueryParameters.SegmentContainer = MediaSourceInfo.Container;
+                options.QueryParameters.BreakOnNonKeyFrames = true;
+                options.QueryParameters.AllowVideoStreamCopy = user.Policy?.EnablePlaybackRemuxing;
+                options.QueryParameters.AllowAudioStreamCopy = user.Policy?.EnablePlaybackRemuxing;
+                options.QueryParameters.EnableAutoStreamCopy = true;
+                options.QueryParameters.EnableAdaptiveBitrateStreaming = true;
+                options.QueryParameters.Context = Sdk.Generated.Videos.Item.MasterM3u8.EncodingContext.Streaming;
+                options.QueryParameters.EnableTrickplay = false;
+                options.QueryParameters.AlwaysBurnInSubtitleWhenTranscoding = false;
+            });
+
+        //var uri = video.URI;
+        return apiClient.BuildUri(video);
+    }
 
     private async Task<BaseItemDtoQueryResult?> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
     {
@@ -377,7 +212,7 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         var videoMediaStream = Item.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
         MediaStream audioMediaStream;
 
-        if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
+        if (AudioList.SingleOrDefault(x => x.IsSelected) is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
         {
             var stream = Item.MediaStreams.SingleOrDefault(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
 
@@ -437,44 +272,36 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             .ToGetRequestInformation();
 
         return apiClient.BuildUri(subtitleRequest);
-        //return subtitleClient.GetSubtitleWithTicksUrl(Item.Id, routeId, index, 0, routeFormat);
+        //return subtitleClient.GetSubtitleWithTicksUrl(UserData.Id, routeId, index, 0, routeFormat);
     }
 
-    private Uri GetVideoUrl(string? videoId, int? audioIndex)
+    private Uri GetVideoUrl()
     {
-        var container = Item.MediaSources[0].Container;
         var video = apiClient.Videos[Item.Id.Value]
-            .StreamWithContainer(container)
+            .StreamWithContainer(MediaSourceInfo.Container)
             .ToGetRequestInformation(options =>
             {
                 options.QueryParameters.Static = true;
-                options.QueryParameters.MediaSourceId = videoId;
+                options.QueryParameters.MediaSourceId = MediaSourceInfo.Id;
                 options.QueryParameters.AllowVideoStreamCopy = user.Policy.EnablePlaybackRemuxing;
                 options.QueryParameters.AllowAudioStreamCopy = user.Policy.EnablePlaybackRemuxing;
-                options.QueryParameters.AudioStreamIndex = audioIndex;
+                options.QueryParameters.AudioStreamIndex = SelectedAudio.Index;
                 options.QueryParameters.StartTimeTicks = Item.UserData?.PlaybackPositionTicks;
             });
-        //var videoUrl = videosClient.GetVideoStreamByContainerUrl(
-        //    Item.Id,
-        //    container,
-        //    @static: true,
-        //    mediaSourceId: videoId);
-
-        //return new Uri(videoUrl);
 
         return apiClient.BuildUri(video);
     }
 
-    private async Task<bool> IsTranscodingNeededBecauseOfAudio(IReadOnlyList<MediaStream> mediaStreams)
+    private async Task<bool> IsTranscodingNeededBecauseOfAudio(IReadOnlyList<MediaStream> mediaStreams, int? selectedAudioMediaStreamIndex)
     {
         var codecQuery = new CodecQuery();
 
         string selectedAudioCodec;
 
         // Get the selected audio codec, if one was, or the default (first) codec.
-        if (detailsItemPlayRecord.SelectedAudioMediaStreamIndex.HasValue)
+        if (selectedAudioMediaStreamIndex.HasValue)
         {
-            selectedAudioCodec = mediaStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioMediaStreamIndex.Value && x.Type == MediaStream_Type.Audio).Codec!;
+            selectedAudioCodec = mediaStreams.Single(x => x.Index == selectedAudioMediaStreamIndex.Value && x.Type == MediaStream_Type.Audio).Codec!;
         }
         else
         {
@@ -485,7 +312,7 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             .Select(x => x).ToArray();
 
         // Check if the selected audio codec is a supported, by default, audio codec
-        if (supportedAudioCodecs.TryGetValue(selectedAudioCodec, out var supportedAudioCodecId))
+        if (MediaPlayerHelpers.SupportedAudioCodecs.TryGetValue(selectedAudioCodec, out var supportedAudioCodecId))
         {
             // Check to make sure the codec actually is there to use
             return !Array.Exists(audioCodecsInstalled, x => x.Subtypes.Any(y => y.Equals(supportedAudioCodecId, StringComparison.InvariantCultureIgnoreCase)));
@@ -537,9 +364,9 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             videoCodecsInstalled.AddRange(codecs);
         }
 
-        if (supportedVideoCodecs.Keys.Any(x => string.Equals(x, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)))
+        if (MediaPlayerHelpers.SupportedVideoCodecs.Keys.Any(x => string.Equals(x, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)))
         {
-            var videoCodecId = supportedVideoCodecs.Single(x => string.Equals(x.Key, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)).Value;
+            var videoCodecId = MediaPlayerHelpers.SupportedVideoCodecs.Single(x => string.Equals(x.Key, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)).Value;
 
             // Check to make sure the codec actually is there to use
             return !videoCodecsInstalled.Exists(x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
@@ -551,8 +378,6 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task LoadMediaItemAsync(DetailsItemPlayRecord detailsItemPlayRecord, CancellationToken cancellationToken = default)
     {
-        this.detailsItemPlayRecord = detailsItemPlayRecord;
-
         var item = await apiClient.Items[detailsItemPlayRecord.Id]
             .GetAsync(options =>
             {
@@ -569,65 +394,37 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
 
         Item = item;
 
-        await LoadMediaPlaybackInfoAsync(cancellationToken);
+        await LoadMediaPlaybackInfoAsync(detailsItemPlayRecord, cancellationToken);
 
-        var needsToTranscodeAudio = await IsTranscodingNeededBecauseOfAudio(MediaSourceInfo.MediaStreams);
-        var needsToTranscodeVideo = await IsTranscodingNeededBecauseOfVideo(MediaSourceInfo.MediaStreams);
+        AudioList = new ObservableCollection<UIAudio>(MediaSourceInfo.MediaStreams.Where(x => x.Type == MediaStream_Type.Audio).Select(x => new UIAudio { Title = x.DisplayTitle, Index = x.Index, }));
+        HasMultipleAudio = AudioList.Count > 1;
 
-        // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
-        if (needsToTranscodeAudio || needsToTranscodeVideo)
+        if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
         {
-            IsTranscoding = true;
-
-            Log.Debug("Transcoding because of audio: {0} ;; video: {1}", needsToTranscodeAudio, needsToTranscodeVideo);
+            AudioList[detailsItemPlayRecord.SelectedAudioIndex.Value].IsSelected = true;
+        }
+        else
+        {
+            AudioList[0].IsSelected = true;
         }
 
-        if (IsTranscoding && !((user.Policy?.EnableAudioPlaybackTranscoding ?? false) || (user.Policy.EnableVideoPlaybackTranscoding ?? false)))
-        {
-            IsErrorPopupOpen = true;
-            ErrorMessage = $"Transcoding is needed for {Item.Name} but policy does not allow this account to transcode. Please contact your administrator.";
+        SelectedAudio = AudioList.Single(x => x.IsSelected);
 
-            return;
-        }
+        //await SetupMediaPlayer(cancellationToken);
 
-        var source = LoadSource();
-
-        var mediaPlaybackItem = new MediaPlaybackItem(source);
-
-        var props = mediaPlaybackItem.GetDisplayProperties();
-        props.Type = Windows.Media.MediaPlaybackType.Video;
-
-        foreach (var genre in Item.Genres ?? [])
-        {
-            props.VideoProperties.Genres.Add(genre);
-        }
-
-        props.VideoProperties.Title = Item.Name;
-
-        mediaPlaybackItem.ApplyDisplayProperties(props);
-
-        if (!IsTranscoding && detailsItemPlayRecord.SelectedAudioIndex.HasValue)
-        {
-            //mediaPlaybackItem.AudioTracks.SelectedIndex = detailsItemPlayRecord.SelectedAudioIndex.Value;
-        }
-
-        Source = mediaPlaybackItem;
-
-        await SessionPlayingAsync(cancellationToken).ConfigureAwait(true);
-
-        WeakReferenceMessenger.Default.Send(new MediaPlayerItemUserDataChanged(Item.UserData ?? new UserItemDataDto()));
+        DataIsLoaded?.Invoke();
     }
 
-    private async Task LoadMediaPlaybackInfoAsync(CancellationToken cancellationToken)
+    private async Task LoadMediaPlaybackInfoAsync(DetailsItemPlayRecord detailsItemPlayRecord, CancellationToken cancellationToken)
     {
         var startTimeTicks = 0L;
 
         if (Item.UserData.PlayedPercentage.HasValue && Item.UserData.PlayedPercentage < 90 && Item.UserData.PlaybackPositionTicks.HasValue)
         {
-            //startTimeTicks = Item.UserData.PlaybackPositionTicks.Value;
+            startTimeTicks = Item.UserData.PlaybackPositionTicks.Value;
         }
 
-        var playbackBody = GetPlaybackInfoBody(user, startTimeTicks, detailsItemPlayRecord);
+        var playbackBody = MediaPlayerHelpers.GetPlaybackInfoBody(user, startTimeTicks, detailsItemPlayRecord.SelectedVideoId, detailsItemPlayRecord.SelectedAudioMediaStreamIndex);
         playbackInfo = await apiClient.Items[Item.Id.Value].PlaybackInfo
             .PostAsync(playbackBody, cancellationToken: cancellationToken)
             .ConfigureAwait(true);
@@ -636,15 +433,15 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(detailsItemPlayRecord?.SelectedVideoId))
         {
-            MediaSourceInfo = playbackInfo.MediaSources.Single();
+            MediaSourceInfo = playbackInfo.MediaSources![0];
         }
         else
         {
-            MediaSourceInfo = playbackInfo.MediaSources.Single(x => string.Equals(x.Id, detailsItemPlayRecord.SelectedVideoId, StringComparison.CurrentCultureIgnoreCase));
+            MediaSourceInfo = playbackInfo.MediaSources!.Single(x => string.Equals(x.Id, detailsItemPlayRecord.SelectedVideoId, StringComparison.CurrentCultureIgnoreCase));
         }
     }
 
-    private MediaSource LoadSource()
+    private async Task<MediaSource> LoadSource()
     {
         MediaSource source;
 
@@ -653,15 +450,30 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             var mediaUri = new Uri($"{memoryCache.Get<string>(JellyfinConstants.HostUrlName)}{MediaSourceInfo.TranscodingUrl}");
             source = MediaSource.CreateFromUri(mediaUri);
         }
+        else if (IsAdaptiveStream)
+        {
+            var mediaUri = GetHLS();
+            mediaUri = new Uri($"{mediaUri.AbsoluteUri}&api_key={settings.AccessToken}");
+
+            var adapativeUri = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
+
+            if (adapativeUri.Status != AdaptiveMediaSourceCreationStatus.Success)
+            {
+                var issue = await adapativeUri.HttpResponseMessage.Content.ReadAsStringAsync();
+                Log.Error(issue);
+            }
+
+            source = MediaSource.CreateFromAdaptiveMediaSource(adapativeUri.MediaSource);
+        }
         else
         {
-            var mediaUri = GetVideoUrl(detailsItemPlayRecord?.SelectedVideoId, detailsItemPlayRecord?.SelectedAudioMediaStreamIndex);
+            var mediaUri = GetVideoUrl();
             source = MediaSource.CreateFromUri(mediaUri);
         }
 
         var mediaStreams = MediaSourceInfo.MediaStreams;
 
-        if (mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", Item.MediaSources[0].Container, StringComparison.InvariantCultureIgnoreCase))
+        if (mediaStreams is not null && mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", MediaSourceInfo.Container, StringComparison.InvariantCultureIgnoreCase))
         {
             var firstSubtitle = mediaStreams.First(x => x.Type == MediaStream_Type.Subtitle);
             var subtitleUrl = GetSubtitleUrl(
@@ -692,14 +504,17 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
             }
         }
 
-        //try
-        //{
-        //    await source.OpenAsync();
-        //}
-        //catch (Exception ex)
-        //{
-        //    Log.Error("failed to open source", ex);
-        //}
+        if (!IsTranscoding)
+        {
+            try
+            {
+                await source.OpenAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("failed to open source", ex);
+            }
+        }
 
         return source;
     }
@@ -721,6 +536,8 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
     private async Task PlayNextEpisode(CancellationToken cancellationToken)
     {
         var episodes = await GetSeriesAsync(Item.SeriesId.Value, Item.SeasonId.Value, cancellationToken);
+
+        var detailsItemPlayRecord = new DetailsItemPlayRecord();
 
         if (episodes is not null)
         {
@@ -765,5 +582,70 @@ internal sealed partial class MediaItemPlayerViewModel : ObservableObject
         };
 
         await apiClient.Sessions.Playing.PostAsync(playbackStartInfo, cancellationToken: cancellationToken);
+    }
+
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task SetupMediaPlayer(CancellationToken cancellationToken)
+    {
+        IsAudioOpen = false;
+
+        var needsToTranscodeAudio = await IsTranscodingNeededBecauseOfAudio(MediaSourceInfo.MediaStreams, SelectedAudio.Index);
+        var needsToTranscodeVideo = await IsTranscodingNeededBecauseOfVideo(MediaSourceInfo.MediaStreams);
+
+        // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
+        if (needsToTranscodeAudio || needsToTranscodeVideo || (MediaSourceInfo.Bitrate / 1_000_000) > 8)
+        {
+            IsTranscoding = true;
+
+            Log.Debug("Transcoding because of audio: {0} ;; video: {1} for media: {2}", needsToTranscodeAudio, needsToTranscodeVideo, Item.Name);
+        }
+
+        if (IsTranscoding && !((user.Policy?.EnableAudioPlaybackTranscoding ?? false) || (user.Policy.EnableVideoPlaybackTranscoding ?? false)))
+        {
+            IsErrorPopupOpen = true;
+            ErrorMessage = $"Transcoding is needed for {Item.Name} but policy does not allow this account to transcode. Please contact your administrator.";
+
+            return;
+        }
+
+        var playbackBody = MediaPlayerHelpers.GetPlaybackInfoBody(user, 0L, MediaSourceInfo.Id, SelectedAudio.Index);
+        playbackInfo = await apiClient.Items[Item.Id.Value].PlaybackInfo
+            .PostAsync(playbackBody, cancellationToken: cancellationToken)
+            .ConfigureAwait(true);
+
+        // TODO: When jellyfin gets better adaptive streaming, re-enable this to handle
+        //if (!IsTranscoding)
+        //{
+        //    IsAdaptiveStream = (MediaSourceInfo.Bitrate / 1_000_000) > 3;
+
+        //    Log.Debug("Is adaptive media: {0} ;; for media: {1}", IsAdaptiveStream, UserData.Label);
+        //}
+
+        var source = await LoadSource();
+
+        var mediaPlaybackItem = new MediaPlaybackItem(source);
+
+        var props = mediaPlaybackItem.GetDisplayProperties();
+        props.Type = Windows.Media.MediaPlaybackType.Video;
+
+        foreach (var genre in Item.Genres ?? [])
+        {
+            props.VideoProperties.Genres.Add(genre);
+        }
+
+        props.VideoProperties.Title = Item.Name;
+
+        mediaPlaybackItem.ApplyDisplayProperties(props);
+
+        if (!IsTranscoding && SelectedAudio.Index.HasValue)
+        {
+            mediaPlaybackItem.AudioTracks.SelectedIndex = SelectedAudio.Index.Value - 1;
+        }
+
+        Source = mediaPlaybackItem;
+
+        await SessionPlayingAsync(cancellationToken);
+
+        PlayingStarted?.Invoke();
     }
 }

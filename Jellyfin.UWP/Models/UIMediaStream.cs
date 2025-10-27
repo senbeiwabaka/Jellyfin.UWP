@@ -1,16 +1,17 @@
 ﻿using WinRT;
 
-namespace Jellyfin.UWP.Models
+namespace Jellyfin.UWP.Models;
+
+[GeneratedBindableCustomProperty(propertyNames: [nameof(IsSelected), nameof(Title)], indexerPropertyTypes: [typeof(bool), typeof(string)])]
+public partial class UIMediaStream
 {
-    [GeneratedBindableCustomProperty(propertyNames: [nameof(IsSelected), nameof(Title)], indexerPropertyTypes: [typeof(bool), typeof(string)])]
-    public partial class UIMediaStream
-    {
-        public string Title { get; set; } = default!;
+    public string Title { get; init; } = default!;
 
-        public int MediaSourceIndex { get; set; }
+    public int MediaSourceIndex { get; init; }
 
-        public bool IsSelected { get; set; }
+    public bool IsSelected { get; set; }
 
-        public int MediaStreamIndex { get; set; }
-    }
+    public int MediaStreamIndex { get; init; }
+
+    public int MediaListIndex { get; init; }
 }

@@ -1,12 +1,14 @@
 ﻿using Jellyfin.Sdk.Generated.Models;
+using WinRT;
 
 namespace Jellyfin.UWP.Models.Filters;
 
-public sealed class FiltersModel
+[GeneratedBindableCustomProperty(propertyNames: [nameof(IsSelected), nameof(Name)], indexerPropertyTypes: [typeof(bool), typeof(string)])]
+internal partial class FiltersModel
 {
-    public string DisplayName { get; init; } = default!;
+    public required string Name { get; init; } = default!;
 
-    public ItemFilter Filter { get; init; }
+    public required ItemFilter Filter { get; init; }
 
     public bool IsSelected { get; set; }
 }

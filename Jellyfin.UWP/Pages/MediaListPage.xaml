@@ -4,11 +4,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.UWP.Models"
     xmlns:mf="using:Jellyfin.UWP.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    x:Name="MediaList"
     d:DataContext="{d:DesignInstance Type=uwp:MediaListViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
@@ -19,6 +22,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolToObjectConverter x:Key="TrueRedFalseWhite" TrueValue="#cc3333" FalseValue="#ffffff" />
         <converters:BoolToObjectConverter x:Key="ClearHeartFilledHeart" TrueValue="&#xEB52;" FalseValue="&#xEB51;" />
+        <converters:BoolToObjectConverter x:Key="RadioButtonOnOff" TrueValue="&#xECCB;" FalseValue="&#xECCA;" />
     </Page.Resources>
 
     <Grid>
@@ -46,36 +50,41 @@
                 x:Name="Filters"
                 IsOpen="{x:Bind ViewModel.IsFilteringOpen, Mode=TwoWay}"
                 IsLightDismissEnabled="True">
-                <StackPanel Background="Black" MinWidth="100">
-                    <DropDownButton MinWidth="100">
+                <StackPanel Background="Black" MinWidth="192">
+                    <DropDownButton MinWidth="192">
                         <DropDownButton.Content>
                             Filters
                         </DropDownButton.Content>
                         <DropDownButton.Flyout>
                             <Flyout>
                                 <ListView
-                                    ItemsSource="{x:Bind ViewModel.FilteringFilters, Mode=OneWay}"
+                                    ItemsSource="{x:Bind ViewModel.FilteringFilters, Mode=TwoWay}"
                                     SelectionMode="Multiple"
                                     IsItemClickEnabled="True"
-                                    IsTapEnabled="True"
+                                    IsTapEnabled="False"
+                                    x:Name="FiltersFiltering"
                                     ItemClick="FiltersFiltering_ItemClick"
-                                    SelectionChanged="FiltersFiltering_SelectionChanged"
-                                    x:Name="FiltersFiltering">
+                                    MinWidth="192">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:FiltersModel">
-                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
+                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=OneWay}">
                                                 <StackPanel>
-                                                    <TextBlock Text="{x:Bind DisplayName}" FontSize="25" />
+                                                    <TextBlock Text="{x:Bind Name, Mode=OneTime}" FontSize="25" />
                                                 </StackPanel>
                                             </ListViewItem>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
+                                    <interactivity:Interaction.Behaviors>
+                                        <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.FilterAndSortingCommand}" />
+                                        </interactivity:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
                                 </ListView>
                             </Flyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>
 
-                    <DropDownButton MinWidth="100">
+                    <DropDownButton MinWidth="192">
                         <DropDownButton.Content>
                             Genres
                         </DropDownButton.Content>
@@ -85,10 +94,10 @@
                                     ItemsSource="{x:Bind ViewModel.GenresFilterList, Mode=OneWay}"
                                     SelectionMode="Multiple"
                                     IsItemClickEnabled="True"
-                                    IsTapEnabled="True"
+                                    IsTapEnabled="False"
                                     ItemClick="GenreFiltering_ItemClick"
-                                    SelectionChanged="GenreFiltering_SelectionChanged"
-                                    x:Name="GenreFiltering">
+                                    x:Name="GenreFiltering"
+                                    MinWidth="192">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:GenreFiltersModel">
                                             <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
@@ -98,6 +107,11 @@
                                             </ListViewItem>
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
+                                    <interactivity:Interaction.Behaviors>
+                                        <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.FilterAndSortingCommand}" />
+                                        </interactivity:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
                                 </ListView>
                             </Flyout>
                         </DropDownButton.Flyout>
@@ -105,37 +119,66 @@
                 </StackPanel>
             </Popup>
 
-            <Popup x:Name="Sorting" IsOpen="{x:Bind ViewModel.IsSortingOpen, Mode=TwoWay}" IsLightDismissEnabled="True">
-                <StackPanel Background="Black" MinWidth="100">
-                    <DropDownButton MinWidth="100">
-                        <DropDownButton.Content>
-                            Sorting
-                        </DropDownButton.Content>
-                        <DropDownButton.Flyout>
-                            <Flyout>
-                                <StackPanel>
-                                    <ListView
-                                          ItemsSource="{x:Bind ViewModel.SortingList, Mode=OneWay}"
-                                          SelectionMode="Multiple"
-                                          IsItemClickEnabled="True"
-                                          IsTapEnabled="True">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="mf:SortModel">
-                                                <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{x:Bind Name}" FontSize="25" />
-                                                    </StackPanel>
-                                                </ListViewItem>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </StackPanel>
-                            </Flyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
+            <Popup
+                x:Name="Sorting"
+                IsOpen="{x:Bind ViewModel.IsSortingOpen, Mode=TwoWay}"
+                IsLightDismissEnabled="True">
+                <StackPanel Background="Black" MinWidth="100" Margin="0" Padding="24,24,20,24">
+                    <TextBlock Text="Sort By" FontSize="24" Margin="0,0,0,8" />
+                    <ListView
+                        x:Name="SortColumn"
+                        ItemsSource="{x:Bind ViewModel.SortingList, Mode=TwoWay}"
+                        SelectionMode="Single"
+                        SelectedValuePath="IsSelected">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="mf:SortModel">
+                                <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{x:Bind Name}" FontSize="15" />
+                                    </StackPanel>
+                                </ListViewItem>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <interactivity:Interaction.Behaviors>
+                            <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.FilterAndSortingCommand}" />
+                            </interactivity:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                    </ListView>
+
+                    <TextBlock Text="Sort Order" FontSize="24" Margin="0,0,0,8" />
+                    <ListView
+                        x:Name="SortOrder"
+                        ItemsSource="{x:Bind ViewModel.SortOrderList, Mode=TwoWay}"
+                        SelectionMode="Single"
+                        SelectedValuePath="IsSelected">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="mf:SortOrderModel">
+                                <ListViewItem IsSelected="{x:Bind IsSelected, Mode=TwoWay}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{x:Bind Label}" FontSize="15" />
+                                    </StackPanel>
+                                </ListViewItem>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                        <interactivity:Interaction.Behaviors>
+                            <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.FilterAndSortingCommand}" />
+                            </interactivity:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                    </ListView>
                 </StackPanel>
             </Popup>
         </StackPanel>
+
+        <Grid
+            Grid.Row="2"
+            Canvas.ZIndex="5"
+            Background="Gray"
+            Opacity=".8"
+            Visibility="{x:Bind ViewModel.IsRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <muxc:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" IsActive="{x:Bind ViewModel.IsRunning, Mode=OneWay}" />
+        </Grid>
 
         <GridView
             x:Name="GridMediaList"

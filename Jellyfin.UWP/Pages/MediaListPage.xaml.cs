@@ -8,7 +8,6 @@ using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels;
 using System;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -72,69 +71,20 @@ internal sealed partial class MediaListPage : Page
         id = (Guid)e.Parameter;
     }
 
-    private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
-    {
-        var button = (Button)sender;
-        var item = (UIMediaListItem)button.DataContext;
-        var items = ViewModel.MediaList;
-        var index = items.IndexOf(item);
-
-        await ViewModel.IsFavoriteStateAsync(item.UserData.IsFavorite, item.Id);
-
-        var updateItem = await ViewModel.GetLatestOnItemAsync(item.Id);
-
-        items[index] = updateItem;
-    }
-
-    private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
-    {
-        var button = (Button)sender;
-        var item = (UIMediaListItem)button.DataContext;
-
-        var items = ViewModel.MediaList;
-        var index = items.IndexOf(item);
-
-        await ViewModel.PlayedStateAsync(item.UserData.HasBeenWatched, item.Id);
-
-        var updateItem = await ViewModel.GetLatestOnItemAsync(item.Id);
-
-        items[index] = updateItem;
-    }
-
     private void FiltersFiltering_ItemClick(object sender, ItemClickEventArgs e)
     {
-        Filters.IsOpen = false;
-    }
+        var filterModel = (FiltersModel)e.ClickedItem;
+        var index = ViewModel.FilteringFilters.IndexOf(filterModel);
 
-    private async void FiltersFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        ViewModel.FilterReset();
-
-        var listView = (ListView)sender;
-        var currentListViewSelectedItems = listView.SelectedItems.Cast<FiltersModel>();
-        var genresSelectedItems = GenreFiltering.SelectedItems.Cast<GenreFiltersModel>();
-
-        await ViewModel.LoadMediaAsync(
-            genresSelectedItems.Any() ? [.. genresSelectedItems.Select(x => x.Id).Cast<Guid?>()] : null,
-            currentListViewSelectedItems.Any() ? [.. currentListViewSelectedItems.Select(x => x.Filter)] : null);
+        ViewModel.FilteringFilters[index].IsSelected = !ViewModel.FilteringFilters[index].IsSelected;
     }
 
     private void GenreFiltering_ItemClick(object sender, ItemClickEventArgs e)
     {
-        Filters.IsOpen = false;
-    }
+        var genreFiltersModel = (GenreFiltersModel)e.ClickedItem;
+        var index = ViewModel.GenresFilterList.IndexOf(genreFiltersModel);
 
-    private async void GenreFiltering_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        ViewModel.FilterReset();
-
-        var listView = (ListView)sender;
-        var currentListViewSelectedItems = listView.SelectedItems.Cast<GenreFiltersModel>();
-        var itemFiltersSelectedItems = FiltersFiltering.SelectedItems.Cast<FiltersModel>();
-
-        await ViewModel.LoadMediaAsync(
-            currentListViewSelectedItems.Any() ? currentListViewSelectedItems.Select(x => x.Id).Cast<Guid?>().ToArray() : null,
-            itemFiltersSelectedItems.Any() ? itemFiltersSelectedItems.Select(x => x.Filter).ToArray() : null);
+        ViewModel.GenresFilterList[index].IsSelected = !ViewModel.GenresFilterList[index].IsSelected;
     }
 
     private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
@@ -168,8 +118,8 @@ internal sealed partial class MediaListPage : Page
         child.Visibility = Visibility.Collapsed;
     }
 
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
     {
-        await ViewModel.InitialLoadAsync(id);
+        ViewModel.RefreshCommand.Execute(null);
     }
 }

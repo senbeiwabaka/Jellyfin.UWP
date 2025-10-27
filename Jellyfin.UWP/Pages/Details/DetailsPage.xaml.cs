@@ -30,7 +30,7 @@ public sealed partial class DetailsPage : Page
         {
             var selected = ViewModel.SelectedAudioStream;
 
-            detailsItemPlayRecord.SelectedAudioIndex = selected.MediaSourceIndex;
+            detailsItemPlayRecord.SelectedAudioIndex = selected.MediaListIndex;
             detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selected.MediaStreamIndex;
         }
 

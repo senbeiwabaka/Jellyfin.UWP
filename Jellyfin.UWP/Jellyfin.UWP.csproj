@@ -17,6 +17,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 		<NuGetAuditMode>all</NuGetAuditMode>
+		<SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
 		<IsAotCompatible>True</IsAotCompatible>
