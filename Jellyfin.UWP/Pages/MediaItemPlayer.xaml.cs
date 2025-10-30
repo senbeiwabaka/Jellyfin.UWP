@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.MessagingModels;
@@ -275,7 +274,7 @@ internal sealed partial class MediaItemPlayer : Page
         else
         {
             var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
-            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.FindName("AudioAppBarButton");
+            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
             audioAppBarButton.IsEnabled = false;
             audioAppBarButton.Visibility = Visibility.Collapsed;
@@ -291,8 +290,7 @@ internal sealed partial class MediaItemPlayer : Page
             var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
             var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
-            audioAppBarButton.IsEnabled = false;
-            audioAppBarButton.Visibility = Visibility.Collapsed;
+            mediaControlsCommandBar.PrimaryCommands.Remove(audioAppBarButton);
         }
     }
 }
