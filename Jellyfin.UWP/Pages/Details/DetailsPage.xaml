@@ -60,7 +60,7 @@
 
             <Image Source="{x:Bind ViewModel.ImageUrl, Mode=OneWay}" Grid.Column="0" />
 
-            <ScrollViewer Grid.Column="1">
+            <ScrollViewer Grid.Column="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
                     <TextBlock Text="DETAILS" Visibility="{x:Bind ViewModel.IsInDebug, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
@@ -200,14 +200,18 @@
                                 <TextBlock Text="{x:Bind ViewModel.Director, Mode=OneWay}" TextWrapping="WrapWholeWords" />
                             </StackPanel>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{x:Bind ViewModel.IsMovie, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <TextBlock Text="Writor" Width="93" />
-                                <TextBlock Text="{x:Bind ViewModel.Writer, Mode=OneWay}" TextWrapping="WrapWholeWords" />
-                            </StackPanel>
+                            <Grid Margin="0,0,0,7" Visibility="{x:Bind ViewModel.IsMovie, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="93" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Writor" Grid.Column="0" />
+                                <TextBlock Text="{x:Bind ViewModel.Writer, Mode=OneWay}" TextWrapping="Wrap" Grid.Column="1" />
+                            </Grid>
                         </StackPanel>
 
                         <StackPanel>
-                            <TextBlock Text="Cast &amp; Crew" />
+                            <TextBlock Text="Cast &amp; Crew" FontSize="22" />
 
                             <ListView
                                 ScrollViewer.VerticalScrollBarVisibility="Disabled"
@@ -215,7 +219,9 @@
                                 ScrollViewer.HorizontalScrollMode="Enabled"
                                 ScrollViewer.VerticalScrollMode="Disabled"
                                 ItemsSource="{x:Bind ViewModel.CastAndCrew, Mode=OneWay}"
-                                IsItemClickEnabled="False">
+                                IsItemClickEnabled="False"
+                                IsTapEnabled="False"
+                                SelectionMode="None">
                                 <ListView.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <StackPanel Background="Transparent" Orientation="Horizontal" />
@@ -225,8 +231,8 @@
                                     <DataTemplate x:DataType="m:UIPersonItem">
                                         <StackPanel Width="204" Height="360">
                                             <Image Source="{x:Bind ImageUrl}" Width="186" />
-                                            <TextBlock Text="{x:Bind Name}" FontSize="15" />
-                                            <TextBlock Text="{x:Bind Role}" FontSize="12" />
+                                            <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" />
+                                            <TextBlock Text="{x:Bind Role}" FontSize="12" HorizontalAlignment="Center" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
