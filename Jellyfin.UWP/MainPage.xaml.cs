@@ -268,7 +268,7 @@ internal sealed partial class MainPage : Page
 
             listView.UpdateLayout();
 
-            var nextButton = (Button)button.FindParent<StackPanel>().Children[1];
+            var nextButton = (Button)button.FindParent<StackPanel>()!.Children[1];
 
             nextButton.IsEnabled = true;
         }
@@ -277,11 +277,11 @@ internal sealed partial class MainPage : Page
     private void ScrollRight_Click(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
-        var listView = button.FindParent<StackPanel>().FindParent<Grid>().FindParent<StackPanel>().FindChild<ListView>();
+        var listView = button.FindParent<StackPanel>()!.FindParent<Grid>()!.FindParent<StackPanel>()!.FindChild<ListView>();
         var itemsPanelChildren = listView.ItemsPanelRoot.Children;
         var maxItemWidth = itemsPanelChildren.Max(x => x.ActualSize.X);
 
-        ScrollViewer scrollViewer = listView.FindVisualChild<ScrollViewer>();
+        var scrollViewer = listView.FindVisualChild<ScrollViewer>();
         if (scrollViewer != null)
         {
             var viewportWidth = scrollViewer.ViewportWidth;
@@ -318,7 +318,7 @@ internal sealed partial class MainPage : Page
 
             listView.UpdateLayout();
 
-            var previousButton = (Button)button.FindParent<StackPanel>().Children[0];
+            var previousButton = (Button)button.FindParent<StackPanel>()!.Children[0];
 
             previousButton.IsEnabled = true;
         }

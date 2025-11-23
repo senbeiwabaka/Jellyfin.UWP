@@ -74,9 +74,9 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
                     Year = x.ProductionYear?.ToString() ?? "N/A",
                     UserData = new UIUserData
                     {
-                        IsFavorite = x.UserData.IsFavorite.Value,
+                        IsFavorite = x.UserData.IsFavorite ?? false,
                         UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
-                        HasBeenWatched = x.UserData.Played.Value,
+                        HasBeenWatched = x.UserData.Played ?? false,
                     },
                     Type = x.Type.Value,
                 };

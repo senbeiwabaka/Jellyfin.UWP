@@ -9,7 +9,7 @@ using WinRT;
 
 namespace Jellyfin.UWP.ViewModels;
 
-[GeneratedBindableCustomProperty]
+//[GeneratedBindableCustomProperty]
 public partial class SetupViewModel : ObservableValidator
 {
     public delegate void EventHandler();

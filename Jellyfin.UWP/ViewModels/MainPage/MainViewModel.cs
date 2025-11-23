@@ -13,7 +13,7 @@ using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage;
 
-internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavoritesViewModel favoritesViewModel, IMemoryCache memoryCache, JellyfinApiClient apiClient) : ObservableObject
+internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavoritesViewModel favoritesViewModel, IMemoryCache memoryCache) : ObservableObject
 {
     [ObservableProperty]
     public partial ObservableCollection<UIMainPageListItem> FavoriteEpisodesList { get; set; }
