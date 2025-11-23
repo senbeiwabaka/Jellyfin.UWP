@@ -2,7 +2,7 @@
 
 public sealed class UIMediaListItemSeries : UIMediaListItem
 {
-    public string SeriesName { get; internal set; } = default!;
+    public string? SeriesName { get; internal set; }
 
     public string Description { get; internal set; } = default!;
 }

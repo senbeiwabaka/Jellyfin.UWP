@@ -67,14 +67,7 @@ public sealed partial class App : Application
     /// <inheritdoc/>
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
-        var uniqueDeviceId = ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]?.ToString();
-
-        if (string.IsNullOrWhiteSpace(uniqueDeviceId))
-        {
-            uniqueDeviceId = Guid.NewGuid().ToString();
-        }
-
-        ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"] = uniqueDeviceId;
+        var uniqueDeviceId = UniqueDeviceIdSetup();
 
         Ioc.Default.ConfigureServices(new ServiceCollection()
            .AddMemoryCache()
@@ -99,15 +92,14 @@ public sealed partial class App : Application
 
                 try
                 {
-                    var systemInfo = await apiClient.System.Info.Public
-                        .GetAsync();
+                    var systemInfo = (await apiClient.System.Info.Public.GetAsync())!;
 
                     resetJellyfinUrl = false;
 
                     memoryCache.Set(JellyfinConstants.HostUrlName, jellyfinUrl);
                     memoryCache.Set(JellyfinConstants.ServerVersionName, systemInfo.Version);
 
-                    Log.Debug("Server Version: {0}", systemInfo.Version);
+                    Log.Debug("Server Version: {0}", systemInfo.Version ?? "N/A");
                 }
                 catch (Exception ex)
                 {
@@ -137,7 +129,7 @@ public sealed partial class App : Application
                     settings.SetAccessToken(accessToken);
 
                     var user = await apiClient.Users.Me.GetAsync();
-                    var session = JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession);
+                    var session = JsonSerializer.Deserialize<SessionInfoDto>(localSettingsSession!);
 
                     memoryCache.Set(JellyfinConstants.UserName, user);
                     memoryCache.Set(JellyfinConstants.SessionName, session);
@@ -204,6 +196,20 @@ public sealed partial class App : Application
             // Ensure the current window is active
             Window.Current.Activate();
         }
+    }
+
+    private static string UniqueDeviceIdSetup()
+    {
+        var uniqueDeviceId = ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]?.ToString();
+
+        if (string.IsNullOrWhiteSpace(uniqueDeviceId))
+        {
+            uniqueDeviceId = Guid.NewGuid().ToString();
+        }
+
+        ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"] = uniqueDeviceId;
+
+        return uniqueDeviceId;
     }
 
     private static void CleanupValues(JellyfinSdkSettings settings)

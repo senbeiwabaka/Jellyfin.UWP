@@ -24,8 +24,6 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 {
     private readonly ILogger Log = LoggerFactory.GetLogger(nameof(MediaItemPlayerViewModel));
 
-    
-
     private readonly Dictionary<TimedTextSource, string> ttsMap = [];
 
     private readonly ReadOnlyDictionary<string, string> unSupportedAudioCodecs = new(new Dictionary<string, string>
@@ -41,6 +39,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
     public delegate void EventHandler();
 
     public event EventHandler? DataIsLoaded;
+
     public event EventHandler? PlayingStarted;
 
     [ObservableProperty]
@@ -90,7 +89,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
     public async Task SessionProgressAsync(long position, bool isPaused, CancellationToken cancellationToken = default)
     {
-        var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName);
+        var session = memoryCache.Get<SessionInfoDto>(JellyfinConstants.SessionName)!;
         var playbackProgressInfo = new PlaybackProgressInfo
         {
             SessionId = session.Id,
@@ -118,6 +117,53 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
                 SessionId = session.Id,
                 PlaySessionId = playbackSessionId,
             }, cancellationToken: cancellationToken);
+    }
+
+    private static async Task<bool> IsTranscodingNeededBecauseOfVideo(IReadOnlyList<MediaStream> mediaStreams)
+    {
+        // If it is H264 10 bit then we transcode it
+        if (mediaStreams.Any(x =>
+            x.Type == MediaStream_Type.Video &&
+                x.BitDepth == 10 &&
+                string.Equals("H264", x.Codec, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            return true;
+        }
+
+        var codecQuery = new CodecQuery();
+        var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStream_Type.Video).Codec;
+        var videoCodecsInstalled = new List<CodecInfo>();
+
+        if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
+        {
+            var h265 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H265"))
+                .Select(x => x).ToArray();
+            var h264 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H264"))
+                .Select(x => x).ToArray();
+            var hevc = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "HEVC"))
+                .Select(x => x).ToArray();
+
+            videoCodecsInstalled.AddRange(h265);
+            videoCodecsInstalled.AddRange(h264);
+            videoCodecsInstalled.AddRange(hevc);
+        }
+        else
+        {
+            var codecs = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, string.Empty))
+                .Select(x => x).ToArray();
+
+            videoCodecsInstalled.AddRange(codecs);
+        }
+
+        if (MediaPlayerHelpers.SupportedVideoCodecs.Keys.Any(x => string.Equals(x, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)))
+        {
+            var videoCodecId = MediaPlayerHelpers.SupportedVideoCodecs.Single(x => string.Equals(x.Key, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)).Value;
+
+            // Check to make sure the codec actually is there to use
+            return !videoCodecsInstalled.Exists(x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
+        }
+
+        return true;
     }
 
     [RelayCommand]
@@ -148,7 +194,6 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
                 options.QueryParameters.AlwaysBurnInSubtitleWhenTranscoding = false;
             });
 
-        //var uri = video.URI;
         return apiClient.BuildUri(video);
     }
 
@@ -187,8 +232,8 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
     private async Task GetPlaybackInfo(double playerWidth, double playerHeight, CancellationToken cancellationToken = default)
     {
-        var session = (await apiClient.Sessions.GetAsync(options => options.QueryParameters.DeviceId = JellyfinConstants.DeviceId, cancellationToken))
-            .FirstOrDefault();
+        var sessions = await apiClient.Sessions.GetAsync(options => options.QueryParameters.DeviceId = JellyfinConstants.DeviceId, cancellationToken);
+        var session = sessions?.FirstOrDefault();
 
         string? transcodingVideoCodec = null;
         string? transcodingAudioCodec = null;
@@ -200,13 +245,13 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
         if (session is not null && session.TranscodingInfo is not null)
         {
-            transcodingVideoCodec = session.TranscodingInfo.VideoCodec.ToUpper();
-            transcodingAudioCodec = session.TranscodingInfo.AudioCodec.ToUpper();
+            transcodingVideoCodec = session.TranscodingInfo.VideoCodec?.ToUpper();
+            transcodingAudioCodec = session.TranscodingInfo.AudioCodec?.ToUpper();
             transcodingAudioChannels = session.TranscodingInfo.AudioChannels?.ToString();
             transcodingBitrate = session.TranscodingInfo.Bitrate.HasValue ? $"{session.TranscodingInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A";
             transcodingCompletion = $"{session.TranscodingInfo.CompletionPercentage?.ToString("#.#")}%";
             transcodingFramerate = $"{session.TranscodingInfo.Framerate} fps";
-            transcodingReason = string.Join(",", session.TranscodingInfo?.TranscodeReasons);
+            transcodingReason = string.Join(",", session.TranscodingInfo.TranscodeReasons ?? []);
         }
 
         var videoMediaStream = Item.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
@@ -243,12 +288,12 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
             Container = Item.MediaSources[0].Container,
             Size = Item.MediaSources[0].Size.HasValue ? $"{Item.MediaSources[0].Size.Value / 1073741824m:#.#} GiB" : "N/A",
             Bitrate = Item.MediaSources[0].Bitrate.HasValue ? $"{Item.MediaSources[0].Bitrate.Value / 1000000m:#.#} Mbps" : "N/A",
-            VideoCodec = $"{videoMediaStream.Codec.ToUpper()} {videoMediaStream.Profile}",
+            VideoCodec = $"{videoMediaStream.Codec?.ToUpper()} {videoMediaStream.Profile}",
             VideoBitrate = videoMediaStream.BitRate.HasValue ? $"{videoMediaStream.BitRate.Value / 1000000m:#.#} Mbps" : "N/A",
             VideoRangeType = videoMediaStream.VideoRangeType?.ToString(),
-            AudioCodec = $"{audioMediaStream.Codec.ToUpper()} {audioMediaStream.Profile}",
+            AudioCodec = $"{audioMediaStream.Codec?.ToUpper()} {audioMediaStream.Profile}",
             AudioBitrate = audioMediaStream.BitRate.HasValue ? $"{audioMediaStream.BitRate.Value / 1000:#} kbps" : "N/A",
-            AudioChannels = audioMediaStream.Channels.HasValue ? audioMediaStream.Channels.ToString() : "N/A",
+            AudioChannels = audioMediaStream.Channels?.ToString() ?? "N/A",
             AudioSampleRate = audioMediaStream.SampleRate.HasValue ? $"{audioMediaStream.SampleRate} Hz" : "N/A",
         };
     }
@@ -328,53 +373,6 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
         return true;
     }
 
-    private async Task<bool> IsTranscodingNeededBecauseOfVideo(IReadOnlyList<MediaStream> mediaStreams)
-    {
-        // If it is H264 10 bit then we transcode it
-        if (mediaStreams.Any(x =>
-            x.Type == MediaStream_Type.Video &&
-                x.BitDepth == 10 &&
-                string.Equals("H264", x.Codec, StringComparison.CurrentCultureIgnoreCase)))
-        {
-            return true;
-        }
-
-        var codecQuery = new CodecQuery();
-        var selectedVideoCodec = mediaStreams.First(x => x.Type == MediaStream_Type.Video).Codec;
-        var videoCodecsInstalled = new List<CodecInfo>();
-
-        if (Windows.System.Profile.AnalyticsInfo.VersionInfo.DeviceFamily == "Windows.Xbox")
-        {
-            var h265 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H265"))
-                .Select(x => x).ToArray();
-            var h264 = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "H264"))
-                .Select(x => x).ToArray();
-            var hevc = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, "HEVC"))
-                .Select(x => x).ToArray();
-
-            videoCodecsInstalled.AddRange(h265);
-            videoCodecsInstalled.AddRange(h264);
-            videoCodecsInstalled.AddRange(hevc);
-        }
-        else
-        {
-            var codecs = (await codecQuery.FindAllAsync(CodecKind.Video, CodecCategory.Decoder, string.Empty))
-                .Select(x => x).ToArray();
-
-            videoCodecsInstalled.AddRange(codecs);
-        }
-
-        if (MediaPlayerHelpers.SupportedVideoCodecs.Keys.Any(x => string.Equals(x, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)))
-        {
-            var videoCodecId = MediaPlayerHelpers.SupportedVideoCodecs.Single(x => string.Equals(x.Key, selectedVideoCodec, StringComparison.OrdinalIgnoreCase)).Value;
-
-            // Check to make sure the codec actually is there to use
-            return !videoCodecsInstalled.Exists(x => x.Subtypes.Any(y => y.Equals(videoCodecId, StringComparison.InvariantCultureIgnoreCase)));
-        }
-
-        return true;
-    }
-
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task LoadMediaItemAsync(DetailsItemPlayRecord detailsItemPlayRecord, CancellationToken cancellationToken = default)
     {
@@ -409,8 +407,6 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
         }
 
         SelectedAudio = AudioList.Single(x => x.IsSelected);
-
-        //await SetupMediaPlayer(cancellationToken);
 
         DataIsLoaded?.Invoke();
     }

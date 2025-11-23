@@ -33,7 +33,7 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
     public partial ObservableCollection<UIMediaListItem> MovieMediaList { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<UIMediaListItem> SeriesMediaList { get; set; }
+    public partial ObservableCollection<UIMediaListItemSeries> SeriesMediaList { get; set; }
 
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task LoadSearchAsync(string query, CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,
                             HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
                         },
                     }));
 
@@ -85,24 +85,25 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                 options.QueryParameters.IncludeItemTypes = [BaseItemKind.Series];
             }, cancellationToken);
 
-        SeriesMediaList = new ObservableCollection<UIMediaListItem>(
+        SeriesMediaList = new ObservableCollection<UIMediaListItemSeries>(
             seriesItemsResult
                 .Items
                 .Select(x =>
                 {
-                    var item = new UIMediaListItem
+                    var item = new UIMediaListItemSeries
                     {
                         Id = x.Id.Value,
                         Name = x.Name,
                         Url = mediaHelpers.SetImageUrl(x, "330", "220", JellyfinConstants.PrimaryName),
                         IsFolder = x.IsFolder.HasValue && x.IsFolder.Value,
-                        CollectionType = BaseItemDto_CollectionType.Tvshows,
+                        CollectionType = x.CollectionType,
                         Type = x.Type.Value,
+                        SeriesName = x.SeriesName,
                         UserData = new UIUserData
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,
                             HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
                         },
                     };
 
@@ -138,7 +139,7 @@ internal sealed partial class SearchViewModel(IMemoryCache memoryCache, Jellyfin
                         {
                             IsFavorite = x.UserData.IsFavorite.Value,
                             HasBeenWatched = x.UserData.Played.Value,
-                            UnplayedItemCount = x.UserData.UnplayedItemCount,
+                            UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
                         },
                     }));
 

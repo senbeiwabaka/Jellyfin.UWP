@@ -110,11 +110,11 @@
                                 </ItemsPanelTemplate>
                             </ListView.ItemsPanel>
                             <ListView.ItemTemplate>
-                                <DataTemplate x:DataType="m:UIMediaListItem">
+                                <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                     <StackPanel Width="220" Margin="0,10">
                                         <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
                                             <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched, Mode=OneWay}" />
-                                            <uc:CountControl PositionLeft="180" PositionTop="5" UserData="{x:Bind UserData, Mode=OneWay}" />
+                                            <uc:CountControl PositionLeft="190" PositionTop="10" UserData="{x:Bind UserData, Mode=OneWay}" />
                                             <uc:PlayButtonControl PositionLeft="90" PositionTop="142" />
                                             <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="290" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 

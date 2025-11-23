@@ -1,16 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
-using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.Details;
 
@@ -50,7 +50,7 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
     public partial UIMediaStream SelectedSubtitleStream { get; set; }
 
     [ObservableProperty]
-    public partial UIMediaStreamVideo SelectedVideoStream { get; set; }
+    public partial UIMediaStreamVideo? SelectedVideoStream { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaStream> SubtitleStreams { get; set; }
@@ -65,14 +65,14 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
     {
         await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
 
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
+        await LoadMediaInformationAsync(MediaItem.Id.Value, cancellationToken);
     }
 
     internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
     {
         await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
 
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
+        await LoadMediaInformationAsync(MediaItem.Id.Value, cancellationToken);
     }
 
     protected virtual Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
@@ -151,8 +151,14 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
 
     private void SetAudioStreams(List<MediaStream> mediaStreams)
     {
-        var mediaSourceIndex = MediaItem.MediaSources.IndexOf(MediaItem.MediaSources.Single(x => x.Id == SelectedVideoStream.VideoId));
+        var mediaSourceIndex = 0;
         var medialistIndex = 0;
+
+        if (SelectedVideoStream is not null)
+        {
+            mediaSourceIndex = MediaItem.MediaSources!.IndexOf(MediaItem.MediaSources.Single(x => x.Id == SelectedVideoStream.VideoId));
+        }
+
         AudioStreams = new ObservableCollection<UIMediaStream>(mediaStreams
             .Where(x => x.Type == MediaStream_Type.Audio)
             .Select(x => new UIMediaStream
@@ -169,23 +175,24 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
 
     private void SetSubtitleStreams(List<MediaStream> mediaStreams)
     {
-        HasSubtitle = mediaStreams?.Any(x => x.Type == MediaStream_Type.Subtitle) ?? false;
+        var mediaSourceIndex = 0;
 
-        if (HasSubtitle)
+        if (SelectedVideoStream is not null)
         {
-            var mediaSourceIndex = MediaItem.MediaSources.IndexOf(MediaItem.MediaSources.Single(x => x.Id == SelectedVideoStream.VideoId));
-            SubtitleStreams = new ObservableCollection<UIMediaStream>(mediaStreams
-                .Where(x => x.Type == MediaStream_Type.Subtitle)
-                .Select(x => new UIMediaStream
-                {
-                    MediaSourceIndex = mediaSourceIndex,
-                    IsSelected = x.IsDefault ?? false,
-                    Title = x.DisplayTitle ?? "No Title Found",
-                    MediaStreamIndex = x.Index ?? default,
-                }));
-
-            SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams[0];
+            mediaSourceIndex = MediaItem.MediaSources!.IndexOf(MediaItem.MediaSources.Single(x => x.Id == SelectedVideoStream.VideoId));
         }
+
+        SubtitleStreams = new ObservableCollection<UIMediaStream>(mediaStreams
+            .Where(x => x.Type == MediaStream_Type.Subtitle)
+            .Select(x => new UIMediaStream
+            {
+                MediaSourceIndex = mediaSourceIndex,
+                IsSelected = x.IsDefault ?? false,
+                Title = x.DisplayTitle ?? "No Title Found",
+                MediaStreamIndex = x.Index ?? default,
+            }));
+
+        SelectedSubtitleStream = SubtitleStreams.SingleOrDefault(x => x.IsSelected) ?? SubtitleStreams[0];
     }
 
     private void SetVideoStreams()
@@ -202,7 +209,5 @@ internal partial class MediaDetailsViewModel(IMemoryCache memoryCache, JellyfinA
             })];
 
         VideoStreams[0].IsSelected = true;
-
-        SelectedVideoStream = VideoStreams.Single(x => x.IsSelected);
     }
 }

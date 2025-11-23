@@ -7,6 +7,7 @@ using MetroLog;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -25,7 +26,7 @@ internal sealed partial class LoginViewModel(IMemoryCache memoryCache, JellyfinA
 
     public delegate void EventHandler();
 
-    public event EventHandler SuccessfullyLoggedIn;
+    public event EventHandler? SuccessfullyLoggedIn;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
@@ -45,6 +46,7 @@ internal sealed partial class LoginViewModel(IMemoryCache memoryCache, JellyfinA
     }
 
     [RelayCommand(AllowConcurrentExecutions = false, CanExecute = nameof(CanLogIn), IncludeCancelCommand = true)]
+    [RequiresUnreferencedCode("Calls CommunityToolkit.Mvvm.ComponentModel.ObservableValidator.ValidateAllProperties()")]
     private async Task LoginAsync(CancellationToken token)
     {
         try

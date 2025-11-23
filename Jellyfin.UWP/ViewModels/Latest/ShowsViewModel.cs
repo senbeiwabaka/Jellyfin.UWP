@@ -104,7 +104,7 @@ internal sealed partial class ShowsViewModel(IMemoryCache memoryCache, JellyfinA
                 UserData = new UIUserData
                 {
                     IsFavorite = x.UserData.IsFavorite.Value,
-                    UnplayedItemCount = x.UserData.UnplayedItemCount,
+                    UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
                     HasBeenWatched = x.UserData.Played.Value,
                 },
             };

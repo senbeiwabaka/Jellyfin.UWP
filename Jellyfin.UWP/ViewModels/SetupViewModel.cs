@@ -1,7 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Jellyfin.UWP.Helpers;
 using Windows.Storage;
 using WinRT;
@@ -15,8 +16,6 @@ public partial class SetupViewModel : ObservableValidator
 
     public event EventHandler? SuccessfullySetUrl;
 
-    public IRelayCommand CompleteCommand => field ??= new RelayCommand(Complete, CanGoToLoginPage);
-
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CompleteCommand))]
     [Required(AllowEmptyStrings = false)]
@@ -28,6 +27,8 @@ public partial class SetupViewModel : ObservableValidator
         return !string.IsNullOrWhiteSpace(JellyfinUrl) && Uri.IsWellFormedUriString(JellyfinUrl, UriKind.Absolute);
     }
 
+    [RelayCommand(CanExecute = nameof(CanGoToLoginPage))]
+    [RequiresUnreferencedCode("Calls CommunityToolkit.Mvvm.ComponentModel.ObservableValidator.ValidateAllProperties()")]
     private void Complete()
     {
         ValidateAllProperties();

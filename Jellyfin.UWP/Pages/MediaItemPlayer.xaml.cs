@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -7,9 +10,6 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Windows.Media.Playback;
 using Windows.System.Display;
 using Windows.UI.Core;
@@ -219,13 +219,6 @@ internal sealed partial class MediaItemPlayer : Page
     private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
     {
         Log.Debug("Media has ended playback");
-
-        //await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
-        //          CoreDispatcherPriority.Normal,
-        //              () =>
-        //              {
-        //                  dispatcherTimer.Stop();
-        //              });
 
         dispatcherTimer.Stop();
 

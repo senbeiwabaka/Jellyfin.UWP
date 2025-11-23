@@ -6,7 +6,7 @@ namespace Jellyfin.UWP.Controls;
 
 internal sealed partial class CountControl : UserControl
 {
-    public static readonly DependencyProperty ItemProperty =
+    public static readonly DependencyProperty UserDataProperty =
         DependencyProperty.Register(
             nameof(UserData),
             typeof(UIUserData),
@@ -34,8 +34,8 @@ internal sealed partial class CountControl : UserControl
 
     public UIUserData UserData
     {
-        get { return (UIUserData)GetValue(ItemProperty); }
-        set { SetValue(ItemProperty, value); }
+        get { return (UIUserData)GetValue(UserDataProperty); }
+        set { SetValue(UserDataProperty, value); }
     }
 
     public string PositionLeft

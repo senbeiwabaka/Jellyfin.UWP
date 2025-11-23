@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.ViewModels;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -68,7 +68,20 @@ public sealed partial class SearchPage : Page
             memoryCache.Set<string>("Searched-Text", text);
         }
 
-        Frame.Navigate(typeof(DetailsPage), ((UIMediaListItem)e.ClickedItem).Id);
+        var item = (UIMediaListItem)e.ClickedItem;
+
+        if (item.Type == Sdk.Generated.Models.BaseItemDto_Type.Movie)
+        {
+            Frame.Navigate(typeof(DetailsPage), item.Id);
+        }
+        else if (item.Type == Sdk.Generated.Models.BaseItemDto_Type.Episode)
+        {
+            Frame.Navigate(typeof(EpisodePage), item.Id);
+        }
+        else
+        {
+            Frame.Navigate(typeof(SeriesPage), item.Id);
+        }
     }
 
     private void SearchPage_Loaded(object sender, RoutedEventArgs e)

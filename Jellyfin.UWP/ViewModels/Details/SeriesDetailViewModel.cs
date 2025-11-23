@@ -91,7 +91,7 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
                     UserData = new UIUserData
                     {
                         IsFavorite = x.UserData.IsFavorite.Value,
-                        UnplayedItemCount = x.UserData.UnplayedItemCount,
+                        UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
                         HasBeenWatched = x.UserData.Played.Value,
                     },
                     CollectionType = x.CollectionType,
