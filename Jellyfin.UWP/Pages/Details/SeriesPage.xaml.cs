@@ -58,11 +58,6 @@ internal sealed partial class SeriesPage : Page
         Frame.Navigate(typeof(SeriesPage), ((UIMediaListItem)e.ClickedItem).Id);
     }
 
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.LoadMediaInformationAsync(id);
-    }
-
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         var panel = (StackPanel)sender;
@@ -87,5 +82,10 @@ internal sealed partial class SeriesPage : Page
         var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
+    }
+
+    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.LoadMediaInformationAsync(id);
     }
 }

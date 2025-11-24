@@ -1,11 +1,17 @@
-﻿namespace Jellyfin.UWP.Models
+﻿using Jellyfin.Sdk.Generated.Models;
+using System;
+
+namespace Jellyfin.UWP.Models;
+
+internal sealed class UIPersonItem
 {
-    public sealed class UIPersonItem : UIItem
-    {
-        public string Name { get; internal set; }
+    public Guid Id { get; internal set; }
 
-        public string ImageUrl { get; internal set; }
+    public required BaseItemPerson_Type Type { get; set; }
 
-        public string Role { get; internal set; }
-    }
+    public string Name { get; internal set; } = default!;
+
+    public string ImageUrl { get; internal set; } = default!;
+
+    public string Role { get; internal set; } = default!;
 }

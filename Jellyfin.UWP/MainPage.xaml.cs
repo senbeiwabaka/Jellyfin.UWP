@@ -130,7 +130,7 @@ internal sealed partial class MainPage : Page
                 Name = $"listview_{item.Key.Name}",
             };
 
-            if (item[0].CollectionType == BaseItemDto_CollectionType.Tvshows)
+            if (item[0].Type == BaseItemDto_Type.Series)
             {
                 listView.ItemTemplate = (DataTemplate)Resources["UISeriesMediaListItemDataTemplate"];
             }
@@ -196,7 +196,6 @@ internal sealed partial class MainPage : Page
             ViewModel.HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
             ViewModel.HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
             ViewModel.HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
-            ViewModel.HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
         }
     }
 
@@ -222,7 +221,6 @@ internal sealed partial class MainPage : Page
         ViewModel.HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
         ViewModel.HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
         ViewModel.HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
-        ViewModel.HasEnoughDataToScrollPeopleFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoritePeople);
     }
 
     private void btn_Home_Click(object sender, RoutedEventArgs e)

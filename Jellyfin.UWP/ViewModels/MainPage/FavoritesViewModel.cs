@@ -1,13 +1,13 @@
-﻿using Jellyfin.Sdk;
-using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.MainPage;
 
@@ -103,32 +103,6 @@ internal sealed class FavoritesViewModel : IFavoritesViewModel
 
                     return item;
                 }));
-
-        return items;
-    }
-
-    public async Task<ObservableCollection<UIPersonItem>> GetPeopleAsync(CancellationToken cancellationToken = default)
-    {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var result = await apiClient.Persons
-            .GetAsync(options =>
-            {
-                options.QueryParameters.Limit = 20;
-                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
-                options.QueryParameters.IsFavorite = true;
-                options.QueryParameters.UserId = user.Id;
-            }, cancellationToken: cancellationToken);
-
-        var items = new ObservableCollection<UIPersonItem>(
-            result.Items
-                .Select(x =>
-                    new UIPersonItem
-                    {
-                        Id = x.Id.Value,
-                        Name = x.Name,
-                        ImageUrl = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
-                        Type = x.Type.Value
-                    }));
 
         return items;
     }

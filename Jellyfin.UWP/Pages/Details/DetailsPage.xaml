@@ -49,11 +49,11 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Grid 
-                Grid.ColumnSpan="2" 
-                Canvas.ZIndex="5" 
-                Background="Gray" 
-                Opacity=".8" 
+            <Grid
+                Grid.ColumnSpan="2"
+                Canvas.ZIndex="5"
+                Background="Gray"
+                Opacity=".8"
                 Visibility="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <muxc:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" IsActive="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay}" />
             </Grid>
@@ -155,7 +155,7 @@
                             <TextBlock Text="Video" Width="93" VerticalAlignment="Center" />
                             <TextBlock Text="{x:Bind ViewModel.VideoType, Mode=OneWay}" VerticalAlignment="Center" />
                         </StackPanel>
-                        
+
                         <StackPanel Orientation="Horizontal" Height="32">
                             <TextBlock Text="Audio" Width="93" VerticalAlignment="Center" />
                             <TextBlock
@@ -169,9 +169,9 @@
                                 SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
                             </ComboBox>
                         </StackPanel>
-                        
+
                         <StackPanel
-                            Orientation="Horizontal" 
+                            Orientation="Horizontal"
                             Visibility="{x:Bind ViewModel.HasSubtitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                             Margin="0, 10, 0, 0">
                             <TextBlock Text="Subtitle" Width="93" VerticalAlignment="Center" />
@@ -258,13 +258,19 @@
                                 </ListView.ItemsPanel>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
-                                        <StackPanel Width="220" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <uc:ViewedIconControl PositionLeft="195" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                                            <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                                            <uc:ViewedFavoriteButtonControl PositionLeft="135" PositionTop="300" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
-                                            <uc:CountControl PositionLeft="195" PositionTop="5" UserData="{x:Bind UserData, Mode=OneWay}" />
+                                        <StackPanel Width="220" Margin="0,10">
+                                            <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
+                                                <uc:ViewedIconControl PositionLeft="190" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                                <uc:CountControl PositionLeft="190" PositionTop="10" UserData="{x:Bind UserData, Mode=OneWay}" />
+                                                <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
+                                                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
-                                            <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="-1" Stretch="Fill" />
+                                                <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
+
+                                                <Canvas Visibility="Collapsed">
+                                                    <StackPanel Height="330" Width="220" Canvas.Top="-330" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
+                                                </Canvas>
+                                            </StackPanel>
 
                                             <TextBlock Text="{x:Bind Name}" FontSize="15" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <TextBlock Text="{x:Bind Year}" FontSize="12" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.Collections;
+﻿using CommunityToolkit.Mvvm.Collections;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.MainPage;
 
@@ -20,9 +19,6 @@ internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavor
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> FavoriteMoviesList { get; set; }
-
-    [ObservableProperty]
-    public partial ObservableCollection<UIPersonItem> FavoritePersonList { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> FavoriteSeriesList { get; set; }
@@ -38,9 +34,6 @@ internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavor
 
     [ObservableProperty]
     public partial bool HasEnoughDataToScrollNextUp { get; set; }
-
-    [ObservableProperty]
-    public partial bool HasEnoughDataToScrollPeopleFavorites { get; set; }
 
     [ObservableProperty]
     public partial bool HasEnoughDataToScrollShowsFavorites { get; set; }
@@ -78,7 +71,6 @@ internal sealed partial class MainViewModel(IHomeViewModel homeViewModel, IFavor
         FavoriteMoviesList = await favoritesViewModel.GetMoviesAsync(cancellationToken);
         FavoriteSeriesList = await favoritesViewModel.GetSeriesAsync(cancellationToken);
         FavoriteEpisodesList = await favoritesViewModel.GetEpisodesAsync(cancellationToken);
-        FavoritePersonList = await favoritesViewModel.GetPeopleAsync(cancellationToken);
     }
 
     public async Task HomeLoadAsync(CancellationToken cancellationToken = default)

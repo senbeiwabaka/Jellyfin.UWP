@@ -360,49 +360,6 @@
                         </ListView.ItemsPanel>
                     </ListView>
                 </StackPanel>
-
-                <StackPanel Margin="0,0,0,10">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Text="People" FontSize="40" Grid.Column="0" />
-
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right" Visibility="{x:Bind ViewModel.HasEnoughDataToScrollPeopleFavorites, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <Button Margin="0,0,10,0" Click="ScrollLeft_Click" IsEnabled="False">
-                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76B;" />
-                            </Button>
-                            <Button Click="ScrollRight_Click">
-                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE76C;" />
-                            </Button>
-                        </StackPanel>
-                    </Grid>
-
-                    <ListView
-                        x:Name="lv_FavoritePeople"
-                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                        ScrollViewer.HorizontalScrollMode="Disabled"
-                        ScrollViewer.VerticalScrollMode="Disabled"
-                        ItemsSource="{x:Bind ViewModel.FavoritePersonList, Mode=OneWay}"
-                        IsItemClickEnabled="False">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Background="Transparent" Orientation="Horizontal" HorizontalAlignment="Left" />
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate x:DataType="m:UIPersonItem">
-                                <StackPanel Width="180">
-                                    <Image Source="{x:Bind ImageUrl}" Height="270" HorizontalAlignment="Center" />
-                                    <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

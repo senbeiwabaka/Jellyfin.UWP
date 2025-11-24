@@ -21,6 +21,10 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem>? SeriesMetadata { get; set; }
 
+    [ObservableProperty]
+    public partial ObservableCollection<UIMediaListItem> SimiliarMediaList { get; set; }
+
+
     public override Task<Guid> GetPlayIdAsync()
     {
         return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray() ?? [], NextUpItem?.Id);
@@ -98,6 +102,36 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
                     IsFolder = x.IsFolder ?? false,
                     IndexNumber = x.IndexNumber.Value,
                     Type = x.Type ?? BaseItemDto_Type.AggregateFolder,
+                };
+
+                return item;
+            }));
+
+        var similiarItems = await ApiClient.Items[MediaItem.Id.Value].Similar
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.Limit = 12;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+            }, cancellationToken);
+
+        SimiliarMediaList = new ObservableCollection<UIMediaListItem>(
+            similiarItems.Items
+            .Select(x =>
+            {
+                var item = new UIMediaListItem
+                {
+                    Id = x.Id.Value,
+                    Name = x.Name,
+                    Url = MediaHelpers.SetImageUrl(x, "446", "298", JellyfinConstants.PrimaryName),// MediaHelpers.SetImageUrl(x, "446", "298", JellyfinConstants.PrimaryName),
+                    Year = x.ProductionYear?.ToString() ?? "N/A",
+                    UserData = new UIUserData
+                    {
+                        IsFavorite = x.UserData.IsFavorite ?? false,
+                        UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
+                        HasBeenWatched = x.UserData.Played ?? false,
+                    },
+                    Type = x.Type.Value,
                 };
 
                 return item;
