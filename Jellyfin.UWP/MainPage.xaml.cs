@@ -2,7 +2,9 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.WinUI;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
@@ -15,21 +17,21 @@ using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
-using CommunityToolkit.WinUI;
 
 namespace Jellyfin.UWP;
 
 internal sealed partial class MainPage : Page
 {
     private readonly IMediaHelpers mediaHelpers;
+    private readonly ILogger<MainPage> logger;
 
     public MainPage()
     {
         InitializeComponent();
 
         DataContext = Ioc.Default.GetRequiredService<MainViewModel>();
-
         mediaHelpers = Ioc.Default.GetRequiredService<IMediaHelpers>();
+        logger = Ioc.Default.GetRequiredService<ILogger<MainPage>>();
 
         var memoryCache = Ioc.Default.GetRequiredService<IMemoryCache>();
 
@@ -61,6 +63,8 @@ internal sealed partial class MainPage : Page
         lv_Latest.Children.Clear();
         lv_Latest.UpdateLayout();
 
+        logger.LogDebug("SetupLatest -> did latest control updates");
+
         foreach (var item in ViewModel.MediaListGrouped)
         {
             if (!item.Any())
@@ -80,6 +84,8 @@ internal sealed partial class MainPage : Page
                 Text = $"Recently Added in {item.Key.Name}",
                 FontSize = 40.0d,
             });
+
+            logger.LogDebug("SetupLatest -> initial stack panel: {0}", item.Key.Name);
 
             var greaterThanFontIcon = new FontIcon
             {
@@ -112,6 +118,8 @@ internal sealed partial class MainPage : Page
 
             stackPanel.Children.Add(viewAllLatestButton);
 
+            logger.LogDebug("SetupLatest -> added stack panel children");
+
             lv_Latest.Children.Add(stackPanel);
 
             var listView = new ListView
@@ -137,6 +145,8 @@ internal sealed partial class MainPage : Page
 
             listView.UpdateLayout();
 
+            logger.LogDebug("SetupLatest -> added listview");
+
             var listViewScrollViewer = listView.FindVisualChild<ScrollViewer>();
 
             listViewScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
@@ -146,6 +156,8 @@ internal sealed partial class MainPage : Page
         }
 
         lv_Latest.UpdateLayout();
+
+        logger.LogDebug("SetupLatest -> finished");
     }
 
     private void MediaClickItemList(object sender, ItemClickEventArgs e)
