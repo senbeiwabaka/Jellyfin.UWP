@@ -60,11 +60,11 @@ internal sealed partial class PlayButtonControl : UserControl
         if (item.Type == BaseItemDto_Type.Season || item.Type == BaseItemDto_Type.Series)
         {
             var playId = await mediaHelpers.GetPlayIdAsync(item);
-            detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+            detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = playId, };
         }
         else
         {
-            detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
+            detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = item.Id, };
         }
 
         ((Frame)Window.Current.Content).Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);

@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.ViewModels.Details;
 
@@ -19,15 +19,6 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
 
     [ObservableProperty]
     public partial string ExternalURLs { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsEpisode { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsMovie { get; set; }
-
-    [ObservableProperty]
-    public partial bool IsNotMovie { get; set; }
 
     [ObservableProperty]
     public partial string MediaTags { get; set; }
@@ -49,10 +40,6 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
 
         Director = string.Join(", ", MediaItem.People.Where(x => x.Type == BaseItemPerson_Type.Director).Select(x => x.Name));
         Writer = string.Join(", ", MediaItem.People.Where(x => x.Type == BaseItemPerson_Type.Writer).Select(x => x.Name));
-
-        IsMovie = MediaItem.Type == BaseItemDto_Type.Movie;
-        IsEpisode = MediaItem.Type == BaseItemDto_Type.Episode;
-        IsNotMovie = MediaItem.Type == BaseItemDto_Type.Series;
 
         var similiarItems = await ApiClient.Items[MediaItem.Id.Value].Similar
             .GetAsync(options =>
@@ -83,5 +70,7 @@ internal sealed partial class DetailsViewModel(IMemoryCache memoryCache, Jellyfi
 
                 return item;
             }));
+
+        DetailsItemPlayRecord.MediaId = MediaItem.Id!.Value;
     }
 }

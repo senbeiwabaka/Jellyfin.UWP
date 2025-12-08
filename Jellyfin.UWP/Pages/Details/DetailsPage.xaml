@@ -96,7 +96,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
+                                <Button Click="PlayClick" Margin="0,0,10,0" ToolTipService.ToolTip="Play" >
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
@@ -142,7 +142,6 @@
                             <ComboBox
                                 ItemsSource="{x:Bind ViewModel.VideoStreams, Mode=OneWay}"
                                 DisplayMemberPath="Title"
-                                SelectedValuePath="IsSelected"
                                 SelectedItem="{x:Bind ViewModel.SelectedVideoStream, Mode=TwoWay}">
                                 <interactivity:Interaction.Behaviors>
                                     <interactivity:EventTriggerBehavior EventName="SelectionChanged">
@@ -151,13 +150,14 @@
                                 </interactivity:Interaction.Behaviors>
                             </ComboBox>
                         </StackPanel>
+                        
                         <StackPanel Orientation="Horizontal" Height="32" Margin="0,0,0,4">
-                            <TextBlock Text="Video" Width="93" VerticalAlignment="Center" />
+                            <TextBlock Text="Video:" Width="93" VerticalAlignment="Center" />
                             <TextBlock Text="{x:Bind ViewModel.VideoType, Mode=OneWay}" VerticalAlignment="Center" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Height="32">
-                            <TextBlock Text="Audio" Width="93" VerticalAlignment="Center" />
+                            <TextBlock Text="Audio:" Width="93" VerticalAlignment="Center" />
                             <TextBlock
                                 Visibility="{x:Bind ViewModel.HasMultipleAudioStreams, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}"
                                 Text="{x:Bind ViewModel.AudioType, Mode=OneWay}" />
@@ -165,8 +165,12 @@
                                 Visibility="{x:Bind ViewModel.HasMultipleAudioStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                 ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
                                 DisplayMemberPath="Title"
-                                SelectedValuePath="IsSelected"
                                 SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                        <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.ChangeAudioSelectionCommand}" />
+                                    </interactivity:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
                             </ComboBox>
                         </StackPanel>
 

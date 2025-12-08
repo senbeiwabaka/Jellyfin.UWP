@@ -93,7 +93,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Click="{x:Bind PlayClick}" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
+                                <Button Click="PlayClick" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
@@ -158,7 +158,7 @@
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
                                 <TextBlock Text="Genres" Width="93" />
-                                <TextBlock Text="{x:Bind ViewModel.Genres}" />
+                                <TextBlock Text="{x:Bind ViewModel.Genres, Mode=OneWay}" />
                             </StackPanel>
                         </StackPanel>
 

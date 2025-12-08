@@ -19,16 +19,10 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
     public partial UIMediaListItem? NextUpItem { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<UIMediaListItem>? SeriesMetadata { get; set; }
+    public partial ObservableCollection<UIMediaListItem> SeriesMetadata { get; set; }
 
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItem> SimiliarMediaList { get; set; }
-
-
-    public override Task<Guid> GetPlayIdAsync()
-    {
-        return MediaHelpers.GetPlayIdAsync(MediaItem, SeriesMetadata?.ToArray() ?? [], NextUpItem?.Id);
-    }
 
     protected override async Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default)
     {
@@ -85,7 +79,7 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
             }, cancellationToken);
 
         SeriesMetadata = new ObservableCollection<UIMediaListItem>(
-            seasons.Items.Select(x =>
+            seasons!.Items!.Select(x =>
             {
                 var item = new UIMediaListItem
                 {
@@ -136,6 +130,8 @@ internal sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Je
 
                 return item;
             }));
+
+        DetailsItemPlayRecord.MediaId = await MediaHelpers.GetPlayIdAsync(MediaItem, [.. SeriesMetadata], NextUpItem?.Id);
     }
 
     private string SetSeasonImageUrl(BaseItemDto item)

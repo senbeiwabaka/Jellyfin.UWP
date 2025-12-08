@@ -40,20 +40,9 @@ public sealed partial class EpisodePage : Page
         Frame.Navigate(typeof(EpisodePage), mediaItem.Id);
     }
 
-    private async void Play_Click(object sender, RoutedEventArgs e)
+    public void PlayClick(object sender, RoutedEventArgs e)
     {
-        var playId = await ViewModel.GetPlayIdAsync();
-        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-        if (ViewModel.HasMultipleAudioStreams)
-        {
-            var selectedAudio = ViewModel.SelectedAudioStream;
-
-            detailsItemPlayRecord.SelectedAudioIndex = selectedAudio.MediaSourceIndex;
-            detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selectedAudio.MediaStreamIndex;
-        }
-
-        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
     }
 
     private void SeriesName_Click(object sender, RoutedEventArgs e)

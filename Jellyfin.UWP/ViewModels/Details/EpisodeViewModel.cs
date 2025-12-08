@@ -47,5 +47,7 @@ internal sealed partial class EpisodeViewModel(IMemoryCache memoryCache, Jellyfi
 
                 return item;
             })];
+
+        DetailsItemPlayRecord.MediaId = MediaItem.Id!.Value;
     }
 }

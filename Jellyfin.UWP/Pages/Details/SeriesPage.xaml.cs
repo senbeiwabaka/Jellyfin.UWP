@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
-using System;
-using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -23,12 +23,9 @@ internal sealed partial class SeriesPage : Page
 
     internal SeriesDetailViewModel ViewModel => (SeriesDetailViewModel)DataContext;
 
-    public async void PlayClick(object sender, RoutedEventArgs e)
+    public void PlayClick(object sender, RoutedEventArgs e)
     {
-        var playId = await ViewModel.GetPlayIdAsync();
-        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

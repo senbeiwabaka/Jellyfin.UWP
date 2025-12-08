@@ -25,11 +25,6 @@ internal abstract partial class MediaViewModel(IMemoryCache memoryCache, Jellyfi
     protected IMediaHelpers MediaHelpers { get; } = mediaHelpers;
     protected IMemoryCache MemoryCache { get; } = memoryCache;
 
-    public virtual Task<Guid> GetPlayIdAsync()
-    {
-        return MediaHelpers.GetPlayIdAsync(MediaItem, null, null);
-    }
-
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     public async Task LoadMediaInformationAsync(Guid id, CancellationToken cancellationToken = default)
     {

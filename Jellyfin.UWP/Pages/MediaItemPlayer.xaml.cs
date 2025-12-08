@@ -174,32 +174,19 @@ internal sealed partial class MediaItemPlayer : Page
         {
             Icon = new SymbolIcon(Symbol.Setting),
             Label = "Settings",
+            IsEnabled = true,
         };
         settingsAppBarButton.Click += (_, _) => ViewModel.IsSettingsOpen = true;
 
         mediaControlsCommandBar.PrimaryCommands.Add(settingsAppBarButton);
 
-        var audioAppBarButton = new AppBarButton
-        {
-            Icon = new FontIcon { FontFamily = new FontFamily("Segoe MDL2 Assets"), Glyph = "\xED1F", },
-            Label = "Audio",
-            //Style = Resources["AppBarButtonStyle"] as Style
-            Name = "AudioAppBarButton",
-        };
-        var audioToolTip = new ToolTip { Content = "Show audio selection menu" };
-
-        audioAppBarButton.Click += (_, _) => ViewModel.IsAudioOpen = true;
-
-        ToolTipService.SetToolTip(audioAppBarButton, audioToolTip);
-
-        mediaControlsCommandBar.PrimaryCommands.Add(audioAppBarButton);
 
         Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
         Window.Current.CoreWindow.PointerCursor = null;
         Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
         ViewModel.DataIsLoaded += ViewModel_DataIsLoaded;
-        ViewModel.PlayingStarted += ViewModel_PlayingStarted;
+        //ViewModel.PlayingStarted += ViewModel_PlayingStarted;
     }
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
@@ -263,15 +250,33 @@ internal sealed partial class MediaItemPlayer : Page
         if (ViewModel.IsAdaptiveStream || ViewModel.IsTranscoding || ViewModel.HasMultipleAudio)
         {
             AudioSelectionPopup.VerticalOffset += ((ViewModel.AudioList.Count - 1) * 40) * -1;
-        }
-        else
-        {
-            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
-            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
-            audioAppBarButton.IsEnabled = false;
-            audioAppBarButton.Visibility = Visibility.Collapsed;
+            var audioAppBarButton = new AppBarButton
+            {
+                Icon = new FontIcon { FontFamily = new FontFamily("Segoe MDL2 Assets"), Glyph = "\xED1F", },
+                Label = "Audio",
+                //Style = Resources["AppBarButtonStyle"] as Style
+                Name = "AudioAppBarButton",
+                IsEnabled = false,
+                Visibility = Visibility.Collapsed,
+            };
+            var audioToolTip = new ToolTip { Content = "Show audio selection menu" };
+
+            audioAppBarButton.Click += (_, _) => ViewModel.IsAudioOpen = true;
+
+            ToolTipService.SetToolTip(audioAppBarButton, audioToolTip);
+
+            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+            mediaControlsCommandBar.PrimaryCommands.Add(audioAppBarButton);
         }
+        //else
+        //{
+        //    var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+        //    var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
+
+        //    audioAppBarButton.IsEnabled = false;
+        //    audioAppBarButton.Visibility = Visibility.Collapsed;
+        //}
     }
 
     private void ViewModel_PlayingStarted()
@@ -283,7 +288,15 @@ internal sealed partial class MediaItemPlayer : Page
             var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
             var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
-            mediaControlsCommandBar.PrimaryCommands.Remove(audioAppBarButton);
+            //mediaControlsCommandBar.PrimaryCommands.Remove(audioAppBarButton);
+        }
+        else
+        {
+            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
+
+            audioAppBarButton.IsEnabled = true;
+            audioAppBarButton.Visibility = Visibility.Visible;
         }
     }
 }

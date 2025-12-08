@@ -1,19 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Jellyfin.Sdk;
-using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Helpers;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.ViewModels.Details;
 
 internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : MediaViewModel(memoryCache, apiClient, mediaHelpers)
 {
+    public DetailsItemPlayRecord DetailsItemPlayRecord { get; internal set; } = new DetailsItemPlayRecord();
+
     [ObservableProperty]
     public partial ObservableCollection<UIMediaListItemSeries> SeriesMetadata { get; set; }
 
@@ -51,45 +53,18 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
         };
     }
 
-    public override async Task<Guid> GetPlayIdAsync()
-    {
-        if (!SeriesMetadata.Any(x => x.IsSelected))
-        {
-            return await GetSeriesEpisodeIdAsync();
-        }
-
-        return SeriesMetadata.Single(x => x.IsSelected).Id;
-    }
-
     internal override async Task FavoriteStateAsync(CancellationToken cancellationToken)
     {
         await ChangeFavoriteStateAsync(MediaItem.Id.Value, MediaItem.UserData.IsFavorite.Value, cancellationToken);
 
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
-    }
-
-    private async Task<Guid> GetSeriesEpisodeIdAsync()
-    {
-        var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var episodes = await ApiClient.Shows[MediaItem.ParentId.Value].Episodes
-            .GetAsync(options =>
-            {
-                options.QueryParameters.UserId = user.Id;
-                options.QueryParameters.SeasonId = MediaItem.ParentId;
-                options.QueryParameters.Fields =
-                [
-                    ItemFields.ItemCounts,
-                ];
-            });
-
-        return episodes.Items.First(x => !x.UserData.Played.Value && (x.UserData.PlayedPercentage ?? 0) < 90).Id.Value;
+        await LoadMediaInformationAsync(MediaItem.Id.Value, cancellationToken);
     }
 
     internal override async Task PlayedStateAsync(CancellationToken cancellationToken)
     {
         await ChangePlayStateAsync(MediaItem.Id.Value, MediaItem.UserData.Played.Value, cancellationToken);
 
-        await LoadMediaInformationAsync(MediaItem.Id.Value);
+        await LoadMediaInformationAsync(MediaItem.Id.Value, cancellationToken);
     }
 
     protected override async Task ExtraExecuteAsync(CancellationToken cancellationToken = default)
@@ -106,7 +81,7 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
                     ItemFields.PrimaryImageAspectRatio,
                     ItemFields.Overview,
                 ];
-            });
+            }, cancellationToken);
 
         SeriesMetadata = [.. episodes.Items.Select(x =>
             {
@@ -126,5 +101,34 @@ internal sealed partial class SeasonViewModel(IMemoryCache memoryCache, Jellyfin
 
                 return item;
             })];
+
+        DetailsItemPlayRecord.MediaId = await GetPlayIdAsync();
+    }
+
+    private async Task<Guid> GetPlayIdAsync()
+    {
+        if (!SeriesMetadata.Any(x => x.IsSelected))
+        {
+            return await GetSeriesEpisodeIdAsync();
+        }
+
+        return SeriesMetadata.Single(x => x.IsSelected).Id;
+    }
+
+    private async Task<Guid> GetSeriesEpisodeIdAsync()
+    {
+        var user = MemoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
+        var episodes = await ApiClient.Shows[MediaItem.ParentId!.Value].Episodes
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.SeasonId = MediaItem.Id;
+                options.QueryParameters.Fields =
+                [
+                    ItemFields.ItemCounts,
+                ];
+            });
+
+        return episodes.Items.First(x => !x.UserData.Played.Value && (x.UserData.PlayedPercentage ?? 0) < 90).Id.Value;
     }
 }

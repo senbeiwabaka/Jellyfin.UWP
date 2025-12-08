@@ -1,7 +1,13 @@
-﻿namespace Jellyfin.UWP.Models
+﻿using WinRT;
+
+namespace Jellyfin.UWP.Models;
+
+[GeneratedBindableCustomProperty(propertyNames: [nameof(Title)], indexerPropertyTypes: [typeof(string)])]
+public partial class UIMediaStreamVideo
 {
-    public partial class UIMediaStreamVideo : UIMediaStream
-    {
-        public string VideoId { get; set; } = default!;
-    }
+    public string Title { get; init; } = default!;
+
+    public string MediaSourceId { get; init; } = default!;
+
+    public int MediaSourceListIndex { get; init; }
 }

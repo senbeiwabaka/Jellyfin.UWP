@@ -23,27 +23,9 @@ public sealed partial class DetailsPage : Page
 
     internal DetailsViewModel ViewModel => (DetailsViewModel)DataContext;
 
-    public async void PlayClick(object sender, RoutedEventArgs e)
+    public void PlayClick(object sender, RoutedEventArgs e)
     {
-        var playId = await ViewModel.GetPlayIdAsync();
-        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
-
-        if (ViewModel.HasMultipleAudioStreams && (ViewModel.IsMovie || ViewModel.IsEpisode))
-        {
-            var selected = ViewModel.SelectedAudioStream;
-
-            detailsItemPlayRecord.SelectedAudioIndex = selected.MediaListIndex;
-            detailsItemPlayRecord.SelectedAudioMediaStreamIndex = selected.MediaStreamIndex;
-        }
-
-        if (ViewModel.HasMultipleVideoStreams && (ViewModel.IsMovie || ViewModel.IsEpisode))
-        {
-            var selected = ViewModel.SelectedVideoStream;
-
-            detailsItemPlayRecord.SelectedVideoId = selected.VideoId;
-        }
-
-        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)

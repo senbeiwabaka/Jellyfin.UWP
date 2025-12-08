@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
@@ -13,6 +6,13 @@ using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using MetroLog;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.Media.Streaming.Adaptive;
@@ -257,7 +257,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
         var videoMediaStream = Item.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
         MediaStream audioMediaStream;
 
-        if (AudioList.SingleOrDefault(x => x.IsSelected) is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
+        if (HasMultipleAudio && AudioList.SingleOrDefault(x => x.IsSelected) is null && user.Configuration.PlayDefaultAudioTrack.Value && session is not null && session.TranscodingInfo is null)
         {
             var stream = Item.MediaStreams.SingleOrDefault(x => x.IsDefault.Value && x.Type == MediaStream_Type.Audio);
 
@@ -317,7 +317,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
             .ToGetRequestInformation();
 
         return apiClient.BuildUri(subtitleRequest);
-        //return subtitleClient.GetSubtitleWithTicksUrl(UserData.Id, routeId, index, 0, routeFormat);
+        //return subtitleClient.GetSubtitleWithTicksUrl(UserData.MediaId, routeId, index, 0, routeFormat);
     }
 
     private Uri GetVideoUrl()
@@ -330,7 +330,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
                 options.QueryParameters.MediaSourceId = MediaSourceInfo.Id;
                 options.QueryParameters.AllowVideoStreamCopy = user.Policy.EnablePlaybackRemuxing;
                 options.QueryParameters.AllowAudioStreamCopy = user.Policy.EnablePlaybackRemuxing;
-                options.QueryParameters.AudioStreamIndex = SelectedAudio.Index;
+                options.QueryParameters.AudioStreamIndex = SelectedAudio?.Index;
                 options.QueryParameters.StartTimeTicks = Item.UserData?.PlaybackPositionTicks;
             });
 
@@ -376,7 +376,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task LoadMediaItemAsync(DetailsItemPlayRecord detailsItemPlayRecord, CancellationToken cancellationToken = default)
     {
-        var item = await apiClient.Items[detailsItemPlayRecord.Id]
+        var item = await apiClient.Items[detailsItemPlayRecord.MediaId]
             .GetAsync(options =>
             {
                 options.QueryParameters.UserId = user.Id;
@@ -394,19 +394,28 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
         await LoadMediaPlaybackInfoAsync(detailsItemPlayRecord, cancellationToken);
 
-        AudioList = new ObservableCollection<UIAudio>(MediaSourceInfo.MediaStreams.Where(x => x.Type == MediaStream_Type.Audio).Select(x => new UIAudio { Title = x.DisplayTitle, Index = x.Index, }));
-        HasMultipleAudio = AudioList.Count > 1;
+        HasMultipleAudio = MediaSourceInfo!.MediaStreams!.Count(x => x.Type == MediaStream_Type.Audio) > 1;
 
-        if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
+        if (HasMultipleAudio)
         {
-            AudioList[detailsItemPlayRecord.SelectedAudioIndex.Value].IsSelected = true;
+            var audioStreams = MediaSourceInfo!.MediaStreams!.Where(x => x.Type == MediaStream_Type.Audio).ToList();
+            AudioList = new ObservableCollection<UIAudio>(audioStreams.Select(x => new UIAudio { Title = x.DisplayTitle ?? "No Audio Title", Index = x.Index, }));
+
+            if (detailsItemPlayRecord.SelectedAudioIndex.HasValue)
+            {
+                AudioList[audioStreams.IndexOf(audioStreams.Single(x => x.Index == detailsItemPlayRecord.SelectedAudioIndex.Value))].IsSelected = true;
+            }
+            else
+            {
+                AudioList[0].IsSelected = true;
+            }
+
+            SelectedAudio = AudioList.Single(x => x.IsSelected);
         }
         else
         {
-            AudioList[0].IsSelected = true;
+            await SetupMediaPlayer(cancellationToken);
         }
-
-        SelectedAudio = AudioList.Single(x => x.IsSelected);
 
         DataIsLoaded?.Invoke();
     }
@@ -420,7 +429,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
             startTimeTicks = Item.UserData.PlaybackPositionTicks.Value;
         }
 
-        var playbackBody = MediaPlayerHelpers.GetPlaybackInfoBody(user, startTimeTicks, detailsItemPlayRecord.SelectedVideoId, detailsItemPlayRecord.SelectedAudioMediaStreamIndex);
+        var playbackBody = MediaPlayerHelpers.GetPlaybackInfoBody(user, startTimeTicks, detailsItemPlayRecord.SelectedVideoId, detailsItemPlayRecord.SelectedAudioIndex);
         playbackInfo = await apiClient.Items[Item.Id.Value].PlaybackInfo
             .PostAsync(playbackBody, cancellationToken: cancellationToken)
             .ConfigureAwait(true);
@@ -469,7 +478,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
         var mediaStreams = MediaSourceInfo.MediaStreams;
 
-        if (mediaStreams is not null && mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle) && !string.Equals("mkv", MediaSourceInfo.Container, StringComparison.InvariantCultureIgnoreCase))
+        if (mediaStreams is not null && mediaStreams.Exists(x => x.Type == MediaStream_Type.Subtitle))
         {
             var firstSubtitle = mediaStreams.First(x => x.Type == MediaStream_Type.Subtitle);
             var subtitleUrl = GetSubtitleUrl(
@@ -541,7 +550,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
             if (episodes.Items.Any(x => x.IndexNumber == nextIndex))
             {
-                detailsItemPlayRecord.Id = episodes.Items.Single(x => x.IndexNumber.Value == nextIndex).Id.Value;
+                detailsItemPlayRecord.MediaId = episodes.Items.Single(x => x.IndexNumber.Value == nextIndex).Id.Value;
             }
             else
             {
@@ -552,7 +561,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
                     return;
                 }
 
-                detailsItemPlayRecord.Id = nextSeasonEpisodes.Items[0].Id!.Value;
+                detailsItemPlayRecord.MediaId = nextSeasonEpisodes.Items[0].Id!.Value;
             }
 
             await LoadMediaItemAsync(detailsItemPlayRecord, cancellationToken);
@@ -585,7 +594,7 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
     {
         IsAudioOpen = false;
 
-        var needsToTranscodeAudio = await IsTranscodingNeededBecauseOfAudio(MediaSourceInfo.MediaStreams, SelectedAudio.Index);
+        var needsToTranscodeAudio = await IsTranscodingNeededBecauseOfAudio(MediaSourceInfo.MediaStreams, SelectedAudio?.Index);
         var needsToTranscodeVideo = await IsTranscodingNeededBecauseOfVideo(MediaSourceInfo.MediaStreams);
 
         // If a sketchy codec is selected and the decoder does not exist or the file is 10-bit then we will use a transcoded version.
@@ -603,11 +612,6 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
             return;
         }
-
-        var playbackBody = MediaPlayerHelpers.GetPlaybackInfoBody(user, 0L, MediaSourceInfo.Id, SelectedAudio.Index);
-        playbackInfo = await apiClient.Items[Item.Id.Value].PlaybackInfo
-            .PostAsync(playbackBody, cancellationToken: cancellationToken)
-            .ConfigureAwait(true);
 
         // TODO: When jellyfin gets better adaptive streaming, re-enable this to handle
         //if (!IsTranscoding)
@@ -633,9 +637,11 @@ internal sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache,
 
         mediaPlaybackItem.ApplyDisplayProperties(props);
 
-        if (!IsTranscoding && SelectedAudio.Index.HasValue)
+        // TODO: FIX
+        if (!IsTranscoding && HasMultipleAudio)
         {
-            mediaPlaybackItem.AudioTracks.SelectedIndex = SelectedAudio.Index.Value - 1;
+            var index = AudioList.IndexOf(AudioList.Single(x => x.Index == SelectedAudio.Index));
+            mediaPlaybackItem.AudioTracks.SelectedIndex = index;
         }
 
         Source = mediaPlaybackItem;

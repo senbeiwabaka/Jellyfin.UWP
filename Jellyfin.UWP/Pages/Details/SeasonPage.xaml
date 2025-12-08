@@ -135,7 +135,7 @@
                                                 </Grid>
                                             </Canvas>
 
-                                            <Image Source="{x:Bind Url, Mode=OneTime}" Canvas.ZIndex="-1" Height="330" Width="500" VerticalAlignment="Center" Stretch="Fill" />
+                                            <Image Source="{x:Bind Url, Mode=OneTime}" MaxHeight="330" MaxWidth="500" VerticalAlignment="Center" Stretch="Fill" />
                                             <StackPanel Padding="10">
                                                 <TextBlock Text="{x:Bind Name, Mode=OneTime}" FontSize="15" />
 
@@ -149,6 +149,7 @@
                                                             </Button.Background>
                                                             <SymbolIcon x:Name="play" Symbol="Play" />
                                                         </Button>
+                                                        <uc:PlayButtonControl PositionLeft="-45" PositionTop="40" DataContext="{x:Bind Mode=OneWay}" />
                                                         <Button x:Name="btn_EpisodeMarkPlayState" ToolTipService.ToolTip="Mark played" Margin="10" Click="btn_EpisodeMarkPlayState_Click">
                                                             <Button.Background>
                                                                 <SolidColorBrush Color="#000000" Opacity="0" />

@@ -7,7 +7,7 @@ namespace Jellyfin.UWP.Helpers;
 
 internal static class MediaPlayerHelpers
 {
-    internal static PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks, string? selectedVideoId, int? selectedAudioMediaStreamIndex)
+    internal static PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks, string? mediaSourceId, int? selectedAudioMediaStreamIndex)
     {
         const string mp4VideoFormats = "h264,hevc,vp8,vp9";
         const string mkvVideoFormats = "h264,hevc,vc1,vp8,vp9";
@@ -26,7 +26,8 @@ internal static class MediaPlayerHelpers
             StartTimeTicks = startTimeTicks,
             EnableDirectStream = true,
             AudioStreamIndex = selectedAudioMediaStreamIndex,
-            MediaSourceId = selectedVideoId,
+            MediaSourceId = mediaSourceId,
+            
 
             DeviceProfile = new DeviceProfile
             {

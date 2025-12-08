@@ -46,16 +46,17 @@ internal sealed partial class SeasonPage : Page
         items[index] = updateItem;
     }
 
-    private async void EpisodePlay_Click(object sender, RoutedEventArgs e)
+    // TODO: FIX
+    private void EpisodePlay_Click(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
         var item = (UIMediaListItem)button.DataContext;
 
         item.IsSelected = true;
 
-        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ViewModel.GetPlayIdAsync() };
+        //var detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = await ViewModel.GetPlayIdAsync() };
 
-        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        //Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
     }
 
     private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
@@ -63,11 +64,9 @@ internal sealed partial class SeasonPage : Page
         Frame.Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
     }
 
-    private async void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
+    private void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
     {
-        var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = await ViewModel.GetPlayIdAsync() };
-
-        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
     }
 
     private async void btn_EpisodeMarkFavoriteState_Click(object sender, RoutedEventArgs e)

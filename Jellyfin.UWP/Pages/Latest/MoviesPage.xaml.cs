@@ -76,14 +76,14 @@ internal sealed partial class MoviesPage : Page
         if (item.Type == BaseItemDto_Type.AggregateFolder)
         {
             var playId = await mediaHelpers.GetPlayIdAsync(item);
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = playId, };
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = playId, };
 
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }
 
         if (item.Type == BaseItemDto_Type.Episode || item.Type == BaseItemDto_Type.Movie)
         {
-            var detailsItemPlayRecord = new DetailsItemPlayRecord { Id = item.Id, };
+            var detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = item.Id, };
 
             Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
         }

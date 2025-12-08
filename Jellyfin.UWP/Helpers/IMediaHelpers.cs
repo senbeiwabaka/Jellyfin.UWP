@@ -1,7 +1,7 @@
-﻿using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Models;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.UWP.Models;
 
 namespace Jellyfin.UWP.Helpers
 {
@@ -9,7 +9,7 @@ namespace Jellyfin.UWP.Helpers
     {
         Task<Guid> GetPlayIdAsync(UIMediaListItem mediaItem);
 
-        Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seasonsData, Guid? seriesNextUpId);
+        Task<Guid> GetPlayIdAsync(BaseItemDto mediaItem, UIMediaListItem[] seriesData, Guid? seriesNextUpId = null);
 
         Task<Guid> GetSeriesIdFromEpisodeIdAsync(Guid episodeId);
 

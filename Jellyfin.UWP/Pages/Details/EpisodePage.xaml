@@ -49,11 +49,11 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Grid 
-                Grid.ColumnSpan="2" 
-                Canvas.ZIndex="5" 
-                Background="Gray" 
-                Opacity=".8" 
+            <Grid
+                Grid.ColumnSpan="2"
+                Canvas.ZIndex="5"
+                Background="Gray"
+                Opacity=".8"
                 Visibility="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                 <muxc:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" VerticalContentAlignment="Center" IsActive="{x:Bind ViewModel.LoadMediaInformationCommand.IsRunning, Mode=OneWay}" />
             </Grid>
@@ -79,13 +79,13 @@
                             <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
 
                                 <StackPanel>
-                                    <Button 
-                                      x:Name="SeriesName" 
-                                      Click="SeriesName_Click" 
-                                      Content="{x:Bind ViewModel.MediaItem.SeriesName, Mode=OneWay}" 
+                                    <Button
+                                      x:Name="SeriesName"
+                                      Click="SeriesName_Click"
+                                      Content="{x:Bind ViewModel.MediaItem.SeriesName, Mode=OneWay}"
                                       FontSize="26" />
                                 </StackPanel>
-                                
+
                                 <StackPanel>
                                     <TextBlock>
                                         <Run Text="{x:Bind ViewModel.MediaItem.SeasonName, Mode=OneWay}" />
@@ -110,7 +110,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="Play" Click="Play_Click" ToolTipService.ToolTip="Play" Margin="10">
+                                <Button  Click="PlayClick" ToolTipService.ToolTip="Play" Margin="10">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
@@ -128,9 +128,9 @@
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
-                                    <FontIcon 
-                                        FontFamily="Segoe MDL2 Assets" 
-                                        Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" 
+                                    <FontIcon
+                                        FontFamily="Segoe MDL2 Assets"
+                                        Foreground="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}"
                                         Glyph="{x:Bind ViewModel.MediaItem.UserData.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
                                 </Button>
                             </StackPanel>
@@ -140,12 +140,9 @@
                     <StackPanel Padding="30,0,0,0">
                         <StackPanel Orientation="Horizontal" Height="32" Margin="0,0,0,4">
                             <TextBlock Text="Video" Width="93" VerticalAlignment="Center" />
-                            <TextBlock 
-                                Visibility="{x:Bind ViewModel.HasMultipleVideoStreams, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" 
+                            <TextBlock
                                 Text="{x:Bind ViewModel.VideoType, Mode=OneWay}"
                                 VerticalAlignment="Center" />
-                            <ComboBox Visibility="{x:Bind ViewModel.HasMultipleVideoStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                            </ComboBox>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Height="32">
@@ -157,8 +154,12 @@
                                 Visibility="{x:Bind ViewModel.HasMultipleAudioStreams, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                                 ItemsSource="{x:Bind ViewModel.AudioStreams, Mode=OneWay}"
                                 DisplayMemberPath="Title"
-                                SelectedValuePath="IsSelected"
                                 SelectedItem="{x:Bind ViewModel.SelectedAudioStream, Mode=TwoWay}">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactivity:EventTriggerBehavior EventName="SelectionChanged">
+                                        <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.ChangeAudioSelectionCommand}" />
+                                    </interactivity:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
                             </ComboBox>
                         </StackPanel>
 
@@ -169,11 +170,9 @@
                             Height="32">
                             <TextBlock Text="Subtitle" Width="93" VerticalAlignment="Center" />
                             <ComboBox
-                                ItemsSource="{x:Bind ViewModel.SubtitleStreams, Mode=OneWay}" 
-                                DisplayMemberPath="Title" 
-                                SelectedValuePath="IsSelected" 
-                                SelectedItem="{x:Bind ViewModel.SelectedSubtitleStream, Mode=TwoWay}"
-                                IsSynchronizedWithCurrentItem="False">
+                                ItemsSource="{x:Bind ViewModel.SubtitleStreams, Mode=OneWay}"
+                                DisplayMemberPath="Title"
+                                SelectedItem="{x:Bind ViewModel.SelectedSubtitleStream, Mode=TwoWay}">
                             </ComboBox>
                         </StackPanel>
 
