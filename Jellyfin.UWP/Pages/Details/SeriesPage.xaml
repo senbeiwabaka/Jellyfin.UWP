@@ -76,7 +76,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind ViewModel.MediaItem.Name, Mode=OneWay}" FontSize="26" FontWeight="Bold" />
+                                <TextBlock Text="{x:Bind ViewModel.MediaItem.Name, Mode=OneWay}" FontSize="26" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind ViewModel.MediaItem.Name, Mode=OneWay}" />
                                 <TextBlock Text="{x:Bind ViewModel.MediaItem.OriginalTitle, Mode=OneWay}" FontSize="15" FontWeight="Bold" />
 
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

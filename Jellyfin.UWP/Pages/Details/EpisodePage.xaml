@@ -79,11 +79,11 @@
                             <StackPanel Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center">
 
                                 <StackPanel>
-                                    <Button
-                                      x:Name="SeriesName"
-                                      Click="SeriesName_Click"
-                                      Content="{x:Bind ViewModel.MediaItem.SeriesName, Mode=OneWay}"
-                                      FontSize="26" />
+                                    <HyperlinkButton FontSize="26" HorizontalAlignment="Left" Click="SeriesName_Click" ToolTipService.ToolTip="{x:Bind ViewModel.MediaItem.SeriesName, Mode=OneWay}">
+                                        <ContentControl>
+                                            <TextBlock Text="{x:Bind ViewModel.MediaItem.SeriesName, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                                        </ContentControl>
+                                    </HyperlinkButton>
                                 </StackPanel>
 
                                 <StackPanel>

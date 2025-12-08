@@ -81,7 +81,7 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <Button Click="WholeSeriesPlay_Click" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
+                                <Button Click="PlayClick" Margin="0,0,10,0" ToolTipService.ToolTip="Play">
                                     <Button.Background>
                                         <SolidColorBrush Color="#000000" Opacity="0" />
                                     </Button.Background>
@@ -149,7 +149,6 @@
                                                             </Button.Background>
                                                             <SymbolIcon x:Name="play" Symbol="Play" />
                                                         </Button>
-                                                        <uc:PlayButtonControl PositionLeft="-45" PositionTop="40" DataContext="{x:Bind Mode=OneWay}" />
                                                         <Button x:Name="btn_EpisodeMarkPlayState" ToolTipService.ToolTip="Mark played" Margin="10" Click="btn_EpisodeMarkPlayState_Click">
                                                             <Button.Background>
                                                                 <SolidColorBrush Color="#000000" Opacity="0" />

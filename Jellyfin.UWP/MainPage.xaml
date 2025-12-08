@@ -234,8 +234,12 @@
                                             <StackPanel Height="214" Width="380" Canvas.Top="-213" Background="#B3646464" Canvas.ZIndex="1"></StackPanel>
                                         </Canvas>
                                     </StackPanel>
-                                    
-                                    <HyperlinkButton Content="{x:Bind SeriesName}" FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click" />
+
+                                    <HyperlinkButton FontSize="14" HorizontalAlignment="Center" Click="MediaItemLink_Click" Width="300">
+                                        <ContentControl>
+                                            <TextBlock Text="{x:Bind SeriesName}" TextTrimming="CharacterEllipsis" />
+                                        </ContentControl>
+                                    </HyperlinkButton>
                                     <TextBlock Text="{x:Bind Name}" FontSize="12" Opacity=".8" HorizontalAlignment="Center" />
                                 </StackPanel>
                             </DataTemplate>
