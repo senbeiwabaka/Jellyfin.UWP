@@ -1,7 +1,7 @@
-﻿using System;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.UWP.Models;
 using Jellyfin.UWP.ViewModels.Details;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -33,6 +33,19 @@ internal sealed partial class SeasonPage : Page
         base.OnNavigatedTo(e);
     }
 
+    private async void btn_EpisodeMarkFavoriteState_Click(object sender, RoutedEventArgs e)
+    {
+        var item = (UIMediaListItemSeries)((Button)sender).DataContext;
+        var items = ViewModel.SeriesMetadata;
+        var index = items.IndexOf(item);
+
+        await ViewModel.EpisodeFavoriteStateAsync(item);
+
+        var updateItem = await ViewModel.GetLatestOnSeriesItemAsync(item.Id);
+
+        items[index] = updateItem;
+    }
+
     private async void btn_EpisodeMarkPlayState_Click(object sender, RoutedEventArgs e)
     {
         var item = (UIMediaListItemSeries)((Button)sender).DataContext;
@@ -46,7 +59,6 @@ internal sealed partial class SeasonPage : Page
         items[index] = updateItem;
     }
 
-    // TODO: FIX
     private void EpisodePlay_Click(object sender, RoutedEventArgs e)
     {
         var button = (Button)sender;
@@ -54,31 +66,18 @@ internal sealed partial class SeasonPage : Page
 
         item.IsSelected = true;
 
-        //var detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = await ViewModel.GetPlayIdAsync() };
+        var detailsItemPlayRecord = new DetailsItemPlayRecord { MediaId = item.Id, };
 
-        //Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+        Frame.Navigate(typeof(MediaItemPlayer), detailsItemPlayRecord);
+    }
+
+    private void PlayClick(object sender, RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
     }
 
     private void SeriesItems_ItemClick(object sender, ItemClickEventArgs e)
     {
         Frame.Navigate(typeof(EpisodePage), ((UIMediaListItem)e.ClickedItem).Id);
-    }
-
-    private void WholeSeriesPlay_Click(object sender, RoutedEventArgs e)
-    {
-        Frame.Navigate(typeof(MediaItemPlayer), ViewModel.DetailsItemPlayRecord);
-    }
-
-    private async void btn_EpisodeMarkFavoriteState_Click(object sender, RoutedEventArgs e)
-    {
-        var item = (UIMediaListItemSeries)((Button)sender).DataContext;
-        var items = ViewModel.SeriesMetadata;
-        var index = items.IndexOf(item);
-
-        await ViewModel.EpisodeFavoriteStateAsync(item);
-
-        var updateItem = await ViewModel.GetLatestOnSeriesItemAsync(item.Id);
-
-        items[index] = updateItem;
     }
 }
