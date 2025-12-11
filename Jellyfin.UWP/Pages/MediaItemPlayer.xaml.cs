@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -10,6 +7,10 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
 using Windows.UI.Core;
@@ -58,8 +59,21 @@ internal sealed partial class MediaItemPlayer : Page
         _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
         _mediaPlayerElement.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
         _mediaPlayerElement.SizeChanged += _mediaPlayerElement_SizeChanged;
+        _mediaPlayerElement.MediaPlayer.SeekCompleted += MediaPlayer_SeekCompleted;
 
         base.OnNavigatedTo(e);
+    }
+
+    private void MediaPlayer_SeekCompleted(MediaPlayer sender, object args)
+    {
+        CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+            CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    ViewModel.SessionProgressAsync(
+                        _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
+                        _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
+                });
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
@@ -77,7 +91,7 @@ internal sealed partial class MediaItemPlayer : Page
 
         try
         {
-            displayRequest?.RequestRelease();
+            displayRequest.RequestRelease();
         }
         catch (Exception ex)
         {
@@ -119,9 +133,21 @@ internal sealed partial class MediaItemPlayer : Page
             mediaPlayerSession.Position += newTime;
         }
 
-        if (args.VirtualKey == Windows.System.VirtualKey.GamepadY)
+        if (args.VirtualKey == Windows.System.VirtualKey.GamepadY || args.VirtualKey == Windows.System.VirtualKey.F)
         {
             _mediaPlayerElement.IsFullWindow = !_mediaPlayerElement.IsFullWindow;
+        }
+
+        if (args.VirtualKey == Windows.System.VirtualKey.GamepadA || args.VirtualKey == Windows.System.VirtualKey.Space)
+        {
+            if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused)
+            {
+                _mediaPlayerElement.MediaPlayer.Play();
+            }
+            else if (_mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Playing)
+            {
+                _mediaPlayerElement.MediaPlayer.Pause();
+            }
         }
     }
 
@@ -147,9 +173,9 @@ internal sealed partial class MediaItemPlayer : Page
         }
     }
 
-    private async void DispatcherTimer_Tick(object? sender, object e)
+    private void DispatcherTimer_Tick(object? sender, object e)
     {
-        await ViewModel.SessionProgressAsync(
+        ViewModel.SessionProgressAsync(
                   _mediaPlayerElement.MediaPlayer.PlaybackSession.Position.Ticks,
                   _mediaPlayerElement.MediaPlayer.PlaybackSession.PlaybackState == MediaPlaybackState.Paused);
 
@@ -180,13 +206,12 @@ internal sealed partial class MediaItemPlayer : Page
 
         mediaControlsCommandBar.PrimaryCommands.Add(settingsAppBarButton);
 
-
         Window.Current.CoreWindow.PointerMoved += CoreWindow_PointerMoved;
         Window.Current.CoreWindow.PointerCursor = null;
         Window.Current.CoreWindow.KeyDown += CoreWindow_KeyDown;
 
         ViewModel.DataIsLoaded += ViewModel_DataIsLoaded;
-        //ViewModel.PlayingStarted += ViewModel_PlayingStarted;
+        ViewModel.PlayingStarted += ViewModel_PlayingStarted;
     }
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
@@ -231,14 +256,13 @@ internal sealed partial class MediaItemPlayer : Page
         Log.Debug("Playback state has changed");
 
         // TODO: FIX
-        MediaPlaybackSession playbackSession = sender as MediaPlaybackSession;
-        if (playbackSession != null && playbackSession.NaturalVideoHeight != 0)
+        if (sender != null && sender.NaturalVideoHeight != 0)
         {
-            if (playbackSession.PlaybackState == MediaPlaybackState.Playing)
+            if (sender.PlaybackState == MediaPlaybackState.Playing)
             {
                 displayRequest.RequestActive();
             }
-            else // PlaybackState is Buffering, None, Opening, or Paused.
+            else if (sender.PlaybackState == MediaPlaybackState.Paused) // PlaybackState is Buffering, None, Opening, or Paused.
             {
                 displayRequest.RequestRelease();
             }
@@ -247,7 +271,7 @@ internal sealed partial class MediaItemPlayer : Page
 
     private void ViewModel_DataIsLoaded()
     {
-        if (ViewModel.IsAdaptiveStream || ViewModel.IsTranscoding || ViewModel.HasMultipleAudio)
+        if ((ViewModel.IsAdaptiveStream || ViewModel.IsTranscoding) && ViewModel.HasMultipleAudio)
         {
             AudioSelectionPopup.VerticalOffset += ((ViewModel.AudioList.Count - 1) * 40) * -1;
 
@@ -281,22 +305,27 @@ internal sealed partial class MediaItemPlayer : Page
 
     private void ViewModel_PlayingStarted()
     {
+        if (ViewModel.Item.UserData.PlaybackPositionTicks.HasValue && ViewModel.Item.UserData.PlaybackPositionTicks > 0)
+        {
+            _mediaPlayerElement.MediaPlayer.PlaybackSession.Position = new TimeSpan(ViewModel.Item.UserData.PlaybackPositionTicks.Value);
+        }
+
         dispatcherTimer.Start();
 
-        if (!ViewModel.IsAdaptiveStream || !ViewModel.IsTranscoding || !ViewModel.HasMultipleAudio)
-        {
-            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
-            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
+        //if (!ViewModel.IsAdaptiveStream || !ViewModel.IsTranscoding || !ViewModel.HasMultipleAudio)
+        //{
+        //    var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+        //    var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
-            //mediaControlsCommandBar.PrimaryCommands.Remove(audioAppBarButton);
-        }
-        else
-        {
-            var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
-            var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
+        //    //mediaControlsCommandBar.PrimaryCommands.Remove(audioAppBarButton);
+        //}
+        //else
+        //{
+        //    var mediaControlsCommandBar = mediaControls.FindVisualChild<CommandBar>()!;
+        //    var audioAppBarButton = (AppBarButton)mediaControlsCommandBar.PrimaryCommands[mediaControlsCommandBar.PrimaryCommands.Count - 1];
 
-            audioAppBarButton.IsEnabled = true;
-            audioAppBarButton.Visibility = Visibility.Visible;
-        }
+        //    audioAppBarButton.IsEnabled = true;
+        //    audioAppBarButton.Visibility = Visibility.Visible;
+        //}
     }
 }
