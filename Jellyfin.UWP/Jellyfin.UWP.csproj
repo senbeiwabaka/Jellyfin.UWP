@@ -47,9 +47,9 @@
 		<PackageReference Include="CommunityToolkit.Uwp.Extensions" Version="8.2.250402" />
 		<PackageReference Include="Jellyfin.Sdk" Version="2024.10.28" />
 		<PackageReference Include="MetroLog.Net6" Version="2.1.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
 		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.0" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.9.50">
@@ -57,8 +57,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.0" />
-		<PackageReference Include="System.Text.Json" Version="10.0.0" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.1" />
+		<PackageReference Include="System.Text.Json" Version="10.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Update="NLog.config">
