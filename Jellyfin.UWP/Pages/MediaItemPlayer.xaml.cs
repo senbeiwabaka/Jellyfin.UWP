@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
@@ -7,9 +10,6 @@ using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Models.filters;
 using Jellyfin.UWP.ViewModels;
 using MetroLog;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
@@ -183,7 +183,7 @@ internal sealed partial class MediaItemPlayer : Page
             && ViewModel.Item.Type == BaseItemDto_Type.Episode
             && !ViewModel.IsNextItemOpen)
         {
-            ViewModel.IsNextItemOpen = true;
+            //ViewModel.IsNextItemOpen = true;
         }
     }
 
@@ -232,18 +232,23 @@ internal sealed partial class MediaItemPlayer : Page
     {
         Log.Debug("Media has ended playback");
 
-        dispatcherTimer.Stop();
+        CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+            CoreDispatcherPriority.Normal,
+                () =>
+                {
+                    dispatcherTimer.Stop();
 
-        ViewModel.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
+                    ViewModel.SessionStopAsync(sender.PlaybackSession.Position.Ticks);
 
-        if (ViewModel.Item.Type == BaseItemDto_Type.Episode && !ViewModel.IsNextItemOpen)
-        {
-            ViewModel.IsNextItemOpen = true;
-        }
-        else
-        {
-            Frame.GoBack();
-        }
+                    if (ViewModel.Item.Type == BaseItemDto_Type.Episode && !ViewModel.IsNextItemOpen)
+                    {
+                        ViewModel.IsNextItemOpen = true;
+                    }
+                    else
+                    {
+                        Frame.GoBack();
+                    }
+                });
     }
 
     private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
