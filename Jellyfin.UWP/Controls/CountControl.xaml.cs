@@ -1,4 +1,4 @@
-﻿using Jellyfin.UWP.Models;
+﻿using Jellyfin.Models;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 

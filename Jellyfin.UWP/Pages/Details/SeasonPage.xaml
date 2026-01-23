@@ -5,12 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:m="using:Jellyfin.Models"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
+    xmlns:uwp="using:Jellyfin.ViewModels.Details"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    d:DataContext="{d:DesignInstance Type=uwp:SeasonViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -68,7 +67,7 @@
 
                         <Grid Height="115">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -128,42 +127,29 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItemSeries">
                                         <StackPanel Orientation="Horizontal" Height="330">
-                                            <Canvas Background="Transparent" Visibility="{x:Bind UserData.HasBeenWatched, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                <Grid Canvas.Left="470" Canvas.Top="5" Canvas.ZIndex="2">
-                                                    <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
-                                                </Grid>
-                                            </Canvas>
-
                                             <Image Source="{x:Bind Url, Mode=OneTime}" MaxHeight="330" MaxWidth="500" VerticalAlignment="Center" Stretch="Fill" />
-                                            <StackPanel Padding="10">
-                                                <TextBlock Text="{x:Bind Name, Mode=OneTime}" FontSize="15" />
+                                            <TextBlock Text="{x:Bind Name, Mode=OneTime}" FontSize="15" />
 
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{x:Bind Description, Mode=OneTime}" Width="300" TextWrapping="WrapWholeWords" Opacity=".6" />
+                                            <TextBlock Text="{x:Bind Description, Mode=OneTime}" Width="300" TextWrapping="WrapWholeWords" Opacity=".6" />
 
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Button x:Name="EpisodePlay" Click="EpisodePlay_Click" Margin="0,5,0,0">
-                                                            <Button.Background>
-                                                                <SolidColorBrush Color="#000000" Opacity="0" />
-                                                            </Button.Background>
-                                                            <SymbolIcon x:Name="play" Symbol="Play" />
-                                                        </Button>
-                                                        <Button x:Name="btn_EpisodeMarkPlayState" ToolTipService.ToolTip="Mark played" Margin="10" Click="btn_EpisodeMarkPlayState_Click">
-                                                            <Button.Background>
-                                                                <SolidColorBrush Color="#000000" Opacity="0" />
-                                                            </Button.Background>
-                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind UserData.HasBeenWatched, Mode=TwoWay, Converter={StaticResource TrueRedFalseWhite}}" />
-                                                        </Button>
-                                                        <Button x:Name="btn_EpisodeMarkFavoriteState" ToolTipService.ToolTip="Add to favorites" Margin="10" Click="btn_EpisodeMarkFavoriteState_Click">
-                                                            <Button.Background>
-                                                                <SolidColorBrush Color="#000000" Opacity="0" />
-                                                            </Button.Background>
-                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" />
-                                                        </Button>
-                                                    </StackPanel>
-                                                </StackPanel>
-                                            </StackPanel>
+                                            <Button x:Name="EpisodePlay" Click="EpisodePlay_Click" Margin="0,5,0,0">
+                                                <Button.Background>
+                                                    <SolidColorBrush Color="#000000" Opacity="0" />
+                                                </Button.Background>
+                                                <SymbolIcon x:Name="play" Symbol="Play" />
+                                            </Button>
+                                            <Button ToolTipService.ToolTip="Mark played" Margin="10" Click="btn_EpisodeMarkPlayState_Click">
+                                                <Button.Background>
+                                                    <SolidColorBrush Color="#000000" Opacity="0" />
+                                                </Button.Background>
+                                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" Foreground="{x:Bind UserData.HasBeenWatched, Mode=TwoWay, Converter={StaticResource TrueRedFalseWhite}}" />
+                                            </Button>
+                                            <Button x:Name="btn_EpisodeMarkFavoriteState" ToolTipService.ToolTip="Add to favorites" Margin="10" Click="btn_EpisodeMarkFavoriteState_Click">
+                                                <Button.Background>
+                                                    <SolidColorBrush Color="#000000" Opacity="0" />
+                                                </Button.Background>
+                                                <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind UserData.IsFavorite, Converter={StaticResource ClearHeartFilledHeart}}" Foreground="{x:Bind UserData.IsFavorite, Converter={StaticResource TrueRedFalseWhite}}" />
+                                            </Button>
                                         </StackPanel>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>

@@ -8,7 +8,7 @@
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:models="using:Jellyfin.UWP.Models"
+    xmlns:models="using:Jellyfin.Models"
     d:DataContext="{d:DesignInstance Type=uwp:MediaItemPlayerViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">

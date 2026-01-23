@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
-using Jellyfin.UWP.ViewModels.Latest;
+using Jellyfin.ViewModels.Latest;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;

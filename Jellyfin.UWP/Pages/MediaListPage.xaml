@@ -6,8 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:mf="using:Jellyfin.UWP.Models.Filters"
+    xmlns:m="using:Jellyfin.Models"
+    xmlns:mf="using:Jellyfin.Models.Filters"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
@@ -67,7 +67,7 @@
                                     MinWidth="192">
                                     <ListView.ItemTemplate>
                                         <DataTemplate x:DataType="mf:FiltersModel">
-                                            <ListViewItem IsSelected="{x:Bind IsSelected, Mode=OneWay}">
+                                            <ListViewItem >
                                                 <StackPanel>
                                                     <TextBlock Text="{x:Bind Name, Mode=OneTime}" FontSize="25" />
                                                 </StackPanel>

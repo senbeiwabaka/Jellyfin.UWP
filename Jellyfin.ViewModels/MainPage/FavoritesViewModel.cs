@@ -1,0 +1,140 @@
+﻿using Jellyfin.Models;
+using Jellyfin.Sdk;
+using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Jellyfin.ViewModels.MainPage;
+
+public sealed class FavoritesViewModel(IMemoryCache memoryCache, JellyfinApiClient apiClient, IMediaHelpers mediaHelpers) : IFavoritesViewModel
+{
+    public async Task<ObservableCollection<UIMainPageListItem>> GetEpisodesAsync(CancellationToken cancellationToken = default)
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Items
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.SortBy = [ItemSortBy.SeriesSortName, ItemSortBy.SortName,];
+                options.QueryParameters.Filters = [ItemFilter.IsFavorite];
+                options.QueryParameters.Recursive = true;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.ExcludeLocationTypes = [LocationType.Virtual,];
+                options.QueryParameters.EnableTotalRecordCount = false;
+                options.QueryParameters.Limit = 20;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Episode,];
+            }, cancellationToken: cancellationToken);
+
+        var items = new ObservableCollection<UIMainPageListItem>(
+            itemsResult.Items
+                .Select(x =>
+                {
+                    var item = new UIMainPageListItem
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        Type = x.Type.Value,
+                        SeriesName = x.SeriesName,
+                        UserData = new UIUserData
+                        {
+                            HasBeenWatched = x.UserData.Played.Value,
+                            IsFavorite = true,
+                        },
+                        IndexNumber = x.IndexNumber,
+                        ParentIndexNumber = x.ParentIndexNumber,
+                    };
+
+                    return item;
+                }));
+
+        return items;
+    }
+
+    public async Task<ObservableCollection<UIMediaListItem>> GetMoviesAsync(CancellationToken cancellationToken = default)
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Items
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.SortBy = [ItemSortBy.SeriesSortName, ItemSortBy.SortName,];
+                options.QueryParameters.Filters = [ItemFilter.IsFavorite];
+                options.QueryParameters.Recursive = true;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.ExcludeLocationTypes = [LocationType.Virtual,];
+                options.QueryParameters.EnableTotalRecordCount = false;
+                options.QueryParameters.Limit = 20;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Movie,];
+            }, cancellationToken: cancellationToken);
+
+        var items = new ObservableCollection<UIMediaListItem>(
+            itemsResult.Items
+                .Select(x =>
+                {
+                    var item = new UIMediaListItem
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        Type = x.Type.Value,
+                        UserData = new UIUserData
+                        {
+                            HasBeenWatched = x.UserData.Played.Value,
+                            IsFavorite = true,
+                        },
+                    };
+
+                    return item;
+                }));
+
+        return items;
+    }
+
+    public async Task<ObservableCollection<UIMediaListItem>> GetSeriesAsync(CancellationToken cancellationToken = default)
+    {
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var itemsResult = await apiClient.Items
+            .GetAsync(options =>
+            {
+                options.QueryParameters.UserId = user.Id;
+                options.QueryParameters.SortBy = [ItemSortBy.SeriesSortName, ItemSortBy.SortName,];
+                options.QueryParameters.Filters = [ItemFilter.IsFavorite];
+                options.QueryParameters.Recursive = true;
+                options.QueryParameters.Fields = [ItemFields.PrimaryImageAspectRatio,];
+                options.QueryParameters.ExcludeLocationTypes = [LocationType.Virtual,];
+                options.QueryParameters.EnableTotalRecordCount = false;
+                options.QueryParameters.Limit = 20;
+                options.QueryParameters.IncludeItemTypes = [BaseItemKind.Series,];
+            }, cancellationToken: cancellationToken);
+
+        var items = new ObservableCollection<UIMediaListItem>(
+            itemsResult.Items
+                .Select(x =>
+                {
+                    var item = new UIMediaListItemSeries
+                    {
+                        Id = x.Id.Value,
+                        Name = x.Name,
+                        Url = mediaHelpers.SetImageUrl(x, "250", "300", JellyfinConstants.PrimaryName),
+                        Type = x.Type.Value,
+                        SeriesName = x.SeriesName,
+                        UserData = new UIUserData
+                        {
+                            HasBeenWatched = x.UserData.Played.Value,
+                            IsFavorite = true,
+                            UnplayedItemCount = x.UserData.UnplayedItemCount ?? 0,
+                        },
+                    };
+
+                    return item;
+                }));
+
+        return items;
+    }
+}

@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Details;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.Details;
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

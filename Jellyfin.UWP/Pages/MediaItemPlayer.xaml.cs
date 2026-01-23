@@ -1,15 +1,15 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
+using Jellyfin.Models;
+using Jellyfin.Models.Filters;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.MessagingModels;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.filters;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.ViewModels;
 using MetroLog;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
@@ -183,7 +183,7 @@ internal sealed partial class MediaItemPlayer : Page
             && ViewModel.Item.Type == BaseItemDto_Type.Episode
             && !ViewModel.IsNextItemOpen)
         {
-            //ViewModel.IsNextItemOpen = true;
+            ViewModel.IsNextItemOpen = true;
         }
     }
 

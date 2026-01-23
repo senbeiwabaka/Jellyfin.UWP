@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:m="using:Jellyfin.UWP.Models"
+    xmlns:m="using:Jellyfin.Models"
     xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
     d:DataContext="{d:DesignInstance Type=uwp:MoviesViewModel}"
     mc:Ignorable="d"

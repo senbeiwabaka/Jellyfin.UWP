@@ -1,10 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Jellyfin.Models;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Models;
+using Jellyfin.Services;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Jellyfin.UWP.Helpers;
 
