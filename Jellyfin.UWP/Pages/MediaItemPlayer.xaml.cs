@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Models;
 using Jellyfin.Models.Filters;
@@ -7,9 +10,6 @@ using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.MessagingModels;
 using Jellyfin.ViewModels;
 using MetroLog;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
 using Windows.System.Display;
@@ -216,8 +216,6 @@ internal sealed partial class MediaItemPlayer : Page
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Unregister<MediaPlayerItemUserDataChanged>(this);
-
         stopwatch.Stop();
 
         Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;

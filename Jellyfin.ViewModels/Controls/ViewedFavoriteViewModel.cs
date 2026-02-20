@@ -1,9 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Models;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.ViewModels.MessagingModels;
 using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Jellyfin.ViewModels.Controls;
@@ -18,9 +22,10 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
     [ObservableProperty]
     public partial bool IsFavorite { get; set; }
 
-    public async Task FavoriteStateAsync()
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task FavoriteStateAsync(CancellationToken cancellationToken)
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
 
         if (item.UserData.IsFavorite)
         {
@@ -38,6 +43,12 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
                     options.QueryParameters.UserId = user.Id;
                 });
         }
+
+        var updateItem = await WeakReferenceMessenger.Default.Send<UIMediaListItemRequestMessage>(new UIMediaListItemRequestMessage(item.Id));
+
+        //Initialize(updateItem);
+
+        WeakReferenceMessenger.Default.Send(new UIItemChangedMesage(updateItem));
     }
 
     public void Initialize(UIItem item)
@@ -48,9 +59,10 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
         HasBeenWatched = this.item.UserData.HasBeenWatched;
     }
 
-    public async Task PlayedStateAsync()
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task ChangePlayStateAsync(CancellationToken cancellationToken)
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
 
         if (item.UserData.HasBeenWatched)
         {
@@ -58,7 +70,7 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
                 .DeleteAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                });
+                }, cancellationToken: cancellationToken);
         }
         else
         {
@@ -67,7 +79,13 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
                 {
                     options.QueryParameters.UserId = user.Id;
                     options.QueryParameters.DatePlayed = DateTimeOffset.Now;
-                });
+                }, cancellationToken: cancellationToken);
         }
+
+        var updateItem = await WeakReferenceMessenger.Default.Send<UIMediaListItemRequestMessage>(new UIMediaListItemRequestMessage(item.Id));
+
+        //Initialize(updateItem);
+
+        WeakReferenceMessenger.Default.Send(new UIItemChangedMesage(updateItem));
     }
 }

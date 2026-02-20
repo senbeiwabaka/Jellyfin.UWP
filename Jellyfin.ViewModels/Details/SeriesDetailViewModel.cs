@@ -19,10 +19,10 @@ public sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Jell
     public partial UIMediaListItem? NextUpItem { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<UIMediaListItem> SeriesMetadata { get; set; }
+    public partial ObservableCollection<UIMediaListItem> SeriesMetadata { get; set; } = [];
 
     [ObservableProperty]
-    public partial ObservableCollection<UIMediaListItem> SimiliarMediaList { get; set; }
+    public partial ObservableCollection<UIMediaListItem> SimiliarMediaList { get; set; } = [];
 
     protected override async Task DetailsExtraExecuteAsync(CancellationToken cancellationToken = default)
     {
@@ -72,8 +72,8 @@ public sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Jell
                 option.QueryParameters.Fields =
                 [
                     ItemFields.ItemCounts,
-                        ItemFields.PrimaryImageAspectRatio,
-                        ItemFields.MediaSourceCount,
+                    ItemFields.PrimaryImageAspectRatio,
+                    ItemFields.MediaSourceCount,
                 ];
             }, cancellationToken);
 
@@ -133,18 +133,6 @@ public sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Jell
         DetailsItemPlayRecord.MediaId = await MediaHelpers.GetPlayIdAsync(MediaItem, [.. SeriesMetadata], NextUpItem?.Id);
     }
 
-    private string SetSeasonImageUrl(BaseItemDto item)
-    {
-        var baseUrl = MemoryCache.Get<string>(JellyfinConstants.HostUrlName);
-        var imageTags = item.ImageTags.AdditionalData;
-        if (imageTags.ContainsKey(JellyfinConstants.PrimaryName))
-        {
-            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={imageTags[JellyfinConstants.PrimaryName]}";
-        }
-
-        return $"{baseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
-    }
-
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
     private async Task NextUpFavoriteStateAsync(CancellationToken cancellationToken)
     {
@@ -196,5 +184,17 @@ public sealed partial class SeriesDetailViewModel(IMemoryCache memoryCache, Jell
 
             await LoadMediaInformationAsync(MediaItem.Id.Value, cancellationToken);
         }
+    }
+
+    private string SetSeasonImageUrl(BaseItemDto item)
+    {
+        var baseUrl = MemoryCache.Get<string>(JellyfinConstants.HostUrlName);
+        var imageTags = item.ImageTags.AdditionalData;
+        if (imageTags.ContainsKey(JellyfinConstants.PrimaryName))
+        {
+            return $"{baseUrl}/Items/{item.Id}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={imageTags[JellyfinConstants.PrimaryName]}";
+        }
+
+        return $"{baseUrl}/Items/{item.SeriesId}/Images/{JellyfinConstants.PrimaryName}?fillHeight=446&fillWidth=298&quality=96&tag={item.SeriesPrimaryImageTag}";
     }
 }

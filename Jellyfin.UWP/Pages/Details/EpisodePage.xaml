@@ -210,9 +210,9 @@
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="m:UIMediaListItem">
                                         <StackPanel Width="380">
-                                            <uc:ViewedIconControl PositionLeft="345" PositionTop="5" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                                            <uc:ViewedIconControl PositionLeft="345" PositionTop="5" UserItem="{x:Bind Mode=OneWay}" />
                                             <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                                            <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_Click" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" UserItem="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_Click" />
 
                                             <Image Source="{x:Bind Url}" Height="215" Stretch="Fill" Canvas.ZIndex="-1" />
                                             <TextBlock FontSize="14">

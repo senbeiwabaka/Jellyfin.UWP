@@ -1,17 +1,18 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.IO;
+using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages;
+using Jellyfin.UWP.Services;
 using MetroLog;
 using MetroLog.Targets;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
-using System;
-using System.IO;
-using System.Text.Json;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Storage;
@@ -34,7 +35,7 @@ public sealed partial class App : Application
     /// executed, and as such is the logical equivalent of main() or WinMain().
     /// </summary>
     public App()
-    { 
+    {
         InitializeComponent();
 
         Suspending += OnSuspending;
@@ -58,7 +59,6 @@ public sealed partial class App : Application
         Log = MetroLog.LoggerFactory.GetLogger(nameof(App));
 
         Log.Info("Jellyfin UWP Client has started");
-       
     }
 
     private void SetupExceptionHandling(Microsoft.Extensions.Logging.ILogger<App> logger)
@@ -85,7 +85,14 @@ public sealed partial class App : Application
                //configure.ClearProviders();
                configure.AddNLog();
            })
+           .AddSingleton<ItemService>()
            .BuildServiceProvider());
+
+        // Start the singleton Item message service
+        using (var scope = Ioc.Default.CreateScope())
+        {
+            _ = scope.ServiceProvider.GetRequiredService<ItemService>();
+        }
 
         var accessToken = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.AccessTokenName]?.ToString();
         var jellyfinUrl = ApplicationData.Current.LocalSettings.Values[JellyfinConstants.HostUrlName]?.ToString();

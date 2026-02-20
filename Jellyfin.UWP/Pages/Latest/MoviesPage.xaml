@@ -7,8 +7,6 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
     xmlns:m="using:Jellyfin.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
-    d:DataContext="{d:DesignInstance Type=uwp:MoviesViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -19,9 +17,9 @@
         <DataTemplate x:Key="UIContinueMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="380">
                 <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214">
-                    <uc:ViewedIconControl PositionLeft="350" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                    <uc:ViewedIconControl PositionLeft="350" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
                     <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" UserItem="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                     <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="5" />
 
@@ -37,9 +35,9 @@
         <DataTemplate x:Key="UIMediaListItemDataTemplate" x:DataType="m:UIMediaListItem">
             <StackPanel Width="220">
                 <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
-                    <uc:ViewedIconControl PositionLeft="195" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
+                    <uc:ViewedIconControl PositionLeft="195" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
                     <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                    <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
 
                     <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 

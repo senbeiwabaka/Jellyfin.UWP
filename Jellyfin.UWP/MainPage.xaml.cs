@@ -1,4 +1,9 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
 using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
@@ -8,16 +13,12 @@ using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.Pages.Latest;
 using Jellyfin.ViewModels.MainPage;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP;
 
@@ -57,6 +58,16 @@ internal sealed partial class MainPage : Page
         ViewModel.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
 
         await ViewModel.GetUserDisplay();
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        if (Frame.CanGoForward)
+        {
+            Frame.ForwardStack.Clear();
+        }
+
+        base.OnNavigatedTo(e);
     }
 
     private void SetupLatest()
