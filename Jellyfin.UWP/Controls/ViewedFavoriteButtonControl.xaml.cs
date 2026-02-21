@@ -41,8 +41,6 @@ internal sealed partial class ViewedFavoriteButtonControl : UserControl
         Unloaded += ViewedFavoriteButtonControl_Unloaded;
     }
 
-    public event RoutedEventHandler? ButtonClick;
-
     public string PositionLeft
     {
         get { return (string)GetValue(PositionLeftProperty); }

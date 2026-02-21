@@ -94,11 +94,6 @@ public sealed partial class SearchPage : Page
         ApplicationView.GetForCurrentView().Title = "Search";
     }
 
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.LoadSearchCommand.Execute(asbSearch.Text);
-    }
-
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         var panel = (StackPanel)sender;

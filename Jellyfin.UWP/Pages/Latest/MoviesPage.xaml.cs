@@ -246,11 +246,6 @@ internal sealed partial class MoviesPage : Page
         }
     }
 
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        await Run();
-    }
-
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         var panel = (StackPanel)sender;

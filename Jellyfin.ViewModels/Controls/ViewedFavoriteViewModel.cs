@@ -1,14 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Jellyfin.Models;
 using Jellyfin.Sdk;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.ViewModels.MessagingModels;
-using Microsoft.Extensions.Caching.Memory;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Jellyfin.ViewModels.Controls;
 
@@ -46,8 +46,6 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
 
         var updateItem = await WeakReferenceMessenger.Default.Send<UIMediaListItemRequestMessage>(new UIMediaListItemRequestMessage(item.Id));
 
-        //Initialize(updateItem);
-
         WeakReferenceMessenger.Default.Send(new UIItemChangedMesage(updateItem));
     }
 
@@ -83,8 +81,6 @@ public sealed partial class ViewedFavoriteViewModel(JellyfinApiClient apiClient,
         }
 
         var updateItem = await WeakReferenceMessenger.Default.Send<UIMediaListItemRequestMessage>(new UIMediaListItemRequestMessage(item.Id));
-
-        //Initialize(updateItem);
 
         WeakReferenceMessenger.Default.Send(new UIItemChangedMesage(updateItem));
     }

@@ -194,11 +194,6 @@ internal sealed partial class ShowsPage : Page
         Frame.Navigate(typeof(SeriesPage), seriesId);
     }
 
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        Run();
-    }
-
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         var panel = (StackPanel)sender;

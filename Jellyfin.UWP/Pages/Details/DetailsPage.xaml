@@ -267,7 +267,7 @@
                                                 <uc:ViewedIconControl PositionLeft="190" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
                                                 <uc:CountControl PositionLeft="190" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
                                                 <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                                                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind}" />
 
                                                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 

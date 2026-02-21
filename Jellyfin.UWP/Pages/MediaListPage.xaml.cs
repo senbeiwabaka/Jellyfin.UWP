@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
 using Jellyfin.Models;
 using Jellyfin.Models.Filters;
@@ -6,8 +8,6 @@ using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.ViewModels;
-using System;
-using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -116,10 +116,5 @@ internal sealed partial class MediaListPage : Page
         var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
-    }
-
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RefreshCommand.Execute(null);
     }
 }

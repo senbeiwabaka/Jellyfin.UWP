@@ -212,7 +212,7 @@
                                         <StackPanel Width="380">
                                             <uc:ViewedIconControl PositionLeft="345" PositionTop="5" UserItem="{x:Bind Mode=OneWay}" />
                                             <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                                            <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" UserItem="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_Click" />
+                                            <uc:ViewedFavoriteButtonControl PositionLeft="285" PositionTop="180" UserItem="{x:Bind}" />
 
                                             <Image Source="{x:Bind Url}" Height="215" Stretch="Fill" Canvas.ZIndex="-1" />
                                             <TextBlock FontSize="14">

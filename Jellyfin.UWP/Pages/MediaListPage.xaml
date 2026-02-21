@@ -208,7 +208,7 @@
                             </Canvas>
 
                             <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                            <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                            <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind Mode=OneWay}" />
 
                             <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 
