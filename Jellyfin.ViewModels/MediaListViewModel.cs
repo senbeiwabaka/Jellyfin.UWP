@@ -67,8 +67,11 @@ public sealed partial class MediaListViewModel(IMemoryCache memoryCache, Jellyfi
         CurrentIndex = 0;
     }
 
-    public async Task InitialLoadAsync(Guid id, CancellationToken cancellationToken = default)
+    [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false)]
+    private async Task InitialLoadAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        IsRunning = true;
+
         if (parentId is not null && parentItem is not null)
         {
             return;
@@ -157,7 +160,7 @@ public sealed partial class MediaListViewModel(IMemoryCache memoryCache, Jellyfi
     }
 
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false, CanExecute = nameof(CanLoadNext))]
-    public async Task LoadNextAsync(CancellationToken cancellationToken)
+    private async Task LoadNextAsync(CancellationToken cancellationToken)
     {
         if (CurrentIndex == 0)
         {
@@ -177,7 +180,7 @@ public sealed partial class MediaListViewModel(IMemoryCache memoryCache, Jellyfi
     }
 
     [RelayCommand(AllowConcurrentExecutions = false, IncludeCancelCommand = false, CanExecute = nameof(CanLoadPrevious))]
-    public async Task LoadPreviousAsync(CancellationToken cancellationToken)
+    private async Task LoadPreviousAsync(CancellationToken cancellationToken)
     {
         CurrentIndex -= Limit;
 

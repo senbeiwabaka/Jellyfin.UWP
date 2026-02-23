@@ -13,21 +13,21 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
 {
     public async Task<Guid> GetPlayIdAsync(UIMediaListItem mediaItem)
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var seasonId = mediaItem.Id;
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
+        var seriesId = mediaItem.Id;
 
         if (mediaItem.Type == BaseItemDto_Type.Season)
         {
-            var season = await apiClient.Items[mediaItem.Id].
+            var season = (await apiClient.Items[mediaItem.Id].
                 GetAsync(options =>
                 {
                     options.QueryParameters.UserId = user.Id;
-                });
+                }))!;
 
-            seasonId = season.ParentId.Value;
+            seriesId = season.ParentId!.Value;
         }
 
-        var seasons = await apiClient.Shows[seasonId].Seasons
+        var seasons = await apiClient.Shows[seriesId].Seasons
             .GetAsync(options =>
             {
                 options.QueryParameters.UserId = user.Id;
@@ -38,14 +38,14 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
                     ItemFields.MediaSourceCount,
                 ];
             });
-        var nextUp = await apiClient.Shows.NextUp
+        var nextUp = (await apiClient.Shows.NextUp
             .GetAsync(options =>
             {
                 options.QueryParameters.UserId = user.Id;
-                options.QueryParameters.SeriesId = mediaItem.Id;
+                options.QueryParameters.SeriesId = seriesId;
                 options.QueryParameters.Fields = [ItemFields.MediaSourceCount,];
-            });
-        var nextUpItem = nextUp.Items.FirstOrDefault();
+            }))!;
+        var nextUpItem = nextUp.Items?.FirstOrDefault();
 
         return await GetPlayIdAsync(
             mediaItem.Id,
@@ -122,7 +122,7 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
             return mediaId;
         }
 
-        if (seriesData != null && Array.Exists(seriesData, x => x.IsSelected))
+        if (Array.Exists(seriesData, x => x.IsSelected))
         {
             return await GetSeriesEpisodeIdAsync(mediaId, seriesData);
         }
@@ -137,15 +137,22 @@ internal sealed class MediaHelpers(IMemoryCache memoryCache, JellyfinApiClient a
 
     private async Task<Guid> GetSeriesEpisodeIdAsync(Guid mediaId, UIMediaListItem[] seriesData)
     {
-        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName);
-        var episodes = await apiClient.Shows[mediaId].Episodes
+        var user = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!;
+        var episodes = (await apiClient.Shows[mediaId].Episodes
             .GetAsync(options =>
             {
                 options.QueryParameters.UserId = user.Id;
                 options.QueryParameters.SeasonId = seriesData.SingleOrDefault(x => x.IsSelected)?.Id ?? seriesData[0].Id;
                 options.QueryParameters.Fields = [ItemFields.ItemCounts, ItemFields.PrimaryImageAspectRatio,];
-            });
+            }))!;
 
-        return episodes.Items.First(x => !x.UserData.Played.Value && x.UserData.PlayedPercentage < 90).Id ?? Guid.Empty;
+        var id = episodes.Items?.FirstOrDefault(x => !x.UserData.Played.Value && x.UserData.PlayedPercentage < 90)?.Id;
+
+        if (!id.HasValue)
+        {
+            id = episodes.Items?[0].Id;
+        }
+
+        return id.Value;
     }
 }

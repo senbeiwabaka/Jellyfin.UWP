@@ -51,8 +51,6 @@ internal sealed partial class MediaListPage : Page
         {
             NavigationCacheMode = NavigationCacheMode.Disabled;
 
-            Loaded -= MediaListPage_Loaded;
-
             PageHelpers.ResetPageCache();
         }
     }
@@ -64,8 +62,6 @@ internal sealed partial class MediaListPage : Page
         if (e.NavigationMode == NavigationMode.New)
         {
             DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
-
-            Loaded += MediaListPage_Loaded;
         }
 
         id = (Guid)e.Parameter;
@@ -85,11 +81,6 @@ internal sealed partial class MediaListPage : Page
         var index = ViewModel.GenresFilterList.IndexOf(genreFiltersModel);
 
         ViewModel.GenresFilterList[index].IsSelected = !ViewModel.GenresFilterList[index].IsSelected;
-    }
-
-    private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.InitialLoadAsync(id);
     }
 
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)

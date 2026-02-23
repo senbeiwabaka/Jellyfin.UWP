@@ -17,6 +17,12 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     NavigationCacheMode="Enabled">
 
+    <interactivity:Interaction.Behaviors>
+        <interactivity:EventTriggerBehavior EventName="Loaded">
+            <interactivity:InvokeCommandAction Command="{x:Bind ViewModel.InitialLoadCommand}" CommandParameter="{x:Bind id}" />
+        </interactivity:EventTriggerBehavior>
+    </interactivity:Interaction.Behaviors>
+
     <Page.Resources>
         <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
