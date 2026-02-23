@@ -2,7 +2,7 @@ name: Build and Tests
 
 on:  
   push:
-    branches: [ master, dotnet9 ]
+    branches: [ master, dotnet9, testing ]
   pull_request:
     branches: [ master, dotnet9 ]
     
