@@ -480,8 +480,8 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
         {
             var firstSubtitle = mediaStreams.First(x => x.Type == MediaStream_Type.Subtitle);
             var subtitleUrl = GetSubtitleUrl(
-                firstSubtitle.Index.Value,
-                string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec);
+                firstSubtitle.Index ?? 0,
+                string.Equals(firstSubtitle.Codec, "subrip", StringComparison.OrdinalIgnoreCase) ? "vtt" : firstSubtitle.Codec ?? string.Empty);
 
             var timedTextSource = TimedTextSource.CreateFromUri(subtitleUrl);
 
