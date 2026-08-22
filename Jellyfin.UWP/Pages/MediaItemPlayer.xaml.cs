@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Messaging;
+using Jellyfin.Models;
+using Jellyfin.Models.Filters;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
 using Jellyfin.UWP.MessagingModels;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.filters;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.ViewModels;
 using MetroLog;
 using Windows.ApplicationModel.Core;
 using Windows.Media.Playback;
@@ -183,7 +183,7 @@ internal sealed partial class MediaItemPlayer : Page
             && ViewModel.Item.Type == BaseItemDto_Type.Episode
             && !ViewModel.IsNextItemOpen)
         {
-            //ViewModel.IsNextItemOpen = true;
+            ViewModel.IsNextItemOpen = true;
         }
     }
 
@@ -216,8 +216,6 @@ internal sealed partial class MediaItemPlayer : Page
 
     private void MediaItemPlayer_Unloaded(object sender, RoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Unregister<MediaPlayerItemUserDataChanged>(this);
-
         stopwatch.Stop();
 
         Window.Current.CoreWindow.PointerMoved -= CoreWindow_PointerMoved;

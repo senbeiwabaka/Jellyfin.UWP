@@ -1,9 +1,10 @@
 ﻿using Jellyfin.Sdk;
-using Jellyfin.UWP.ViewModels;
-using Jellyfin.UWP.ViewModels.Controls;
-using Jellyfin.UWP.ViewModels.Details;
-using Jellyfin.UWP.ViewModels.Latest;
-using Jellyfin.UWP.ViewModels.MainPage;
+using Jellyfin.Services;
+using Jellyfin.ViewModels;
+using Jellyfin.ViewModels.Controls;
+using Jellyfin.ViewModels.Details;
+using Jellyfin.ViewModels.Latest;
+using Jellyfin.ViewModels.MainPage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
@@ -53,7 +54,9 @@ internal static class IOCExtensions
                 s.GetRequiredService<JellyfinSdkSettings>(),
                 s.GetRequiredService<IHttpClientFactory>().CreateClient("Default")))
             .AddScoped<JellyfinApiClient>()
-            .AddScoped<IMediaHelpers, MediaHelpers>();
+            .AddScoped<IMediaHelpers, MediaHelpers>()
+            .AddScoped<IMediaPlayerHelpers, MediaPlayerHelpers>()
+            .AddScoped<IApplicationService, ApplicationService>();
 
         return services;
     }

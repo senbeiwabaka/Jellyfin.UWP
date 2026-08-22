@@ -14,10 +14,10 @@
         <converters:DoubleToVisibilityConverter x:Key="GreaterThanToleranceVisibilityConverter" GreaterThan="0.0" />
     </UserControl.Resources>
 
-    <Canvas Background="Transparent" Visibility="{x:Bind UserData.UnplayedItemCount, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
+    <Canvas Background="Transparent" Visibility="{x:Bind UserItem.UserData.UnplayedItemCount, Mode=OneWay, Converter={StaticResource GreaterThanToleranceVisibilityConverter}}">
         <Grid Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}">
             <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xE91F;" FontSize="20" />
-            <TextBlock Text="{x:Bind UserData.UnplayedItemCount, Mode=OneWay}" Margin="6" />
+            <TextBlock Text="{x:Bind UserItem.UserData.UnplayedItemCount, Mode=OneWay}" Margin="6" />
             
         </Grid>
     </Canvas>

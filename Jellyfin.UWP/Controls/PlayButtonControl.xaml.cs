@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
-using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
+using Jellyfin.Services;
 using Jellyfin.UWP.Pages;
+using Microsoft.Extensions.Caching.Memory;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 

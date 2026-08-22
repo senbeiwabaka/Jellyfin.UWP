@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
-using Jellyfin.UWP.ViewModels.Latest;
+using Jellyfin.ViewModels.Latest;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -243,11 +244,6 @@ internal sealed partial class MoviesPage : Page
             listViewScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
             listViewScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
         }
-    }
-
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        await Run();
     }
 
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)

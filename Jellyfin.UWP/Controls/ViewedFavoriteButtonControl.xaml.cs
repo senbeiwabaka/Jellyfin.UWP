@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.Controls;
+using Jellyfin.ViewModels.MessagingModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -8,13 +10,6 @@ namespace Jellyfin.UWP.Controls;
 
 internal sealed partial class ViewedFavoriteButtonControl : UserControl
 {
-    public static readonly DependencyProperty ItemProperty =
-           DependencyProperty.Register(
-               nameof(Item),
-               typeof(UIItem),
-               typeof(ViewedFavoriteButtonControl),
-               new PropertyMetadata(null));
-
     public static readonly DependencyProperty PositionLeftProperty =
                DependencyProperty.Register(
            nameof(PositionLeft),
@@ -29,6 +24,13 @@ internal sealed partial class ViewedFavoriteButtonControl : UserControl
             typeof(ViewedFavoriteButtonControl),
             new PropertyMetadata(null));
 
+    public static readonly DependencyProperty UserItemProperty =
+                  DependencyProperty.Register(
+               nameof(UserItem),
+               typeof(UIItem),
+               typeof(ViewedFavoriteButtonControl),
+               new PropertyMetadata(null));
+
     public ViewedFavoriteButtonControl()
     {
         InitializeComponent();
@@ -36,14 +38,7 @@ internal sealed partial class ViewedFavoriteButtonControl : UserControl
         DataContext = Ioc.Default.GetRequiredService<ViewedFavoriteViewModel>();
 
         Loaded += ViewedFavoriteButtonControl_Loaded;
-    }
-
-    public event RoutedEventHandler ButtonClick;
-
-    public UIItem Item
-    {
-        get { return (UIItem)GetValue(ItemProperty); }
-        set { SetValue(ItemProperty, value); }
+        Unloaded += ViewedFavoriteButtonControl_Unloaded;
     }
 
     public string PositionLeft
@@ -58,24 +53,35 @@ internal sealed partial class ViewedFavoriteButtonControl : UserControl
         set { SetValue(PositionTopProperty, value); }
     }
 
+    public UIItem UserItem
+    {
+        get { return (UIItem)GetValue(UserItemProperty); }
+        set { SetValue(UserItemProperty, value); }
+    }
+
     public ViewedFavoriteViewModel ViewModel => (ViewedFavoriteViewModel)DataContext;
-
-    private async void btn_Favorite_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.FavoriteStateAsync();
-
-        ButtonClick?.Invoke(this, new RoutedEventArgs());
-    }
-
-    private async void btn_Viewed_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.PlayedStateAsync();
-
-        ButtonClick?.Invoke(this, new RoutedEventArgs());
-    }
 
     private void ViewedFavoriteButtonControl_Loaded(object sender, RoutedEventArgs e)
     {
-        ViewModel.Initialize(Item);
+        WeakReferenceMessenger.Default.Register<UIItemChangedMesage>(this, (r, m) =>
+        {
+            // Handle the message here, with r being the recipient and m being the
+            // input message. Using the recipient passed as input makes it so that
+            // the lambda expression doesn't capture "this", improving performance.
+
+            if (m.Value.Id == UserItem.Id)
+            {
+                UserItem = m.Value;
+
+                ViewModel.Initialize(UserItem);
+            }
+        });
+
+        ViewModel.Initialize(UserItem);
+    }
+
+    private void ViewedFavoriteButtonControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Unregister<UIItemChangedMesage>(this);
     }
 }

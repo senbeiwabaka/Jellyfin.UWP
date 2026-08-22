@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Details;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.Details;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -79,10 +80,5 @@ internal sealed partial class SeriesPage : Page
         var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
-    }
-
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.LoadMediaInformationAsync(id);
     }
 }

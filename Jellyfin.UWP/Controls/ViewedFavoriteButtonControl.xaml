@@ -5,8 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Controls"
-    d:DataContext="{d:DesignInstance Type=uwp:ViewedFavoriteViewModel}"
     Canvas.ZIndex="2"
     mc:Ignorable="d"
     d:DesignHeight="300"
@@ -20,11 +18,11 @@
 
     <Canvas Background="Transparent">
         <StackPanel Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}" Orientation="Horizontal">
-            <Button x:Name="btn_Viewed" Margin="0,0,5,0" Click="btn_Viewed_Click" Background="Black">
+            <Button x:Name="btn_Viewed" Margin="0,0,5,0" Background="Black"  Command="{x:Bind ViewModel.ChangePlayStateCommand}">
                 <FontIcon Foreground="{x:Bind ViewModel.HasBeenWatched, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
             </Button>
 
-            <Button x:Name="btn_Favorite" Margin="5,0,0,0" Click="btn_Favorite_Click"  Background="Black">
+            <Button x:Name="btn_Favorite" Margin="5,0,0,0"  Background="Black" Command="{x:Bind ViewModel.FavoriteStateCommand}">
                 <FontIcon Foreground="{x:Bind ViewModel.IsFavorite, Mode=OneWay, Converter={StaticResource TrueRedFalseWhite}}" FontFamily="Segoe MDL2 Assets" Glyph="{x:Bind ViewModel.IsFavorite, Mode=OneWay, Converter={StaticResource ClearHeartFilledHeart}}" />
             </Button>
         </StackPanel>

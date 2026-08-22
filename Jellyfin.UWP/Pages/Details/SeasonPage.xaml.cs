@@ -1,14 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Details;
+using CommunityToolkit.Mvvm.Input;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.Details;
 using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP.Pages.Details;
 
-internal sealed partial class SeasonPage : Page
+public partial class SeasonPage : Page
 {
     private Guid id;
 
@@ -19,7 +23,13 @@ internal sealed partial class SeasonPage : Page
         DataContext = Ioc.Default.GetRequiredService<SeasonViewModel>();
     }
 
-    internal SeasonViewModel ViewModel => (SeasonViewModel)DataContext;
+    public SeasonViewModel ViewModel => (SeasonViewModel)DataContext;
+
+    [RelayCommand]
+    public void Epi()
+    {
+        Console.Write("test");
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {

@@ -1,13 +1,13 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using System;
+using System.Linq;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
+using Jellyfin.Models.Filters;
 using Jellyfin.Sdk.Generated.Models;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.Models.Filters;
 using Jellyfin.UWP.Pages.Details;
-using Jellyfin.UWP.ViewModels;
-using System;
-using System.Linq;
+using Jellyfin.ViewModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -51,8 +51,6 @@ internal sealed partial class MediaListPage : Page
         {
             NavigationCacheMode = NavigationCacheMode.Disabled;
 
-            Loaded -= MediaListPage_Loaded;
-
             PageHelpers.ResetPageCache();
         }
     }
@@ -64,8 +62,6 @@ internal sealed partial class MediaListPage : Page
         if (e.NavigationMode == NavigationMode.New)
         {
             DataContext = Ioc.Default.GetRequiredService<MediaListViewModel>();
-
-            Loaded += MediaListPage_Loaded;
         }
 
         id = (Guid)e.Parameter;
@@ -85,11 +81,6 @@ internal sealed partial class MediaListPage : Page
         var index = ViewModel.GenresFilterList.IndexOf(genreFiltersModel);
 
         ViewModel.GenresFilterList[index].IsSelected = !ViewModel.GenresFilterList[index].IsSelected;
-    }
-
-    private async void MediaListPage_Loaded(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.InitialLoadAsync(id);
     }
 
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -116,10 +107,5 @@ internal sealed partial class MediaListPage : Page
         var child = panel.Children.Last(x => x.GetType() == typeof(Canvas));
 
         child.Visibility = Visibility.Collapsed;
-    }
-
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.RefreshCommand.Execute(null);
     }
 }

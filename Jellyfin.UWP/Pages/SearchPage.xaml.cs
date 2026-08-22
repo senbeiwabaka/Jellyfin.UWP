@@ -1,12 +1,12 @@
-﻿using System;
-using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
-using Jellyfin.UWP.ViewModels;
+using Jellyfin.ViewModels;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Linq;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -92,11 +92,6 @@ public sealed partial class SearchPage : Page
         }
 
         ApplicationView.GetForCurrentView().Title = "Search";
-    }
-
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        ViewModel.LoadSearchCommand.Execute(asbSearch.Text);
     }
 
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)

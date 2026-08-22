@@ -6,8 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Details"
+    xmlns:m="using:Jellyfin.Models"
+    xmlns:uwp="using:Jellyfin.ViewModels.Details"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     d:DataContext="{d:DesignInstance Type=uwp:DetailsViewModel}"
@@ -264,10 +264,10 @@
                                     <DataTemplate x:DataType="m:UIMediaListItem">
                                         <StackPanel Width="220" Margin="0,10">
                                             <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="330">
-                                                <uc:ViewedIconControl PositionLeft="190" PositionTop="10" HasBeenViewed="{x:Bind UserData.HasBeenWatched}" />
-                                                <uc:CountControl PositionLeft="190" PositionTop="10" UserData="{x:Bind UserData, Mode=OneWay}" />
+                                                <uc:ViewedIconControl PositionLeft="190" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
+                                                <uc:CountControl PositionLeft="190" PositionTop="10" UserItem="{x:Bind Mode=OneWay}" />
                                                 <uc:PlayButtonControl PositionLeft="95" PositionTop="150" />
-                                                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" Item="{x:Bind}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                                <uc:ViewedFavoriteButtonControl PositionLeft="120" PositionTop="295" UserItem="{x:Bind}" />
 
                                                 <Image Source="{x:Bind Url}" Height="330" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 

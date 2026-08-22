@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<Nullable>enable</Nullable>
+		<UseUwp>true</UseUwp>
+		<DefaultLanguage>en-US</DefaultLanguage>
+		<IsAotCompatible>false</IsAotCompatible>
+		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+		<LangVersion>Preview</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Jellyfin.Models\Jellyfin.Models.csproj" />
+		<ProjectReference Include="..\Jellyfin.Services\Jellyfin.Services.csproj" />
+		<ProjectReference Include="..\Jellyfin\Jellyfin.csproj" />
+	</ItemGroup>
+
+</Project>

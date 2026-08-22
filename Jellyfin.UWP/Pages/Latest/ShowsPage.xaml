@@ -6,11 +6,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:uc="using:Jellyfin.UWP.Controls"
-    xmlns:m="using:Jellyfin.UWP.Models"
-    xmlns:uwp="using:Jellyfin.UWP.ViewModels.Latest"
+    xmlns:m="using:Jellyfin.Models"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    d:DataContext="{d:DesignInstance Type=uwp:ShowsViewModel}"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
@@ -27,7 +25,7 @@
             <StackPanel Width="360">
                 <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214">
                     <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                    <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" UserItem="{x:Bind Mode=OneWay}" />
 
                     <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 
@@ -46,7 +44,7 @@
             <StackPanel Width="360">
                 <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214" Margin="10,10">
                     <uc:PlayButtonControl PositionLeft="160" PositionTop="95" />
-                    <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                    <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" UserItem="{x:Bind Mode=OneWay}" />
 
                     <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 
@@ -139,7 +137,7 @@
                                 <StackPanel Width="360">
                                     <StackPanel PointerEntered="StackPanel_PointerEntered" PointerExited="StackPanel_PointerExited" Height="214" Margin="10,10">
                                         <uc:PlayButtonControl PositionLeft="175" PositionTop="95" />
-                                        <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" Item="{x:Bind Mode=OneWay}" ButtonClick="ViewedFavoriteButtonControl_ButtonClick" />
+                                        <uc:ViewedFavoriteButtonControl PositionLeft="240" PositionTop="180" UserItem="{x:Bind Mode=OneWay}" />
 
                                         <Image Source="{x:Bind Url}" Height="214" HorizontalAlignment="Center" Canvas.ZIndex="5" Stretch="Fill" />
 

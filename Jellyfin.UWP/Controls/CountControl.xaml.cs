@@ -1,4 +1,6 @@
-﻿using Jellyfin.UWP.Models;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.MessagingModels;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -6,13 +8,6 @@ namespace Jellyfin.UWP.Controls;
 
 internal sealed partial class CountControl : UserControl
 {
-    public static readonly DependencyProperty UserDataProperty =
-        DependencyProperty.Register(
-            nameof(UserData),
-            typeof(UIUserData),
-            typeof(CountControl),
-            new PropertyMetadata(null));
-
     public static readonly DependencyProperty PositionLeftProperty =
                DependencyProperty.Register(
            nameof(PositionLeft),
@@ -27,15 +22,19 @@ internal sealed partial class CountControl : UserControl
             typeof(CountControl),
             new PropertyMetadata(null));
 
+    public static readonly DependencyProperty UserItemProperty =
+               DependencyProperty.Register(
+           nameof(UserItem),
+           typeof(UIItem),
+           typeof(CountControl),
+           new PropertyMetadata(null));
+
     public CountControl()
     {
         InitializeComponent();
-    }
 
-    public UIUserData UserData
-    {
-        get { return (UIUserData)GetValue(UserDataProperty); }
-        set { SetValue(UserDataProperty, value); }
+        Loaded += CountControl_Loaded;
+        Unloaded += CountControl_Unloaded;
     }
 
     public string PositionLeft
@@ -48,5 +47,27 @@ internal sealed partial class CountControl : UserControl
     {
         get { return (string)GetValue(PositionTopProperty); }
         set { SetValue(PositionTopProperty, value); }
+    }
+
+    public UIItem UserItem
+    {
+        get { return (UIItem)GetValue(UserItemProperty); }
+        set { SetValue(UserItemProperty, value); }
+    }
+
+    private void CountControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Register<UIItemChangedMesage>(this, (r, m) =>
+        {
+            if (m.Value.Id == UserItem.Id)
+            {
+                UserItem = m.Value;
+            }
+        });
+    }
+
+    private void CountControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Unregister<UIItemChangedMesage>(this);
     }
 }

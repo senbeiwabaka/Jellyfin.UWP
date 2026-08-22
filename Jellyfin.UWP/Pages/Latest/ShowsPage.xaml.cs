@@ -1,10 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages.Details;
-using Jellyfin.UWP.ViewModels.Latest;
+using Jellyfin.ViewModels.Latest;
 using System;
 using System.Linq;
 using Windows.Foundation;
@@ -191,11 +192,6 @@ internal sealed partial class ShowsPage : Page
         var seriesId = await mediaHelpers.GetSeriesIdFromEpisodeIdAsync(mediaItem.Id);
 
         Frame.Navigate(typeof(SeriesPage), seriesId);
-    }
-
-    private void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        Run();
     }
 
     private void StackPanel_PointerEntered(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)

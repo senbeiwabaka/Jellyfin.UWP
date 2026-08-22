@@ -14,10 +14,10 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </UserControl.Resources>
 
-    <Canvas>
-        <Grid Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}" Visibility="{x:Bind HasBeenViewed, Converter={StaticResource BoolToVisibilityConverter}}">
-            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" />
-            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" />
+    <Canvas Background="Transparent" Visibility="{x:Bind UserItem.UserData.HasBeenWatched, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+        <Grid Canvas.Left="{x:Bind PositionLeft}" Canvas.Top="{x:Bind PositionTop}">
+            <FontIcon Foreground="#00a4dc" FontFamily="Segoe MDL2 Assets" Glyph="&#xF63C;" FontSize="20" />
+            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE73E;" FontSize="20" />
         </Grid>
     </Canvas>
 </UserControl>

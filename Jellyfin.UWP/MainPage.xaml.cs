@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.WinUI;
+using Jellyfin.Models;
 using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
 using Jellyfin.UWP.Helpers;
-using Jellyfin.UWP.Models;
 using Jellyfin.UWP.Pages;
 using Jellyfin.UWP.Pages.Details;
 using Jellyfin.UWP.Pages.Latest;
-using Jellyfin.UWP.ViewModels.MainPage;
+using Jellyfin.ViewModels.MainPage;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Navigation;
 
 namespace Jellyfin.UWP;
 
@@ -56,6 +58,16 @@ internal sealed partial class MainPage : Page
         ViewModel.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
 
         await ViewModel.GetUserDisplay();
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        if (Frame.CanGoForward)
+        {
+            Frame.ForwardStack.Clear();
+        }
+
+        base.OnNavigatedTo(e);
     }
 
     private void SetupLatest()
@@ -175,27 +187,6 @@ internal sealed partial class MainPage : Page
         else
         {
             Frame.Navigate(typeof(SeriesPage), mediaItem.Id);
-        }
-    }
-
-    private async void ViewedFavoriteButtonControl_ButtonClick(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.IsHomeSelected)
-        {
-            await ViewModel.HomeLoadAsync();
-
-            ViewModel.HasEnoughDataToScrollContinueWatching = PageHelpers.IsThereEnoughDataForScrolling(lv_Resume);
-            ViewModel.HasEnoughDataToScrollNextUp = PageHelpers.IsThereEnoughDataForScrolling(lv_NextUp);
-
-            SetupLatest();
-        }
-        else
-        {
-            await ViewModel.FavoriteLoadAsync();
-
-            ViewModel.HasEnoughDataToScrollMoviesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteMovies);
-            ViewModel.HasEnoughDataToScrollShowsFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteShows);
-            ViewModel.HasEnoughDataToScrollEpisodesFavorites = PageHelpers.IsThereEnoughDataForScrolling(lv_FavoriteEpisodes);
         }
     }
 

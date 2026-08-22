@@ -1,13 +1,14 @@
 ﻿using Jellyfin.Sdk.Generated.Models;
+using Jellyfin.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Media.Core;
 
 namespace Jellyfin.UWP.Helpers;
 
-internal static class MediaPlayerHelpers
+internal sealed class MediaPlayerHelpers : IMediaPlayerHelpers
 {
-    internal static PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks, string? mediaSourceId, int? selectedAudioMediaStreamIndex)
+    public PlaybackInfoDto GetPlaybackInfoBody(UserDto user, long startTimeTicks, string? mediaSourceId, int? selectedAudioMediaStreamIndex)
     {
         const string mp4VideoFormats = "h264,hevc,vp8,vp9";
         const string mkvVideoFormats = "h264,hevc,vc1,vp8,vp9";
@@ -27,7 +28,6 @@ internal static class MediaPlayerHelpers
             EnableDirectStream = true,
             AudioStreamIndex = selectedAudioMediaStreamIndex,
             MediaSourceId = mediaSourceId,
-            
 
             DeviceProfile = new DeviceProfile
             {
@@ -193,7 +193,7 @@ internal static class MediaPlayerHelpers
         };
     }
 
-    internal static readonly ReadOnlyDictionary<string, string> SupportedAudioCodecs = new(new Dictionary<string, string>
+    public ReadOnlyDictionary<string, string> SupportedAudioCodecs { get; } = new(new Dictionary<string, string>
     {
         { "aac", CodecSubtypes.AudioFormatAac },
         { "ac3", CodecSubtypes.AudioFormatDolbyAC3 },
@@ -203,7 +203,7 @@ internal static class MediaPlayerHelpers
         { "mp3", CodecSubtypes.AudioFormatMP3 },
     });
 
-    internal static readonly ReadOnlyDictionary<string, string> SupportedVideoCodecs = new(new Dictionary<string, string>
+    public ReadOnlyDictionary<string, string> SupportedVideoCodecs { get; } = new(new Dictionary<string, string>
     {
         { "mp4v", CodecSubtypes.VideoFormatMP4V },
         { "h264", CodecSubtypes.VideoFormatH264 },

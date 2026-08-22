@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Jellyfin.UWP.Models;
-using Jellyfin.UWP.ViewModels.Details;
-using System;
+﻿using System;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using Jellyfin.Models;
+using Jellyfin.ViewModels.Details;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -48,10 +48,5 @@ public sealed partial class EpisodePage : Page
     private void SeriesName_Click(object sender, RoutedEventArgs e)
     {
         Frame.Navigate(typeof(SeriesPage), ViewModel.MediaItem.SeriesId);
-    }
-
-    private async void ViewedFavoriteButtonControl_Click(object sender, RoutedEventArgs e)
-    {
-        await ViewModel.LoadMediaInformationAsync(id);
     }
 }
