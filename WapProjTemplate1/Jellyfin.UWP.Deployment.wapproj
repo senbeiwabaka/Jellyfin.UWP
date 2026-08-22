@@ -57,8 +57,8 @@
     <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\Jellyfin.UWP\Jellyfin.UWP.csproj</EntryPointProjectUniqueName>
-    <PackageCertificateThumbprint>9C50C1F5221E07AD8CA878AD5C83828B7B182B47</PackageCertificateThumbprint>
-    <PackageCertificateKeyFile>WapProjTemplate1_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>14FA1A2528032C24FB096B2A9DE28B8532DEE52B</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile>Jellyfin.UWP.Deployment_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -129,6 +129,6 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <None Include="WapProjTemplate1_TemporaryKey.pfx" />
+    <None Include="Jellyfin.UWP.Deployment_TemporaryKey.pfx" />
   </ItemGroup>
 </Project>
