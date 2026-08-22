@@ -27,7 +27,7 @@ jobs:
         uses: microsoft/setup-msbuild@v3.0.0
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v4.0.0
+        uses: NuGet/setup-nuget@v4.0
         
       - name: Setup VSTest
         uses: darenm/Setup-VSTest@v1.3
@@ -51,19 +51,19 @@ jobs:
         # run: dotnet test .\tests\Jellyfin.UWP.UI.Tests\ -c Release
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4.7.0
+        uses: actions/setup-java@v5.7.0
         with:
           java-version: 17
           distribution: 'zulu'
       - name: Cache SonarQube packages
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v6.1.0
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarQube scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v4.2.2
+        uses: actions/cache@v6.1.0
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
@@ -97,7 +97,7 @@ jobs:
         uses: microsoft/setup-msbuild@v3.0.0
 
       - name: Setup NuGet
-        uses: NuGet/setup-nuget@v4.0.0
+        uses: NuGet/setup-nuget@v4.0
         
       - name: Navigate to Workspace
         run: cd $GITHUB_WORKSPACE
@@ -122,7 +122,7 @@ jobs:
           msbuild.exe WapProjTemplate1\Jellyfin.UWP.Deployment.wapproj /p:configuration=$env:Configuration /p:AppxBundle=$env:AppxBundle /p:AppxBundlePlatforms=$env:Platform /p:UapAppxPackageBuildMode=SideloadOnly -v:m
           
       - name: Zip Package
-        uses: vimtor/action-zip@v1.2
+        uses: vimtor/action-zip@v1.3
         with:
           files: .\WapProjTemplate1\AppPackages\Jellyfin.UWP.Deployment_${{ env.NBGV_SimpleVersion }}.0_Test
           dest: Jellyfin.UWP.zip
