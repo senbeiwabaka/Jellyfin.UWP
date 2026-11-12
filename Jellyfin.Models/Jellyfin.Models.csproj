@@ -7,8 +7,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Jellyfin.Sdk" Version="2025.10.21" />
-		<PackageReference Include="Microsoft.Kiota.Abstractions" Version="2.0.0" />
+		<PackageReference Include="Jellyfin.Sdk" Version="2026.10.12" />
+		<PackageReference Include="Microsoft.Kiota.Abstractions" Version="2.1.6" />
 	</ItemGroup>
 
 </Project>

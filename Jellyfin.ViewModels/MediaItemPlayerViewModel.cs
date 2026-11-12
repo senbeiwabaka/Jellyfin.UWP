@@ -167,33 +167,33 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
     [RelayCommand]
     private void ClosePlaybackInfo() => IsPlaybackOpen = false;
 
-    private Uri GetHLS()
-    {
-        var uniqueId = $"Jellyfin.UWP-{ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]}";
-        var video = apiClient.Videos[Item.Id.Value].MasterM3u8
-            .ToGetRequestInformation(options =>
-            {
-                options.QueryParameters.DeviceId = uniqueId;
-                options.QueryParameters.MediaSourceId = MediaSourceInfo.Id;
-                options.QueryParameters.VideoCodec = "h264,hevc";
-                options.QueryParameters.AudioCodec = "aac";
-                options.QueryParameters.AudioStreamIndex = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).Index;
-                options.QueryParameters.AudioBitRate = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).BitRate;
-                options.QueryParameters.PlaySessionId = playbackSessionId;
-                options.QueryParameters.EnableAudioVbrEncoding = true;
-                options.QueryParameters.SegmentContainer = MediaSourceInfo.Container;
-                options.QueryParameters.BreakOnNonKeyFrames = true;
-                options.QueryParameters.AllowVideoStreamCopy = user.Policy?.EnablePlaybackRemuxing;
-                options.QueryParameters.AllowAudioStreamCopy = user.Policy?.EnablePlaybackRemuxing;
-                options.QueryParameters.EnableAutoStreamCopy = true;
-                options.QueryParameters.EnableAdaptiveBitrateStreaming = true;
-                options.QueryParameters.Context = Sdk.Generated.Videos.Item.MasterM3u8.EncodingContext.Streaming;
-                options.QueryParameters.EnableTrickplay = false;
-                options.QueryParameters.AlwaysBurnInSubtitleWhenTranscoding = false;
-            });
+    //private Uri GetHLS()
+    //{
+    //    var uniqueId = $"Jellyfin.UWP-{ApplicationData.Current.LocalSettings.Values["UniqueDeviceId"]}";
+    //    var video = apiClient.Videos[Item.Id.Value].MasterM3u8
+    //        .ToGetRequestInformation(options =>
+    //        {
+    //            options.QueryParameters.DeviceId = uniqueId;
+    //            options.QueryParameters.MediaSourceId = MediaSourceInfo.Id;
+    //            options.QueryParameters.VideoCodec = "h264,hevc";
+    //            options.QueryParameters.AudioCodec = "aac";
+    //            options.QueryParameters.AudioStreamIndex = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).Index;
+    //            options.QueryParameters.AudioBitRate = MediaSourceInfo.MediaStreams.First(x => x.Type == MediaStream_Type.Audio).BitRate;
+    //            options.QueryParameters.PlaySessionId = playbackSessionId;
+    //            options.QueryParameters.EnableAudioVbrEncoding = true;
+    //            options.QueryParameters.SegmentContainer = MediaSourceInfo.Container;
+    //            options.QueryParameters.BreakOnNonKeyFrames = true;
+    //            options.QueryParameters.AllowVideoStreamCopy = user.Policy?.EnablePlaybackRemuxing;
+    //            options.QueryParameters.AllowAudioStreamCopy = user.Policy?.EnablePlaybackRemuxing;
+    //            options.QueryParameters.EnableAutoStreamCopy = true;
+    //            options.QueryParameters.EnableAdaptiveBitrateStreaming = true;
+    //            options.QueryParameters.Context = Sdk.Generated.Videos.Item.MasterM3u8.EncodingContext.Streaming;
+    //            options.QueryParameters.EnableTrickplay = false;
+    //            options.QueryParameters.AlwaysBurnInSubtitleWhenTranscoding = false;
+    //        });
 
-        return apiClient.BuildUri(video);
-    }
+    //    return apiClient.BuildUri(video);
+    //}
 
     private async Task<BaseItemDtoQueryResult?> GetNextSeasonEpisodes(Guid seriesId, Guid seasonId, CancellationToken cancellationToken = default)
     {
@@ -249,7 +249,7 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
             transcodingBitrate = session.TranscodingInfo.Bitrate.HasValue ? $"{session.TranscodingInfo.Bitrate.Value / 1000000m:#.#} Mbps" : "N/A";
             transcodingCompletion = $"{session.TranscodingInfo.CompletionPercentage?.ToString("#.#")}%";
             transcodingFramerate = $"{session.TranscodingInfo.Framerate} fps";
-            transcodingReason = string.Join(",", session.TranscodingInfo.TranscodeReasons ?? []);
+            transcodingReason = string.Join(",", session.TranscodingInfo.TranscodeReasons ?? [TranscodeReason.UnknownVideoStreamInfo, TranscodeReason.UnknownAudioStreamInfo]);
         }
 
         var videoMediaStream = Item.MediaStreams.Single(x => x.Type == MediaStream_Type.Video);
@@ -453,21 +453,21 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
             var mediaUri = new Uri($"{memoryCache.Get<string>(JellyfinConstants.HostUrlName)}{MediaSourceInfo.TranscodingUrl}");
             source = MediaSource.CreateFromUri(mediaUri);
         }
-        else if (IsAdaptiveStream)
-        {
-            var mediaUri = GetHLS();
-            mediaUri = new Uri($"{mediaUri.AbsoluteUri}&api_key={settings.AccessToken}");
+        //else if (IsAdaptiveStream)
+        //{
+        //    var mediaUri = GetHLS();
+        //    mediaUri = new Uri($"{mediaUri.AbsoluteUri}&api_key={settings.AccessToken}");
 
-            var adapativeUri = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
+        //    var adapativeUri = await AdaptiveMediaSource.CreateFromUriAsync(mediaUri);
 
-            if (adapativeUri.Status != AdaptiveMediaSourceCreationStatus.Success)
-            {
-                var issue = await adapativeUri.HttpResponseMessage.Content.ReadAsStringAsync();
-                logger.LogError(issue);
-            }
+        //    if (adapativeUri.Status != AdaptiveMediaSourceCreationStatus.Success)
+        //    {
+        //        var issue = await adapativeUri.HttpResponseMessage.Content.ReadAsStringAsync();
+        //        logger.LogError(issue);
+        //    }
 
-            source = MediaSource.CreateFromAdaptiveMediaSource(adapativeUri.MediaSource);
-        }
+        //    source = MediaSource.CreateFromAdaptiveMediaSource(adapativeUri.MediaSource);
+        //}
         else
         {
             var mediaUri = GetVideoUrl();
