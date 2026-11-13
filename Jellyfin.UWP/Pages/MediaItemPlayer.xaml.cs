@@ -265,9 +265,14 @@ internal sealed partial class MediaItemPlayer : Page
             {
                 displayRequest.RequestActive();
             }
-            else if (sender.PlaybackState == MediaPlaybackState.Paused) // PlaybackState is Buffering, None, Opening, or Paused.
+            
+            if (sender.PlaybackState == MediaPlaybackState.Paused || sender.PlaybackState == MediaPlaybackState.None) // PlaybackState is Buffering, None, Opening, or Paused.
             {
-                displayRequest.RequestRelease();
+                try
+                {
+                    displayRequest.RequestRelease();
+                }
+                catch { }
             }
         }
     }

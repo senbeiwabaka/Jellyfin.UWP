@@ -507,8 +507,8 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
             }
         }
 
-        if (!IsTranscoding)
-        {
+        //if (!IsTranscoding)
+        //{
             try
             {
                 await source.OpenAsync();
@@ -517,7 +517,7 @@ public sealed partial class MediaItemPlayerViewModel(IMemoryCache memoryCache, J
             {
                 logger.LogError(ex, "Failed to load media");
             }
-        }
+        //}
 
         return source;
     }

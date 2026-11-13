@@ -5,8 +5,6 @@
     xmlns:local="using:Jellyfin.UWP.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodels="using:Jellyfin.UWP.ViewModels"
-    d:DataContext="{d:DesignInstance Type=viewmodels:MediaItemPlayerViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
@@ -40,15 +38,19 @@
                     <StackPanel Orientation="Horizontal">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="User:" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
-                            <TextBlock Text="{x:Bind userName}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+                            <TextBlock Text="{x:Bind userName, Mode=OneTime}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Jellyfin Version:" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
-                            <TextBlock Text="{x:Bind jellyfinVersion}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+                            <TextBlock Text="{x:Bind jellyfinVersion, Mode=OneTime}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="App Version:" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
-                            <TextBlock Text="{x:Bind appVersion}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+                            <TextBlock Text="{x:Bind appVersion, Mode=OneTime}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Runtime Version:" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
+                            <TextBlock Text="{x:Bind runtimeVersion, Mode=OneTime}" VerticalAlignment="Center" Margin="0,0,5,0"></TextBlock>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

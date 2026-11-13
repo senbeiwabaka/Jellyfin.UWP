@@ -25,6 +25,7 @@ internal sealed partial class TopControl : UserControl
     private readonly string userName;
     private readonly string jellyfinVersion;
     private readonly string appVersion;
+    private readonly string runtimeVersion;
 
     public TopControl()
     {
@@ -35,6 +36,7 @@ internal sealed partial class TopControl : UserControl
         userName = memoryCache.Get<UserDto>(JellyfinConstants.UserName)!.Name!;
         jellyfinVersion = memoryCache.Get<string>(JellyfinConstants.ServerVersionName)!;
         appVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version;
+        runtimeVersion = System.Environment.Version.ToString();
 
         Loaded += TopControl_Loaded;
     }

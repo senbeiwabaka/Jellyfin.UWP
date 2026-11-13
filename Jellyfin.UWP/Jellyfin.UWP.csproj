@@ -1,53 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup Label="Globals">
+	<!--<PropertyGroup Label="Globals">
 		<WebView2EnableCsWinRTProjection>True</WebView2EnableCsWinRTProjection>
-	</PropertyGroup>
+	</PropertyGroup>-->
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
-		<TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
+		<TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+		<Nullable>enable</Nullable>
 		<UseUwp>true</UseUwp>
 		<Platforms>x86;x64;arm64</Platforms>
 		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
 		<DefaultLanguage>en-US</DefaultLanguage>
-		<!--<PublishAot>true</PublishAot>-->
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
-		<EnableMsixTooling>true</EnableMsixTooling>
-		<LangVersion>preview</LangVersion>
-		<Nullable>enable</Nullable>
-		<CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
+		<SupportedOSPlatformVersion>10.0.22000.0</SupportedOSPlatformVersion>
+		<!--<EnableMsixTooling>true</EnableMsixTooling>-->
+		<!--<LangVersion>preview</LangVersion>-->
+		<!--<CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
 		<NuGetAuditMode>all</NuGetAuditMode>
-		<NuGetAuditLevel>low</NuGetAuditLevel>
+		<NuGetAuditLevel>low</NuGetAuditLevel>-->
 		<!--<SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>-->
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-		<IsAotCompatible>True</IsAotCompatible>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-		<IsAotCompatible>True</IsAotCompatible>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
-		<IsAotCompatible>True</IsAotCompatible>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-		<IsAotCompatible>True</IsAotCompatible>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-		<IsAotCompatible>True</IsAotCompatible>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
-		<IsAotCompatible>True</IsAotCompatible>
+		<!--<SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>-->
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Common" Version="8.4.2" />
 		<PackageReference Include="CommunityToolkit.Uwp.Converters" Version="8.2.251219" />
 		<PackageReference Include="CommunityToolkit.Uwp.Extensions" Version="8.2.251219" />
 		<PackageReference Include="MetroLog.Net6" Version="2.1.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.*" />
-		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.*" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="11.0.0" />
 		<PackageReference Include="Microsoft.UI.Xaml" Version="2.8.7" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Uwp.Managed" Version="3.0.1" />
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.10.94">
@@ -55,8 +38,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="NLog.Extensions.Logging" Version="6.3.0" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.*" />
-		<PackageReference Include="System.Text.Json" Version="10.0.*" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="11.0.0" />
+		<PackageReference Include="System.Text.Json" Version="11.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\Jellyfin.Services\Jellyfin.Services.csproj" />
